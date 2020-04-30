@@ -184,3 +184,33 @@ func (i *Int) SignExtend(baseBytes *Int) *Int {
 
 	return i.toI256()
 }
+
+func (i *Int) LT(y *Int) bool {
+	return i.Int.Cmp(y.Int) < 0
+}
+
+func (i *Int) GT(y *Int) bool {
+	return i.Int.Cmp(y.Int) > 0 
+}
+
+func (i *Int) SLT(y *Int) bool {
+	si := i.GetSigned()
+	sy := y.GetSigned()
+
+	return si.Int.Cmp(sy.Int) < 0
+}
+
+func (i *Int) SGT(y *Int) bool {
+	si := i.GetSigned()
+	sy := y.GetSigned()
+
+	return si.Int.Cmp(sy.Int) > 0 
+}
+
+func (i *Int) EQ(y *Int) bool {
+	return i.Int.Cmp(y.Int) == 0
+}
+
+func (i *Int) IsZero() bool {
+	return i.Sign() <= 0
+}
