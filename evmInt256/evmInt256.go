@@ -16,7 +16,9 @@
 
 package evmInt256
 
-import "math/big"
+import (
+	"math/big"
+)
 
 func maxUint(bits uint) *big.Int {
 	maxA1 := big.NewInt(0).Lsh(big.NewInt(1), bits)
@@ -35,10 +37,14 @@ func pow(x, y int64) *big.Int {
 	return bx.Exp(bx, by, nil)
 }
 
+const (
+	maxBits = 256
+)
+
 var (
-	uint256MAX = maxUint(256)
-	int256MAX = pow(2,255)
-	bit256 = bit(256)
+	uint256MAX = maxUint(maxBits)
+	int256MAX = pow(2,maxBits - 1)
+	bit256 = bit(maxBits)
 	one = big.NewInt(1)
 )
 
@@ -213,4 +219,77 @@ func (i *Int) EQ(y *Int) bool {
 
 func (i *Int) IsZero() bool {
 	return i.Sign() <= 0
+}
+
+func (i *Int) And(y *Int) *Int {
+	i.Int.And(i.Int, y.Int)
+	return i.toI256()
+}
+
+func (i *Int) Or(y *Int) *Int {
+	i.Int.Or(i.Int, y.Int)
+	return i.toI256()
+}
+
+func (i *Int) XOr(y *Int) *Int {
+	i.Int.Xor(i.Int, y.Int)
+	return i.toI256()
+}
+
+func (i *Int) Not(y *Int) *Int {
+	i.Int.Not(i.Int)
+	return i.toI256()
+}
+
+func (i *Int) ByteAt(n int) byte {
+	if n > 31 {
+		return 0
+	}
+
+	bnBytes := i.Int.Bytes()
+	bnLen := len(bnBytes)
+	bytePos := bnLen - n - 1
+
+	if bytePos < 0 {
+		return 0
+	}
+
+	return bnBytes[bytePos]
+}
+
+func (i *Int) SHL(n uint64) *Int  {
+	if n >= maxBits {
+		i.Int.SetUint64(0)
+	} else {
+		i.Int.Lsh(i.Int, uint(n))
+	}
+
+	return i.toI256()
+}
+
+func (i *Int) SHR(n uint64) *Int {
+	if n >= maxBits {
+		i.Int.SetUint64(0)
+	} else {
+		i.Int.Rsh(i.Int, uint(n))
+	}
+	
+	return i.toI256()
+}
+
+func (i *Int) SAR(n uint64) *Int {
+	si := i.GetSigned()
+
+	if n >= maxBits {
+		if si.Sign() >= 0 {
+			si.SetUint64(0)
+		} else {
+			si.SetInt64(-1)
+		}
+	} else {
+		si.Rsh(si.Int, uint(n))
+	}
+
+	i.Set(si.Int)
+	return i.toI256()
 }

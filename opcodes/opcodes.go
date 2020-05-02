@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package constants
+package opcodes
 
 type OpCode byte
 
