@@ -14,13 +14,34 @@
  *  limitations under the License.
  */
 
-package evmErrors
+package common
 
-import "errors"
+import (
+	"SealEVM/evmInt256"
+)
 
-var StackUnderFlow = errors.New("stack under flow")
-var StackOverFlow = errors.New("stack over flow")
-var StorageNotInitialized = errors.New("storage not initialized")
-func NoSuchDataInTheStorage (err error) error{
-	return errors.New("no such data in the storage: " + err.Error())
+const (
+	hashLength = 32
+)
+
+func EVMIntToHashBytes(i *evmInt256.Int) [hashLength]byte {
+	iBytes := i.Bytes()
+	iLen := len(iBytes)
+
+	var hash [hashLength]byte
+	if iLen > hashLength {
+		copy(hash[:], iBytes[iLen - hashLength:])
+	} else {
+		copy(hash[hashLength - iLen:], iBytes)
+	}
+
+	return hash
+}
+
+func HashBytesToEVMInt(hash [hashLength]byte) (*evmInt256.Int, error) {
+
+	i := evmInt256.New(0)
+	i.SetBytes(hash[:])
+
+	return i, nil
 }
