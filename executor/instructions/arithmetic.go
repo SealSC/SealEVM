@@ -22,98 +22,168 @@ import (
 
 func loadArithmetic(iTable [256]opCodeInstruction) {
 	iTable[opcodes.STOP] = opCodeInstruction{
-		exec: stopAction,
+		doAction: stopAction,
+		minStackDepth: 0,
+		enabled: true,
 	}
 
 	iTable[opcodes.ADD] = opCodeInstruction {
-		exec: addAction,
+		doAction: addAction,
+		minStackDepth: 2,
+		enabled: true,
 	}
 
 	iTable[opcodes.MUL] = opCodeInstruction{
-		exec: mulAction,
+		doAction: mulAction,
+		minStackDepth: 2,
+		enabled: true,
 	}
 
 	iTable[opcodes.SUB] = opCodeInstruction{
-		exec: subAction,
+		doAction: subAction,
+		minStackDepth: 2,
+		enabled: true,
 	}
 
 	iTable[opcodes.DIV] = opCodeInstruction{
-		exec: divAction,
+		doAction: divAction,
+		minStackDepth: 2,
+		enabled: true,
 	}
 
 	iTable[opcodes.SDIV] = opCodeInstruction{
-		exec: sDivAction,
+		doAction: sDivAction,
+		minStackDepth: 2,
+		enabled: true,
 	}
 
 	iTable[opcodes.MOD] = opCodeInstruction{
-		exec: modAction,
+		doAction: modAction,
+		minStackDepth: 2,
+		enabled: true,
 	}
 
 	iTable[opcodes.SMOD] = opCodeInstruction{
-		exec: sModAction,
+		doAction: sModAction,
+		minStackDepth: 2,
+		enabled: true,
 	}
 
 	iTable[opcodes.ADDMOD] = opCodeInstruction{
-		exec: addModAction,
+		doAction: addModAction,
+		minStackDepth: 3,
+		enabled: true,
 	}
 
 	iTable[opcodes.MULMOD] = opCodeInstruction{
-		exec: mulModAction,
+		doAction: mulModAction,
+		minStackDepth: 3,
+		enabled: true,
 	}
 
 	iTable[opcodes.EXP] = opCodeInstruction{
-		exec: expAction,
+		doAction: expAction,
+		minStackDepth: 2,
+		enabled: true,
 	}
 
 	iTable[opcodes.SIGNEXTEND] = opCodeInstruction{
-		exec: signExtendAction,
+		doAction: signExtendAction,
+		minStackDepth: 2,
+		enabled: true,
 	}
 }
 
-func stopAction(context interface{}) ([]byte, error) {
+func stopAction(setting *instructionsSetting) ([]byte, error) {
 	return nil, nil
 }
 
-func addAction(context interface{}) ([]byte, error) {
+func addAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	y := setting.stack.Peek()
+
+	y.Add(x)
 	return nil, nil
 }
 
-func mulAction(context interface{}) ([]byte, error) {
+func mulAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	y := setting.stack.Peek()
+
+	y.Mul(x)
 	return nil, nil
 }
 
-func subAction(context interface{}) ([]byte, error) {
+func subAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	y := setting.stack.Peek()
+
+	y.Set(x.Sub(y).Int)
 	return nil, nil
 }
 
-func divAction(context interface{}) ([]byte, error) {
+func divAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	y := setting.stack.Peek()
+
+	y.Set(x.Div(y).Int)
 	return nil, nil
 }
 
-func sDivAction(context interface{}) ([]byte, error) {
+func sDivAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	y := setting.stack.Peek()
+
+	y.Set(x.SDiv(y).Int)
 	return nil, nil
 }
 
-func modAction(context interface{}) ([]byte, error) {
+func modAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	y := setting.stack.Peek()
+
+	y.Set(x.Mod(y).Int)
 	return nil, nil
 }
 
-func sModAction(context interface{}) ([]byte, error) {
+func sModAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	y := setting.stack.Peek()
+
+	y.Set(x.SMod(y).Int)
 	return nil, nil
 }
 
-func addModAction(context interface{}) ([]byte, error) {
+func addModAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	y, _ := setting.stack.Pop()
+	m := setting.stack.Peek()
+
+	m.Set(x.AddMod(y, m).Int)
 	return nil, nil
 }
 
-func mulModAction(context interface{}) ([]byte, error) {
+func mulModAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	y, _ := setting.stack.Pop()
+	m := setting.stack.Peek()
+
+	m.Set(x.MulMod(y, m).Int)
 	return nil, nil
 }
 
-func expAction(context interface{}) ([]byte, error) {
+func expAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	e := setting.stack.Peek()
+
+	e.Set(x.Exp(e).Int)
 	return nil, nil
 }
 
-func signExtendAction(context interface{}) ([]byte, error) {
+func signExtendAction(setting *instructionsSetting) ([]byte, error) {
+	x, _ := setting.stack.Pop()
+	b := setting.stack.Peek()
+
+	b.Set(x.SignExtend(b).Int)
 	return nil, nil
 }
