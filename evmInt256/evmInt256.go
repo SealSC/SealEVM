@@ -56,6 +56,10 @@ func New(i int64) *Int {
 	return &Int{big.NewInt(i)}
 }
 
+func FromBigInt(i *big.Int) *Int {
+	return &Int{big.NewInt(0).Set(i)}
+}
+
 func FromDecimalString(s string) *Int {
 	bi := big.NewInt(0)
 	_, success := bi.SetString(s, 10)
