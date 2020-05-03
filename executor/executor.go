@@ -15,3 +15,40 @@
  */
 
 package executor
+
+import (
+	"SealEVM/environment"
+	"SealEVM/executor/instructions"
+	"SealEVM/memory"
+	"SealEVM/stack"
+	"SealEVM/storageCache"
+)
+
+type EVMParam struct {
+	MaxStackDepth   int
+	ExternalStore   storageCache.IExternalStorage
+	ResultCallback  storageCache.EVMResultCallback
+	Context         environment.Context
+}
+
+type EVM struct {
+	stack           *stack.Stack
+	memory          *memory.Memory
+	iStore          storageCache.ICache
+	context         environment.Context
+	instructions    instructions.IInstructions
+}
+
+func New(param EVMParam) *EVM {
+	evm := &EVM{
+		stack:        stack.New(param.MaxStackDepth),
+		memory:       memory.New(),
+		iStore:       storageCache.New(param.ExternalStore, param.ResultCallback),
+		context:      param.Context,
+		instructions: nil,
+	}
+
+	evm.instructions = instructions.New(evm.stack, evm.memory, evm.iStore, evm.context)
+
+	return evm
+}
