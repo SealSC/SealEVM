@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package context
+package environment
 
 type Context struct {
 	Block
