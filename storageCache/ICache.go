@@ -17,44 +17,82 @@
 package storageCache
 
 import (
+	"SealEVM/environment"
 	"SealEVM/evmErrors"
 	"SealEVM/evmInt256"
 )
 
 type Cache map[string] *evmInt256.Int
+
+type balance struct {
+	Address *evmInt256.Int
+	Balance *evmInt256.Int
+}
+
+type BalanceCache map[string] *balance
+
+type log struct {
+	Topics  [][]byte
+	Data    []byte
+	Context environment.Context
+}
+type LogCache map[string] []log
+
 type EVMResultCallback func(original Cache, final Cache, err error)
 
 type IExternalStorage interface {
 	SLoad(k *evmInt256.Int) (*evmInt256.Int, error)
+	Balance(address []byte) (*evmInt256.Int, error)
+	GetCode(address []byte) ([]byte, error)
+	GetCodeSize(address []byte) (*evmInt256.Int, error)
+	GetCodeHash(address []byte) ([]byte, error)
 }
 
 type ICache interface {
 	SLoad(k *evmInt256.Int) (*evmInt256.Int, error)
 	SStore(k *evmInt256.Int, i *evmInt256.Int)
+	BalanceChange(address *evmInt256.Int, change *evmInt256.Int)
+	Log(address *evmInt256.Int, topics [][]byte, data []byte, context environment.Context)
+	Destruct(address *evmInt256.Int)
 	ResultFeedback(err error)
 }
 
+type ResultCache struct {
+	OriginalData    Cache
+	CachedData      Cache
+	Balance         BalanceCache
+	Logs            LogCache
+	Destructs       Cache
+}
+
 type storageCache struct {
-	originalData    Cache
-	cachedData      Cache
+	ResultCache
 
 	extStorage      IExternalStorage
 	callback        EVMResultCallback
 }
 
 func New(extStorage IExternalStorage, callback EVMResultCallback) ICache {
-	return &storageCache{
+	s := &storageCache{
 		extStorage: extStorage,
 		callback: callback,
 	}
+
+	s.ResultCache.OriginalData = Cache{}
+	s.ResultCache.CachedData = Cache{}
+	s.ResultCache.Balance = BalanceCache{}
+	s.ResultCache.Logs = LogCache{}
+	s.ResultCache.Destructs = Cache{}
+
+	return s
 }
 
 func (s *storageCache) SLoad(k *evmInt256.Int) (*evmInt256.Int, error ) {
-	if s.originalData == nil || s.cachedData == nil || s.extStorage == nil {
+	if s.OriginalData == nil || s.CachedData == nil || s.extStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
 	}
 
-	i, exists := s.cachedData[k.String()]
+	i, exists := s.CachedData[k.String()]
 	if exists {
 		return i, nil
 	}
@@ -65,17 +103,50 @@ func (s *storageCache) SLoad(k *evmInt256.Int) (*evmInt256.Int, error ) {
 	}
 
 	cacheString := i.String()
-	s.originalData[cacheString] = evmInt256.FromBigInt(i.Int)
-	s.cachedData[cacheString] = i
+	s.OriginalData[cacheString] = evmInt256.FromBigInt(i.Int)
+	s.CachedData[cacheString] = i
 
 	return i, nil
 }
 
 func (s *storageCache) SStore(k *evmInt256.Int, v *evmInt256.Int)  {
 	kString := k.String()
-	s.cachedData[kString] = v
+	s.CachedData[kString] = v
+}
+
+func (s *storageCache) BalanceChange(address *evmInt256.Int, change *evmInt256.Int) {
+	kString := address.String()
+
+	b, exist := s.ResultCache.Balance[kString]
+	if !exist {
+		s.ResultCache.Balance[kString] = &balance {
+			Address: address,
+			Balance: change,
+		}
+	} else {
+		b.Balance.Add(change)
+	}
+}
+
+func (s *storageCache) Log(address *evmInt256.Int, topics [][]byte, data []byte, context environment.Context) {
+	kString := address.String()
+
+	var theLog = log {
+		Topics:   topics,
+		Data:    data,
+		Context: context,
+	}
+
+	l := s.Logs[kString]
+	s.Logs[kString] = append(l, theLog)
+
+	return
+}
+
+func (s *storageCache) Destruct(address *evmInt256.Int) {
+	s.ResultCache.Destructs[address.String()] = address
 }
 
 func (s *storageCache) ResultFeedback(err error) {
-	s.callback(s.originalData, s.cachedData, err)
+	s.callback(s.OriginalData, s.CachedData, err)
 }
