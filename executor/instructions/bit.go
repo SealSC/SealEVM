@@ -14,22 +14,4 @@
  *  limitations under the License.
  */
 
-package evmErrors
-
-import (
-	"errors"
-	"fmt"
-)
-
-var StackUnderFlow = errors.New("stack under flow")
-var StackOverFlow = errors.New("stack over flow")
-var StorageNotInitialized = errors.New("storage not initialized")
-func InvalidOpCode(code byte) error {
-	return errors.New(fmt.Sprintf("invalid op code: 0x%X", code))
-}
-
-func NoSuchDataInTheStorage (err error) error{
-	return errors.New("no such data in the storage: " + err.Error())
-}
-
-var OutOfMemory = errors.New("out of memory")
+package instructions
