@@ -21,6 +21,9 @@ import "errors"
 var StackUnderFlow = errors.New("stack under flow")
 var StackOverFlow = errors.New("stack over flow")
 var StorageNotInitialized = errors.New("storage not initialized")
+
 func NoSuchDataInTheStorage (err error) error{
 	return errors.New("no such data in the storage: " + err.Error())
 }
+
+var OutOfMemory = errors.New("out of memory")
