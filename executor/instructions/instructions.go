@@ -59,7 +59,9 @@ func (i *instructionsSetting) Execute(code opcodes.OpCode) ([]byte, error) {
 }
 
 func Load()  {
-	loadArithmetic(instructionTable)
+	loadArithmetic()
+	loadBitOperations()
+	loadComparision()
 }
 
 func New(stack *stack.Stack, memory *memory.Memory, storage storageCache.ICache, context environment.Context) IInstructions {

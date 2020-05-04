@@ -20,81 +20,81 @@ import (
 	"SealEVM/opcodes"
 )
 
-func loadArithmetic(iTable [256]opCodeInstruction) {
-	iTable[opcodes.STOP] = opCodeInstruction{
+func loadArithmetic() {
+	instructionTable[opcodes.STOP] = opCodeInstruction{
 		doAction: stopAction,
 		minStackDepth: 0,
 		enabled: true,
 	}
 
-	iTable[opcodes.ADD] = opCodeInstruction {
+	instructionTable[opcodes.ADD] = opCodeInstruction {
 		doAction: addAction,
 		minStackDepth: 2,
 		enabled: true,
 	}
 
-	iTable[opcodes.MUL] = opCodeInstruction{
+	instructionTable[opcodes.MUL] = opCodeInstruction{
 		doAction: mulAction,
 		minStackDepth: 2,
 		enabled: true,
 	}
 
-	iTable[opcodes.SUB] = opCodeInstruction{
+	instructionTable[opcodes.SUB] = opCodeInstruction{
 		doAction: subAction,
 		minStackDepth: 2,
 		enabled: true,
 	}
 
-	iTable[opcodes.DIV] = opCodeInstruction{
+	instructionTable[opcodes.DIV] = opCodeInstruction{
 		doAction: divAction,
 		minStackDepth: 2,
 		enabled: true,
 	}
 
-	iTable[opcodes.SDIV] = opCodeInstruction{
+	instructionTable[opcodes.SDIV] = opCodeInstruction{
 		doAction: sDivAction,
 		minStackDepth: 2,
 		enabled: true,
 	}
 
-	iTable[opcodes.MOD] = opCodeInstruction{
+	instructionTable[opcodes.MOD] = opCodeInstruction{
 		doAction: modAction,
 		minStackDepth: 2,
 		enabled: true,
 	}
 
-	iTable[opcodes.SMOD] = opCodeInstruction{
+	instructionTable[opcodes.SMOD] = opCodeInstruction{
 		doAction: sModAction,
 		minStackDepth: 2,
 		enabled: true,
 	}
 
-	iTable[opcodes.ADDMOD] = opCodeInstruction{
+	instructionTable[opcodes.ADDMOD] = opCodeInstruction{
 		doAction: addModAction,
 		minStackDepth: 3,
 		enabled: true,
 	}
 
-	iTable[opcodes.MULMOD] = opCodeInstruction{
+	instructionTable[opcodes.MULMOD] = opCodeInstruction{
 		doAction: mulModAction,
 		minStackDepth: 3,
 		enabled: true,
 	}
 
-	iTable[opcodes.EXP] = opCodeInstruction{
+	instructionTable[opcodes.EXP] = opCodeInstruction{
 		doAction: expAction,
 		minStackDepth: 2,
 		enabled: true,
 	}
 
-	iTable[opcodes.SIGNEXTEND] = opCodeInstruction{
+	instructionTable[opcodes.SIGNEXTEND] = opCodeInstruction{
 		doAction: signExtendAction,
 		minStackDepth: 2,
 		enabled: true,
 	}
 }
 
-func stopAction(setting *instructionsSetting) ([]byte, error) {
+func stopAction(_ *instructionsSetting) ([]byte, error) {
 	return nil, nil
 }
 
