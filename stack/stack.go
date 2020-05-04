@@ -21,26 +21,31 @@ import (
 	"SealEVM/evmInt256"
 )
 
-type stack struct {
+type Stack struct {
 	data [] *evmInt256.Int
 	max int
 }
 
-func New(max int) *stack {
+func New(max int) *Stack {
 	if max <= 0 {
 		max = int(^uint(0) >> 1)
 	}
 
-	return &stack{
+	return &Stack{
 		max: max,
 	}
 }
 
-func (s *stack) Len() int {
+func (s *Stack) CheckMinDepth(min int) bool {
+	sLen := len(s.data)
+	return sLen >= min
+}
+
+func (s *Stack) Len() int {
 	return len(s.data)
 }
 
-func (s *stack) Push(i *evmInt256.Int) error {
+func (s *Stack) Push(i *evmInt256.Int) error {
 	sLen := len(s.data)
 	if sLen + 1 > s.max {
 		return evmErrors.StackOverFlow
@@ -50,7 +55,7 @@ func (s *stack) Push(i *evmInt256.Int) error {
 	return nil
 }
 
-func (s *stack) PushN(i []*evmInt256.Int) error {
+func (s *Stack) PushN(i []*evmInt256.Int) error {
 	sLen := len(s.data)
 	iLen := len(i)
 	if sLen + iLen > s.max {
@@ -61,7 +66,7 @@ func (s *stack) PushN(i []*evmInt256.Int) error {
 	return nil
 }
 
-func (s *stack) Pop() (*evmInt256.Int, error) {
+func (s *Stack) Pop() (*evmInt256.Int, error) {
 	sLen := len(s.data)
 	if sLen == 0 {
 		return nil, evmErrors.StackUnderFlow
@@ -72,7 +77,7 @@ func (s *stack) Pop() (*evmInt256.Int, error) {
 	return i, nil
 }
 
-func (s *stack) PopN(n int) ([]*evmInt256.Int, error) {
+func (s *Stack) PopN(n int) ([]*evmInt256.Int, error) {
 	sLen := len(s.data)
 	var el []*evmInt256.Int
 	if sLen >= n {
@@ -82,10 +87,14 @@ func (s *stack) PopN(n int) ([]*evmInt256.Int, error) {
 		return nil, evmErrors.StackUnderFlow
 	}
 
+	//reverse to make sure the order
+	for i, j := 0, len(el) - 1; i < j; i, j = i+1, j-1 {
+		el[i], el[j] = el[j], el[i]
+	}
 	return el, nil
 }
 
-func (s *stack) Peek() *evmInt256.Int {
+func (s *Stack) Peek() *evmInt256.Int {
 	sLen := len(s.data)
 	if sLen == 0 {
 		return nil
@@ -95,7 +104,7 @@ func (s *stack) Peek() *evmInt256.Int {
 	return i
 }
 
-func (s *stack) PeekN(n int) []*evmInt256.Int {
+func (s *Stack) PeekN(n int) []*evmInt256.Int {
 	sLen := len(s.data)
 	var el []*evmInt256.Int = nil
 	if sLen >= n {
@@ -105,7 +114,7 @@ func (s *stack) PeekN(n int) []*evmInt256.Int {
 	return el
 }
 
-func (s *stack) Swap(n int) error {
+func (s *Stack) Swap(n int) error {
 	n += 1
 	sLen := len(s.data)
 	if sLen < n {
@@ -117,7 +126,7 @@ func (s *stack) Swap(n int) error {
 	return nil
 }
 
-func (s *stack) Dup(n int) error {
+func (s *Stack) Dup(n int) error {
 	sLen := len(s.data)
 	if sLen < n {
 		return evmErrors.StackUnderFlow
