@@ -34,7 +34,7 @@ type EVMParam struct {
 type EVM struct {
 	stack           *stack.Stack
 	memory          *memory.Memory
-	iStore          storageCache.ICache
+	iStore          *storageCache.StorageCache
 	context         environment.Context
 	instructions    instructions.IInstructions
 }

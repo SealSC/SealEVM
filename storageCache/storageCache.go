@@ -41,20 +41,13 @@ type LogCache map[string] []log
 type EVMResultCallback func(original Cache, final Cache, err error)
 
 type IExternalStorage interface {
-	SLoad(k *evmInt256.Int) (*evmInt256.Int, error)
 	Balance(address []byte) (*evmInt256.Int, error)
 	GetCode(address []byte) ([]byte, error)
 	GetCodeSize(address []byte) (*evmInt256.Int, error)
 	GetCodeHash(address []byte) ([]byte, error)
-}
+	GetBlockHash(block uint64) ([]byte, error)
 
-type ICache interface {
-	SLoad(k *evmInt256.Int) (*evmInt256.Int, error)
-	SStore(k *evmInt256.Int, i *evmInt256.Int)
-	BalanceChange(address *evmInt256.Int, change *evmInt256.Int)
-	Log(address *evmInt256.Int, topics [][]byte, data []byte, context environment.Context)
-	Destruct(address *evmInt256.Int)
-	ResultFeedback(err error)
+	load(k *evmInt256.Int) (*evmInt256.Int, error)
 }
 
 type ResultCache struct {
@@ -65,56 +58,56 @@ type ResultCache struct {
 	Destructs       Cache
 }
 
-type storageCache struct {
-	ResultCache
-
-	extStorage      IExternalStorage
-	callback        EVMResultCallback
+type StorageCache struct {
+	ResultCache     ResultCache
+	ResultCallback  EVMResultCallback
+	ExternalStorage IExternalStorage
 }
 
-func New(extStorage IExternalStorage, callback EVMResultCallback) ICache {
-	s := &storageCache{
-		extStorage: extStorage,
-		callback: callback,
+func New(extStorage IExternalStorage, callback EVMResultCallback) *StorageCache {
+	s := &StorageCache{
+		ResultCache: ResultCache{
+			OriginalData: Cache{},
+			CachedData:   Cache{},
+			Balance:      BalanceCache{},
+			Logs:         LogCache{},
+			Destructs:    Cache{},
+		},
+		ExternalStorage:     extStorage,
+		ResultCallback: callback,
 	}
-
-	s.ResultCache.OriginalData = Cache{}
-	s.ResultCache.CachedData = Cache{}
-	s.ResultCache.Balance = BalanceCache{}
-	s.ResultCache.Logs = LogCache{}
-	s.ResultCache.Destructs = Cache{}
 
 	return s
 }
 
-func (s *storageCache) SLoad(k *evmInt256.Int) (*evmInt256.Int, error ) {
-	if s.OriginalData == nil || s.CachedData == nil || s.extStorage == nil {
+func (s *StorageCache) SLoad(k *evmInt256.Int) (*evmInt256.Int, error ) {
+	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.ExternalStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
 	}
 
-	i, exists := s.CachedData[k.String()]
+	i, exists := s.ResultCache.CachedData[k.String()]
 	if exists {
 		return i, nil
 	}
 
-	i, err := s.extStorage.SLoad(k)
+	i, err := s.ExternalStorage.load(k)
 	if err != nil {
 		return nil, evmErrors.NoSuchDataInTheStorage(err)
 	}
 
 	cacheString := i.String()
-	s.OriginalData[cacheString] = evmInt256.FromBigInt(i.Int)
-	s.CachedData[cacheString] = i
+	s.ResultCache.OriginalData[cacheString] = evmInt256.FromBigInt(i.Int)
+	s.ResultCache.CachedData[cacheString] = i
 
 	return i, nil
 }
 
-func (s *storageCache) SStore(k *evmInt256.Int, v *evmInt256.Int)  {
+func (s *StorageCache) SStore(k *evmInt256.Int, v *evmInt256.Int)  {
 	kString := k.String()
-	s.CachedData[kString] = v
+	s.ResultCache.CachedData[kString] = v
 }
 
-func (s *storageCache) BalanceChange(address *evmInt256.Int, change *evmInt256.Int) {
+func (s *StorageCache) BalanceChange(address *evmInt256.Int, change *evmInt256.Int) {
 	kString := address.String()
 
 	b, exist := s.ResultCache.Balance[kString]
@@ -128,7 +121,7 @@ func (s *storageCache) BalanceChange(address *evmInt256.Int, change *evmInt256.I
 	}
 }
 
-func (s *storageCache) Log(address *evmInt256.Int, topics [][]byte, data []byte, context environment.Context) {
+func (s *StorageCache) Log(address *evmInt256.Int, topics [][]byte, data []byte, context environment.Context) {
 	kString := address.String()
 
 	var theLog = log {
@@ -137,16 +130,12 @@ func (s *storageCache) Log(address *evmInt256.Int, topics [][]byte, data []byte,
 		Context: context,
 	}
 
-	l := s.Logs[kString]
-	s.Logs[kString] = append(l, theLog)
+	l := s.ResultCache.Logs[kString]
+	s.ResultCache.Logs[kString] = append(l, theLog)
 
 	return
 }
 
-func (s *storageCache) Destruct(address *evmInt256.Int) {
+func (s *StorageCache) Destruct(address *evmInt256.Int) {
 	s.ResultCache.Destructs[address.String()] = address
-}
-
-func (s *storageCache) ResultFeedback(err error) {
-	s.callback(s.OriginalData, s.CachedData, err)
 }
