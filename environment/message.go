@@ -24,22 +24,6 @@ type Message struct {
 	Data    []byte
 }
 
-func (m Message) GetData(offset uint64, size uint64) []byte {
-	ret := make([]byte, size, size)
-	dLen := uint64(len(m.Data))
-	if dLen < offset {
-		return ret
-	}
-
-	end := offset + size
-	if dLen < end {
-		end = dLen
-	}
-
-	copy(ret, m.Data[offset:end])
-	return ret
-}
-
 func (m Message) DataSize() uint64 {
 	return uint64(len(m.Data))
 }

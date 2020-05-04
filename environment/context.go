@@ -17,8 +17,8 @@
 package environment
 
 type Context struct {
-	Block
-	Contract
-	Transaction
-	Message
+	Block       Block
+	Contract    Contract
+	Transaction Transaction
+	Message     Message
 }

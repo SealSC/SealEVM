@@ -47,7 +47,10 @@ const (
 	SGT
 	EQ
 	ISZERO
-	AND
+)
+
+const (
+	AND OpCode = iota + 0x16
 	OR
 	XOR
 	NOT
