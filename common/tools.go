@@ -45,3 +45,19 @@ func HashBytesToEVMInt(hash [hashLength]byte) (*evmInt256.Int, error) {
 
 	return i, nil
 }
+
+func GetDataFrom(src []byte, offset uint64, size uint64) []byte {
+	ret := make([]byte, size, size)
+	dLen := uint64(len(src))
+	if dLen < offset {
+		return ret
+	}
+
+	end := offset + size
+	if dLen < end {
+		end = dLen
+	}
+
+	copy(ret, src[offset:end])
+	return ret
+}

@@ -17,110 +17,314 @@
 package instructions
 
 import (
+	"SealEVM/common"
+	"SealEVM/evmErrors"
+	"SealEVM/evmInt256"
 	"SealEVM/opcodes"
+	"math/big"
 )
 
-func loadComparision() {
-	instructionTable[opcodes.LT] = opCodeInstruction{
-		doAction: ltAction,
-		minStackDepth: 2,
+func loadEnvironment() {
+	instructionTable[opcodes.ADDRESS] = opCodeInstruction{
+		doAction: addressAction,
+		minStackDepth: 0,
 		enabled: true,
 	}
 
-	instructionTable[opcodes.GT] = opCodeInstruction {
-		doAction: gtAction,
-		minStackDepth: 2,
-		enabled: true,
-	}
-
-	instructionTable[opcodes.SLT] = opCodeInstruction{
-		doAction: sltAction,
-		minStackDepth: 2,
-		enabled: true,
-	}
-
-	instructionTable[opcodes.SGT] = opCodeInstruction{
-		doAction: sgtAction,
-		minStackDepth: 2,
-		enabled: true,
-	}
-
-	instructionTable[opcodes.EQ] = opCodeInstruction{
-		doAction: eqAction,
-		minStackDepth: 2,
-		enabled: true,
-	}
-
-	instructionTable[opcodes.ISZERO] = opCodeInstruction{
-		doAction: isZeroAction,
+	instructionTable[opcodes.BALANCE] = opCodeInstruction{
+		doAction: balanceAction,
 		minStackDepth: 1,
 		enabled: true,
 	}
-}
 
-func ltAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
-
-	if x.LT(y) {
-		y.SetUint64(1)
-	} else {
-		y.SetUint64(0)
+	instructionTable[opcodes.ORIGIN] = opCodeInstruction{
+		doAction: originAction,
+		minStackDepth: 0,
+		enabled: true,
 	}
-	return nil, nil
-}
-
-func gtAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
-
-	if x.GT(y) {
-		y.SetUint64(1)
-	} else {
-		y.SetUint64(0)
+	
+	instructionTable[opcodes.CALLER] = opCodeInstruction{
+		doAction: callerAction,
+		minStackDepth: 0,
+		enabled: true,
 	}
-	return nil, nil
-}
 
-func sltAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
-
-	if x.SLT(y) {
-		y.SetUint64(1)
-	} else {
-		y.SetUint64(0)
+	instructionTable[opcodes.CALLVALUE] = opCodeInstruction{
+		doAction: callValueAction,
+		minStackDepth: 0,
+		enabled: true,
 	}
-	return nil, nil
-}
 
-func sgtAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
-
-	if x.SGT(y) {
-		y.SetUint64(1)
-	} else {
-		y.SetUint64(0)
+	instructionTable[opcodes.CALLDATALOAD] = opCodeInstruction{
+		doAction: callDataLoadAction,
+		minStackDepth: 1,
+		enabled: true,
 	}
-	return nil, nil
-}
 
-func eqAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
-
-	if x.EQ(y) {
-		y.SetUint64(1)
-	} else {
-		y.SetUint64(0)
+	instructionTable[opcodes.CALLDATASIZE] = opCodeInstruction{
+		doAction: callDataSizeAction,
+		minStackDepth: 0,
+		enabled: true,
 	}
+
+	instructionTable[opcodes.CALLDATACOPY] = opCodeInstruction{
+		doAction: callDataCopyAction,
+		minStackDepth: 3,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.CODESIZE] = opCodeInstruction{
+		doAction: codeSizeAction,
+		minStackDepth: 0,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.CODECOPY] = opCodeInstruction{
+		doAction: codeCopyAction,
+		minStackDepth: 3,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.GASPRICE] = opCodeInstruction{
+		doAction: gasPriceAction,
+		minStackDepth: 0,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.EXTCODESIZE] = opCodeInstruction{
+		doAction: extCodeSizeAction,
+		minStackDepth: 1,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.EXTCODECOPY] = opCodeInstruction{
+		doAction: extCodeCopyAction,
+		minStackDepth: 4,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.RETURNDATASIZE] = opCodeInstruction{
+		doAction: returnDataSizeAction,
+		minStackDepth: 0,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.RETURNDATACOPY] = opCodeInstruction{
+		doAction: returnDataCopyAction,
+		minStackDepth: 3,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.EXTCODEHASH] = opCodeInstruction{
+		doAction: extCodeHashAction,
+		minStackDepth: 1,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.BLOCKHASH] = opCodeInstruction{
+		doAction: blockHashAction,
+		minStackDepth: 1,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.COINBASE] = opCodeInstruction{
+		doAction: coinbaseAction,
+		minStackDepth: 0,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.TIMESTAMP] = opCodeInstruction{
+		doAction: timestampAction,
+		minStackDepth: 0,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.NUMBER] = opCodeInstruction{
+		doAction: numberAction,
+		minStackDepth: 0,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.DIFFICULTY] = opCodeInstruction{
+		doAction: difficultyAction,
+		minStackDepth: 0,
+		enabled: true,
+	}
+
+	instructionTable[opcodes.GASLIMIT] = opCodeInstruction{
+		doAction: gasLimitAction,
+		minStackDepth: 0,
+		enabled: true,
+	}
+
+}
+
+func addressAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.context.Contract.Address)
+	return nil, err
+}
+
+func balanceAction(ctx *instructionsContext) ([]byte, error) {
+	addr := ctx.stack.Peek()
+	balance, err := ctx.storage.Balance(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	addr.Set(balance.Int)
 	return nil, nil
 }
 
-func isZeroAction(setting *instructionsSetting) ([]byte, error) {
-	x := setting.stack.Peek()
+func originAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.context.Contract.Address)
+	return nil, err
+}
 
-	x.IsZero()
+func callerAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.context.Message.Caller)
+	return nil, err
+}
+
+func callValueAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.context.Message.Value)
+	return nil, err
+}
+
+func callDataLoadAction(ctx *instructionsContext) ([]byte, error) {
+	i := ctx.stack.Peek()
+	data := common.GetDataFrom(ctx.context.Message.Data, i.Uint64(), 32)
+
+	i.SetBytes(data)
 	return nil, nil
+}
+
+func callDataSizeAction(ctx *instructionsContext) ([]byte, error) {
+	i := ctx.stack.Peek()
+	s := ctx.context.Message.DataSize()
+
+	i.SetUint64(s)
+	return nil, nil
+}
+
+func callDataCopyAction(ctx *instructionsContext) ([]byte, error) {
+	mOffset, _ := ctx.stack.Pop()
+	dOffset, _ := ctx.stack.Pop()
+	size,_ := ctx.stack.Pop()
+
+	data := common.GetDataFrom(ctx.context.Message.Data, dOffset.Uint64(), size.Uint64())
+	err := ctx.memory.Store(mOffset.Uint64(), data)
+	return nil, err
+}
+
+func codeSizeAction(ctx *instructionsContext) ([]byte, error) {
+	s := evmInt256.New(int64(len(ctx.context.Contract.Code)))
+	err := ctx.stack.Push(s)
+	return nil, err
+}
+
+func codeCopyAction(ctx *instructionsContext) ([]byte, error) {
+	mOffset, _ := ctx.stack.Pop()
+	dOffset, _ := ctx.stack.Pop()
+	size,_ := ctx.stack.Pop()
+
+	data := common.GetDataFrom(ctx.context.Contract.Code, dOffset.Uint64(), size.Uint64())
+	err := ctx.memory.Store(mOffset.Uint64(), data)
+	return nil, err
+}
+
+func gasPriceAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.context.Transaction.GasPrice)
+	return nil, err
+}
+
+func extCodeSizeAction(ctx *instructionsContext) ([]byte, error) {
+	addr := ctx.stack.Peek()
+	s, err := ctx.storage.GetCodeSize(addr)
+	if err != nil {
+		return nil, err
+	}
+	err = ctx.stack.Push(s)
+	return nil, err
+}
+
+func extCodeCopyAction(ctx *instructionsContext) ([]byte, error) {
+	addr, _ := ctx.stack.Pop()
+	mOffset, _ := ctx.stack.Pop()
+	dOffset, _ := ctx.stack.Pop()
+	size,_ := ctx.stack.Pop()
+
+	code, err := ctx.storage.GetCode(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	data := common.GetDataFrom(code, dOffset.Uint64(), size.Uint64())
+	err = ctx.memory.Store(mOffset.Uint64(), data)
+	return nil, err
+}
+
+func returnDataSizeAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(evmInt256.New(int64(len(ctx.lastReturn))))
+	return nil, err
+}
+
+func returnDataCopyAction(ctx *instructionsContext) ([]byte, error) {
+	mOffset, _ := ctx.stack.Pop()
+	dOffset, _ := ctx.stack.Pop()
+	size,_ := ctx.stack.Pop()
+
+	end := big.NewInt(0).Add(dOffset.Int, size.Int)
+	if !end.IsUint64() || end.Uint64() > uint64(len(ctx.lastReturn)) {
+		return nil, evmErrors.ReturnDataCopyOutOfBounds
+	}
+
+	err := ctx.memory.Store(mOffset.Uint64(), ctx.lastReturn[dOffset.Uint64() : end.Uint64()])
+	return nil, err
+}
+
+func extCodeHashAction(ctx *instructionsContext) ([]byte, error) {
+	addr:= ctx.stack.Peek()
+	codeHash, err := ctx.storage.GetCodeHash(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	addr.Set(codeHash.Int)
+	return nil, nil
+}
+
+func blockHashAction(ctx *instructionsContext) ([]byte, error) {
+	addr:= ctx.stack.Peek()
+	codeHash, err := ctx.storage.GetBlockHash(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	addr.Set(codeHash.Int)
+	return nil, nil
+}
+
+func coinbaseAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.context.Block.Coinbase)
+	return nil, err
+}
+
+func timestampAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.context.Block.Timestamp)
+	return nil, err
+}
+
+func numberAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.context.Block.Number)
+	return nil, err
+}
+
+func difficultyAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.context.Block.Difficulty)
+	return nil, err
+}
+
+func gasLimitAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.context.Block.GasLimit)
+	return nil, err
 }

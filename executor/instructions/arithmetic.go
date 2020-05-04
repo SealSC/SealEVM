@@ -94,95 +94,95 @@ func loadArithmetic() {
 	}
 }
 
-func stopAction(_ *instructionsSetting) ([]byte, error) {
+func stopAction(_ *instructionsContext) ([]byte, error) {
 	return nil, nil
 }
 
-func addAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func addAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	y.Add(x)
 	return nil, nil
 }
 
-func mulAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func mulAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	y.Mul(x)
 	return nil, nil
 }
 
-func subAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func subAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	y.Set(x.Sub(y).Int)
 	return nil, nil
 }
 
-func divAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func divAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	y.Set(x.Div(y).Int)
 	return nil, nil
 }
 
-func sDivAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func sDivAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	y.Set(x.SDiv(y).Int)
 	return nil, nil
 }
 
-func modAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func modAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	y.Set(x.Mod(y).Int)
 	return nil, nil
 }
 
-func sModAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func sModAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	y.Set(x.SMod(y).Int)
 	return nil, nil
 }
 
-func addModAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y, _ := setting.stack.Pop()
-	m := setting.stack.Peek()
+func addModAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y, _ := ctx.stack.Pop()
+	m := ctx.stack.Peek()
 
 	m.Set(x.AddMod(y, m).Int)
 	return nil, nil
 }
 
-func mulModAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y, _ := setting.stack.Pop()
-	m := setting.stack.Peek()
+func mulModAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y, _ := ctx.stack.Pop()
+	m := ctx.stack.Peek()
 
 	m.Set(x.MulMod(y, m).Int)
 	return nil, nil
 }
 
-func expAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	e := setting.stack.Peek()
+func expAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	e := ctx.stack.Peek()
 
 	e.Set(x.Exp(e).Int)
 	return nil, nil
 }
 
-func signExtendAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	b := setting.stack.Peek()
+func signExtendAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	b := ctx.stack.Peek()
 
 	b.Set(x.SignExtend(b).Int)
 	return nil, nil

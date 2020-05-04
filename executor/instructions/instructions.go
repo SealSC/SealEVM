@@ -25,14 +25,16 @@ import (
 	"SealEVM/storageCache"
 )
 
-type instructionsSetting struct {
+type instructionsContext struct {
 	stack   *stack.Stack
 	memory  *memory.Memory
-	storage storageCache.ICache
+	storage storageCache.StorageCache
 	context environment.Context
+
+	lastReturn []byte
 }
 
-type opCodeAction func(setting *instructionsSetting) ([]byte, error)
+type opCodeAction func(ctx *instructionsContext) ([]byte, error)
 type opCodeInstruction struct {
 	doAction        opCodeAction
 	minStackDepth   int
@@ -45,7 +47,7 @@ type IInstructions interface {
 
 var instructionTable [256]opCodeInstruction
 
-func (i *instructionsSetting) Execute(code opcodes.OpCode) ([]byte, error) {
+func (i *instructionsContext) Execute(code opcodes.OpCode) ([]byte, error) {
 	instruction := instructionTable[code]
 	if !instruction.enabled {
 		return nil, evmErrors.InvalidOpCode(byte(code))
@@ -62,10 +64,11 @@ func Load()  {
 	loadArithmetic()
 	loadBitOperations()
 	loadComparision()
+	loadEnvironment()
 }
 
-func New(stack *stack.Stack, memory *memory.Memory, storage storageCache.ICache, context environment.Context) IInstructions {
-	is := &instructionsSetting{
+func New(stack *stack.Stack, memory *memory.Memory, storage storageCache.StorageCache, context environment.Context) IInstructions {
+	is := &instructionsContext{
 		stack:   stack,
 		memory:  memory,
 		storage: storage,

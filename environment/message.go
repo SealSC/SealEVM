@@ -16,9 +16,11 @@
 
 package environment
 
+import "SealEVM/evmInt256"
+
 type Message struct {
-	Caller  []byte
-	Value   []byte
+	Caller  *evmInt256.Int
+	Value   *evmInt256.Int
 	Data    []byte
 }
 

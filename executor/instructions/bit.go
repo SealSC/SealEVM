@@ -71,65 +71,65 @@ func loadBitOperations() {
 
 }
 
-func andAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func andAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	y.And(x)
 	return nil, nil
 }
 
-func orAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func orAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	y.Or(x)
 	return nil, nil
 }
 
-func xorAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func xorAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	y.XOr(x)
 	return nil, nil
 }
 
-func notAction(setting *instructionsSetting) ([]byte, error) {
-	x := setting.stack.Peek()
+func notAction(ctx *instructionsContext) ([]byte, error) {
+	x := ctx.stack.Peek()
 
 	x.Not(x)
 	return nil, nil
 }
 
-func byteAction(setting *instructionsSetting) ([]byte, error) {
-	i, _ := setting.stack.Pop()
-	x := setting.stack.Peek()
+func byteAction(ctx *instructionsContext) ([]byte, error) {
+	i, _ := ctx.stack.Pop()
+	x := ctx.stack.Peek()
 
 	b := x.ByteAt(int(i.Uint64()))
 	x.SetUint64(uint64(b))
 	return nil, nil
 }
 
-func shlAction(setting *instructionsSetting) ([]byte, error) {
-	s, _ := setting.stack.Pop()
-	x := setting.stack.Peek()
+func shlAction(ctx *instructionsContext) ([]byte, error) {
+	s, _ := ctx.stack.Pop()
+	x := ctx.stack.Peek()
 
 	x.SHL(s.Uint64())
 	return nil, nil
 }
 
-func shrAction(setting *instructionsSetting) ([]byte, error) {
-	s, _ := setting.stack.Pop()
-	x := setting.stack.Peek()
+func shrAction(ctx *instructionsContext) ([]byte, error) {
+	s, _ := ctx.stack.Pop()
+	x := ctx.stack.Peek()
 
 	x.SHR(s.Uint64())
 	return nil, nil
 }
 
-func sarAction(setting *instructionsSetting) ([]byte, error) {
-	s, _ := setting.stack.Pop()
-	x := setting.stack.Peek()
+func sarAction(ctx *instructionsContext) ([]byte, error) {
+	s, _ := ctx.stack.Pop()
+	x := ctx.stack.Peek()
 
 	x.SAR(s.Uint64())
 	return nil, nil

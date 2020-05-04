@@ -41,11 +41,11 @@ type LogCache map[string] []log
 type EVMResultCallback func(original Cache, final Cache, err error)
 
 type IExternalStorage interface {
-	Balance(address []byte) (*evmInt256.Int, error)
-	GetCode(address []byte) ([]byte, error)
-	GetCodeSize(address []byte) (*evmInt256.Int, error)
-	GetCodeHash(address []byte) ([]byte, error)
-	GetBlockHash(block uint64) ([]byte, error)
+	balance(address *evmInt256.Int) (*evmInt256.Int, error)
+	getCode(address *evmInt256.Int) ([]byte, error)
+	getCodeSize(address *evmInt256.Int) (*evmInt256.Int, error)
+	getCodeHash(address *evmInt256.Int) (*evmInt256.Int, error)
+	getBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
 
 	load(k *evmInt256.Int) (*evmInt256.Int, error)
 }
@@ -53,6 +53,7 @@ type IExternalStorage interface {
 type ResultCache struct {
 	OriginalData    Cache
 	CachedData      Cache
+
 	Balance         BalanceCache
 	Logs            LogCache
 	Destructs       Cache
@@ -61,7 +62,7 @@ type ResultCache struct {
 type StorageCache struct {
 	ResultCache     ResultCache
 	ResultCallback  EVMResultCallback
-	ExternalStorage IExternalStorage
+	externalStorage IExternalStorage
 }
 
 func New(extStorage IExternalStorage, callback EVMResultCallback) *StorageCache {
@@ -73,15 +74,15 @@ func New(extStorage IExternalStorage, callback EVMResultCallback) *StorageCache 
 			Logs:         LogCache{},
 			Destructs:    Cache{},
 		},
-		ExternalStorage:     extStorage,
-		ResultCallback: callback,
+		externalStorage: extStorage,
+		ResultCallback:  callback,
 	}
 
 	return s
 }
 
 func (s *StorageCache) SLoad(k *evmInt256.Int) (*evmInt256.Int, error ) {
-	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.ExternalStorage == nil {
+	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.externalStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
 	}
 
@@ -90,7 +91,7 @@ func (s *StorageCache) SLoad(k *evmInt256.Int) (*evmInt256.Int, error ) {
 		return i, nil
 	}
 
-	i, err := s.ExternalStorage.load(k)
+	i, err := s.externalStorage.load(k)
 	if err != nil {
 		return nil, evmErrors.NoSuchDataInTheStorage(err)
 	}
@@ -138,4 +139,29 @@ func (s *StorageCache) Log(address *evmInt256.Int, topics [][]byte, data []byte,
 
 func (s *StorageCache) Destruct(address *evmInt256.Int) {
 	s.ResultCache.Destructs[address.String()] = address
+}
+
+
+//todo: cache all the below methods's result
+func (s *StorageCache) Balance(address *evmInt256.Int) (*evmInt256.Int, error) {
+	return s.externalStorage.balance(address)
+}
+
+func (s *StorageCache) GetCode(address *evmInt256.Int) ([]byte, error) {
+	//todo: handle precompiled-contract and any other special addresses code
+	return s.externalStorage.getCode(address)
+}
+
+func (s *StorageCache) GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error) {
+	//todo: handle precompiled-contract and any other special addresses code size
+	return s.externalStorage.getCodeSize(address)
+}
+
+func (s *StorageCache) GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error) {
+	//todo: handle precompiled-contract and any other special addresses code hash
+	return s.externalStorage.getCodeHash(address)
+}
+
+func (s *StorageCache) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
+	return s.externalStorage.getBlockHash(block)
 }

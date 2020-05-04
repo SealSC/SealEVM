@@ -16,8 +16,10 @@
 
 package environment
 
+import "SealEVM/evmInt256"
+
 type Contract struct {
-	Address []byte
+	Address *evmInt256.Int
 	Code    []byte
-	Hash    []byte
+	Hash    *evmInt256.Int
 }

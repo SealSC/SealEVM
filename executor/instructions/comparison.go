@@ -58,9 +58,9 @@ func loadComparision() {
 	}
 }
 
-func ltAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func ltAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	if x.LT(y) {
 		y.SetUint64(1)
@@ -70,9 +70,9 @@ func ltAction(setting *instructionsSetting) ([]byte, error) {
 	return nil, nil
 }
 
-func gtAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func gtAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	if x.GT(y) {
 		y.SetUint64(1)
@@ -82,9 +82,9 @@ func gtAction(setting *instructionsSetting) ([]byte, error) {
 	return nil, nil
 }
 
-func sltAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func sltAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	if x.SLT(y) {
 		y.SetUint64(1)
@@ -94,9 +94,9 @@ func sltAction(setting *instructionsSetting) ([]byte, error) {
 	return nil, nil
 }
 
-func sgtAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func sgtAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	if x.SGT(y) {
 		y.SetUint64(1)
@@ -106,9 +106,9 @@ func sgtAction(setting *instructionsSetting) ([]byte, error) {
 	return nil, nil
 }
 
-func eqAction(setting *instructionsSetting) ([]byte, error) {
-	x, _ := setting.stack.Pop()
-	y := setting.stack.Peek()
+func eqAction(ctx *instructionsContext) ([]byte, error) {
+	x, _ := ctx.stack.Pop()
+	y := ctx.stack.Peek()
 
 	if x.EQ(y) {
 		y.SetUint64(1)
@@ -118,8 +118,8 @@ func eqAction(setting *instructionsSetting) ([]byte, error) {
 	return nil, nil
 }
 
-func isZeroAction(setting *instructionsSetting) ([]byte, error) {
-	x := setting.stack.Peek()
+func isZeroAction(ctx *instructionsContext) ([]byte, error) {
+	x := ctx.stack.Peek()
 
 	x.IsZero()
 	return nil, nil

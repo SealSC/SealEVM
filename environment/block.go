@@ -16,11 +16,13 @@
 
 package environment
 
+import "SealEVM/evmInt256"
+
 type Block struct {
-	Coinbase    []byte
-	Timestamp   []byte
-	Number      []byte
-	Difficulty  []byte
-	GasLimit    []byte
-	Hash        []byte
+	Coinbase    *evmInt256.Int
+	Timestamp   *evmInt256.Int
+	Number      *evmInt256.Int
+	Difficulty  *evmInt256.Int
+	GasLimit    *evmInt256.Int
+	Hash        *evmInt256.Int
 }
