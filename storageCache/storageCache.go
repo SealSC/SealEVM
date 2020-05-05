@@ -47,7 +47,7 @@ type IExternalStorage interface {
 	getCodeHash(address *evmInt256.Int) (*evmInt256.Int, error)
 	getBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
 
-	load(k *evmInt256.Int) (*evmInt256.Int, error)
+	load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error)
 }
 
 type ResultCache struct {
@@ -81,31 +81,31 @@ func New(extStorage IExternalStorage, callback EVMResultCallback) *StorageCache 
 	return s
 }
 
-func (s *StorageCache) SLoad(k *evmInt256.Int) (*evmInt256.Int, error ) {
+func (s *StorageCache) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error ) {
 	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.externalStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
 	}
 
-	i, exists := s.ResultCache.CachedData[k.String()]
+	cacheKey := n.String() + ":" +  k.String()
+	i, exists := s.ResultCache.CachedData[cacheKey]
 	if exists {
 		return i, nil
 	}
 
-	i, err := s.externalStorage.load(k)
+	i, err := s.externalStorage.load(n, k)
 	if err != nil {
 		return nil, evmErrors.NoSuchDataInTheStorage(err)
 	}
 
-	cacheString := i.String()
-	s.ResultCache.OriginalData[cacheString] = evmInt256.FromBigInt(i.Int)
-	s.ResultCache.CachedData[cacheString] = i
+	s.ResultCache.OriginalData[cacheKey] = evmInt256.FromBigInt(i.Int)
+	s.ResultCache.CachedData[cacheKey] = i
 
 	return i, nil
 }
 
-func (s *StorageCache) SStore(k *evmInt256.Int, v *evmInt256.Int)  {
-	kString := k.String()
-	s.ResultCache.CachedData[kString] = v
+func (s *StorageCache) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int)  {
+	cacheString := n.String() + ":" +  k.String()
+	s.ResultCache.CachedData[cacheString] = v
 }
 
 func (s *StorageCache) BalanceChange(address *evmInt256.Int, change *evmInt256.Int) {

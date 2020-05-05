@@ -64,9 +64,9 @@ func mLoadAction(ctx *instructionsContext) ([]byte, error) {
 
 func mStoreAction(ctx *instructionsContext) ([]byte, error) {
 	mOffset, _ := ctx.stack.Pop()
-	val, _ := ctx.stack.Pop()
+	v, _ := ctx.stack.Pop()
 
-	valBytes := common.EVMIntToHashBytes(val)
+	valBytes := common.EVMIntToHashBytes(v)
 
 	err := ctx.memory.Store(mOffset.Uint64(), valBytes[:])
 	return nil, err
@@ -74,8 +74,8 @@ func mStoreAction(ctx *instructionsContext) ([]byte, error) {
 
 func mStore8Action(ctx *instructionsContext) ([]byte, error) {
 	mOffset, _ := ctx.stack.Pop()
-	val, _ := ctx.stack.Pop()
-	valBytes := val.Uint64()
+	v, _ := ctx.stack.Pop()
+	valBytes := v.Uint64()
 
 	err := ctx.memory.Set(mOffset.Uint64(), byte(valBytes & 0xff))
 	return nil, err
