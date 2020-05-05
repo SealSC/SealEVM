@@ -16,10 +16,35 @@
 
 package environment
 
-import "SealEVM/evmInt256"
+import (
+	"SealEVM/evmErrors"
+	"SealEVM/evmInt256"
+	"SealEVM/opcodes"
+)
 
 type Contract struct {
 	Address *evmInt256.Int
 	Code    []byte
 	Hash    *evmInt256.Int
+
+	codeDataFlag map[uint64] bool
+}
+
+//todo: implement valid jump check
+func (c *Contract) IsValidJump(dest uint64) (bool, error) {
+	codeLen := uint64(len(c.Code))
+
+	if dest > codeLen {
+		return false, evmErrors.JumpOutOfBounds
+	}
+
+	if c.Code[dest] != byte(opcodes.JUMPDEST) {
+		return false, evmErrors.InvalidJumpDest
+	}
+
+	if c.codeDataFlag[dest] {
+		return false, evmErrors.JumpToNoneOpCode
+	}
+
+	return true, nil
 }

@@ -26,6 +26,9 @@ var StackOverFlow = errors.New("stack over flow")
 var StorageNotInitialized = errors.New("storage not initialized")
 
 var ReturnDataCopyOutOfBounds = errors.New("return data copy out of bounds")
+var JumpOutOfBounds = errors.New("jump out of range")
+var InvalidJumpDest = errors.New("invalid jump dest")
+var JumpToNoneOpCode = errors.New("jump to non-OpCode")
 func InvalidOpCode(code byte) error {
 	return errors.New(fmt.Sprintf("invalid op code: 0x%X", code))
 }
