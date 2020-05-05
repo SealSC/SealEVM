@@ -160,7 +160,7 @@ func loadEnvironment() {
 }
 
 func addressAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.context.Contract.Address)
+	err := ctx.stack.Push(ctx.environment.Contract.Address)
 	return nil, err
 }
 
@@ -176,23 +176,23 @@ func balanceAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func originAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.context.Contract.Address)
+	err := ctx.stack.Push(ctx.environment.Contract.Address)
 	return nil, err
 }
 
 func callerAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.context.Message.Caller)
+	err := ctx.stack.Push(ctx.environment.Message.Caller)
 	return nil, err
 }
 
 func callValueAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.context.Message.Value)
+	err := ctx.stack.Push(ctx.environment.Message.Value)
 	return nil, err
 }
 
 func callDataLoadAction(ctx *instructionsContext) ([]byte, error) {
 	i := ctx.stack.Peek()
-	data := common.GetDataFrom(ctx.context.Message.Data, i.Uint64(), 32)
+	data := common.GetDataFrom(ctx.environment.Message.Data, i.Uint64(), 32)
 
 	i.SetBytes(data)
 	return nil, nil
@@ -200,7 +200,7 @@ func callDataLoadAction(ctx *instructionsContext) ([]byte, error) {
 
 func callDataSizeAction(ctx *instructionsContext) ([]byte, error) {
 	i := ctx.stack.Peek()
-	s := ctx.context.Message.DataSize()
+	s := ctx.environment.Message.DataSize()
 
 	i.SetUint64(s)
 	return nil, nil
@@ -211,13 +211,13 @@ func callDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 	dOffset, _ := ctx.stack.Pop()
 	size,_ := ctx.stack.Pop()
 
-	data := common.GetDataFrom(ctx.context.Message.Data, dOffset.Uint64(), size.Uint64())
+	data := common.GetDataFrom(ctx.environment.Message.Data, dOffset.Uint64(), size.Uint64())
 	err := ctx.memory.Store(mOffset.Uint64(), data)
 	return nil, err
 }
 
 func codeSizeAction(ctx *instructionsContext) ([]byte, error) {
-	s := evmInt256.New(int64(len(ctx.context.Contract.Code)))
+	s := evmInt256.New(int64(len(ctx.environment.Contract.Code)))
 	err := ctx.stack.Push(s)
 	return nil, err
 }
@@ -227,13 +227,13 @@ func codeCopyAction(ctx *instructionsContext) ([]byte, error) {
 	dOffset, _ := ctx.stack.Pop()
 	size,_ := ctx.stack.Pop()
 
-	data := common.GetDataFrom(ctx.context.Contract.Code, dOffset.Uint64(), size.Uint64())
+	data := common.GetDataFrom(ctx.environment.Contract.Code, dOffset.Uint64(), size.Uint64())
 	err := ctx.memory.Store(mOffset.Uint64(), data)
 	return nil, err
 }
 
 func gasPriceAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.context.Transaction.GasPrice)
+	err := ctx.stack.Push(ctx.environment.Transaction.GasPrice)
 	return nil, err
 }
 
@@ -305,26 +305,26 @@ func blockHashAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func coinbaseAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.context.Block.Coinbase)
+	err := ctx.stack.Push(ctx.environment.Block.Coinbase)
 	return nil, err
 }
 
 func timestampAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.context.Block.Timestamp)
+	err := ctx.stack.Push(ctx.environment.Block.Timestamp)
 	return nil, err
 }
 
 func numberAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.context.Block.Number)
+	err := ctx.stack.Push(ctx.environment.Block.Number)
 	return nil, err
 }
 
 func difficultyAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.context.Block.Difficulty)
+	err := ctx.stack.Push(ctx.environment.Block.Difficulty)
 	return nil, err
 }
 
 func gasLimitAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.context.Block.GasLimit)
+	err := ctx.stack.Push(ctx.environment.Block.GasLimit)
 	return nil, err
 }

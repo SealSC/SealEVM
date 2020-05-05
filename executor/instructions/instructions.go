@@ -26,12 +26,13 @@ import (
 )
 
 type instructionsContext struct {
-	stack   *stack.Stack
-	memory  *memory.Memory
-	storage storageCache.StorageCache
-	context environment.Context
+	stack       *stack.Stack
+	memory      *memory.Memory
+	storage     storageCache.StorageCache
+	environment environment.Context
 
-	lastReturn []byte
+	pc          uint64
+	lastReturn  []byte
 }
 
 type opCodeAction func(ctx *instructionsContext) ([]byte, error)
@@ -69,10 +70,10 @@ func Load()  {
 
 func New(stack *stack.Stack, memory *memory.Memory, storage storageCache.StorageCache, context environment.Context) IInstructions {
 	is := &instructionsContext{
-		stack:   stack,
-		memory:  memory,
-		storage: storage,
-		context: context,
+		stack:       stack,
+		memory:      memory,
+		storage:     storage,
+		environment: context,
 	}
 	return is
 }
