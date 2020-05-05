@@ -42,16 +42,17 @@ func setPushActions() {
 		bytesSize := uint64(i - opcodes.PUSH1 + 1)
 
 		instructionTable[i] = opCodeInstruction {
-			doAction: func(ctx *instructionsContext) (bytes []byte, err error) {
+			doAction: func(ctx *instructionsContext) ([]byte, error) {
 				start := ctx.pc + 1
 
 				codeBytes := common.GetDataFrom(ctx.environment.Contract.Code, start, bytesSize)
 
 				i := evmInt256.New(0)
 				i.SetBytes(codeBytes)
+				err := ctx.stack.Push(i)
 
 				ctx.pc += bytesSize
-				return nil, nil
+				return nil, err
 			},
 
 			minStackDepth: 0,
@@ -65,7 +66,7 @@ func setSwapActions()  {
 		swapDepth := int(i - opcodes.SWAP1 + 1)
 
 		instructionTable[i] = opCodeInstruction {
-			doAction: func(ctx *instructionsContext) (bytes []byte, err error) {
+			doAction: func(ctx *instructionsContext) ([]byte, error) {
 				_ = ctx.stack.Swap(swapDepth)
 				return nil, nil
 			},
@@ -81,9 +82,9 @@ func setDupActions()  {
 		dupDepth := int(i - opcodes.DUP1 + 1)
 
 		instructionTable[i] = opCodeInstruction {
-			doAction: func(ctx *instructionsContext) (bytes []byte, err error) {
-				_ = ctx.stack.Dup(dupDepth)
-				return nil, nil
+			doAction: func(ctx *instructionsContext) ([]byte, error) {
+				err := ctx.stack.Dup(dupDepth)
+				return nil, err
 			},
 
 			minStackDepth: dupDepth,
