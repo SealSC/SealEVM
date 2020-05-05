@@ -62,10 +62,12 @@ func (i *instructionsContext) Execute(code opcodes.OpCode) ([]byte, error) {
 }
 
 func Load()  {
+	loadStack()
 	loadArithmetic()
 	loadBitOperations()
 	loadComparision()
 	loadEnvironment()
+	loadLog()
 }
 
 func New(stack *stack.Stack, memory *memory.Memory, storage storageCache.StorageCache, context environment.Context) IInstructions {

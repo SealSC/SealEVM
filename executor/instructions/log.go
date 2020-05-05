@@ -15,3 +15,35 @@
  */
 
 package instructions
+
+import (
+	"SealEVM/common"
+	"SealEVM/opcodes"
+)
+
+func loadLog() {
+	for i := opcodes.LOG0; i <= opcodes.LOG4; i++ {
+		topicCount := int(i - opcodes.LOG0)
+		instructionTable[i] = opCodeInstruction {
+			doAction: func(ctx *instructionsContext) (bytes []byte, err error) {
+				mOffset, _ := ctx.stack.Pop()
+				lSize, _ := ctx.stack.Pop()
+				var topics [][]byte
+
+				for t := 0; t < topicCount; t++ {
+					topic, _ := ctx.stack.Pop()
+					topicBytes := common.EVMIntToHashBytes(topic)
+					topics = append(topics, topicBytes[:])
+				}
+
+				log, err := ctx.memory.Copy(mOffset.Uint64(), lSize.Uint64())
+				if err != nil {
+					return
+				}
+
+				ctx.storage.Log(ctx.environment.Contract.Address, topics, log, ctx.environment)
+				return nil, nil
+			},
+		}
+	}
+}
