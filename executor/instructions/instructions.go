@@ -40,9 +40,9 @@ type instructionsContext struct {
 
 type opCodeAction func(ctx *instructionsContext) ([]byte, error)
 type opCodeInstruction struct {
-	doAction        opCodeAction
-	minStackDepth   int
-	enabled         bool
+	doAction      opCodeAction
+	minStackDepth int
+	enabled       bool
 }
 
 type IInstructions interface {
@@ -66,11 +66,20 @@ func (i *instructionsContext) Execute(code opcodes.OpCode) ([]byte, error) {
 
 func Load()  {
 	loadStack()
+	loadMemory()
+	loadStorage()
 	loadArithmetic()
 	loadBitOperations()
 	loadComparision()
 	loadEnvironment()
 	loadLog()
+	loadMisc()
+	loadClosure()
+	loadPC()
+}
+
+func GetInstructionsTable() [256]opCodeInstruction {
+	return instructionTable
 }
 
 func New(

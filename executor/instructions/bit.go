@@ -21,52 +21,52 @@ import (
 )
 
 func loadBitOperations() {
-	instructionTable[opcodes.AND] = opCodeInstruction{
-		doAction: andAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.AND] = opCodeInstruction {
+		doAction:       andAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
 	instructionTable[opcodes.OR] = opCodeInstruction {
-		doAction: orAction,
-		minStackDepth: 2,
-		enabled: true,
+		doAction:       orAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.XOR] = opCodeInstruction{
-		doAction: xorAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.XOR] = opCodeInstruction {
+		doAction:       xorAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.NOT] = opCodeInstruction{
-		doAction: notAction,
-		minStackDepth: 1,
-		enabled: true,
+	instructionTable[opcodes.NOT] = opCodeInstruction {
+		doAction:       notAction,
+		minStackDepth:  1,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.BYTE] = opCodeInstruction{
-		doAction: byteAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.BYTE] = opCodeInstruction {
+		doAction:       byteAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.SHL] = opCodeInstruction{
-		doAction: shlAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.SHL] = opCodeInstruction {
+		doAction:       shlAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.SHR] = opCodeInstruction{
-		doAction: shrAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.SHR] = opCodeInstruction {
+		doAction:       shrAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.SAR] = opCodeInstruction{
-		doAction: sarAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.SAR] = opCodeInstruction {
+		doAction:       sarAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
 }

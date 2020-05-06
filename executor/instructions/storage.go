@@ -21,16 +21,16 @@ import (
 )
 
 func loadStorage() {
-	instructionTable[opcodes.SLOAD] = opCodeInstruction{
-		doAction: sLoadAction,
-		minStackDepth: 1,
-		enabled: true,
+	instructionTable[opcodes.SLOAD] = opCodeInstruction {
+		doAction:       sLoadAction,
+		minStackDepth:  1,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.SSTORE] = opCodeInstruction{
-		doAction: sStoreAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.SSTORE] = opCodeInstruction {
+		doAction:       sStoreAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 }
 

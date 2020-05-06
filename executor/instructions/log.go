@@ -44,6 +44,9 @@ func loadLog() {
 				ctx.storage.Log(ctx.environment.Contract.Address, topics, log, ctx.environment)
 				return nil, nil
 			},
+
+			minStackDepth: topicCount + 2,
+			enabled:       true,
 		}
 	}
 }

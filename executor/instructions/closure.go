@@ -35,39 +35,39 @@ type ClosureParam struct {
 
 func loadClosure() {
 	instructionTable[opcodes.CALL] = opCodeInstruction {
-		doAction: callAction,
-		minStackDepth: 7,
-		enabled: true,
+		doAction:       callAction,
+		minStackDepth:  7,
+		enabled:        true,
 	}
 
 	instructionTable[opcodes.CALLCODE] = opCodeInstruction {
-		doAction: callCodeAction,
-		minStackDepth: 7,
-		enabled: true,
+		doAction:       callCodeAction,
+		minStackDepth:  7,
+		enabled:        true,
 	}
 
 	instructionTable[opcodes.DELEGATECALL] = opCodeInstruction {
-		doAction: delegateCallAction,
-		minStackDepth: 6,
-		enabled: true,
+		doAction:       delegateCallAction,
+		minStackDepth:  6,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.DELEGATECALL] = opCodeInstruction {
-		doAction: staticCallAction,
-		minStackDepth: 6,
-		enabled: true,
+	instructionTable[opcodes.STATICCALL] = opCodeInstruction {
+		doAction:       staticCallAction,
+		minStackDepth:  6,
+		enabled:        true,
 	}
 
 	instructionTable[opcodes.CREATE] = opCodeInstruction {
-		doAction: createAction,
-		minStackDepth: 3,
-		enabled: true,
+		doAction:       createAction,
+		minStackDepth:  3,
+		enabled:        true,
 	}
 
 	instructionTable[opcodes.CREATE2] = opCodeInstruction {
-		doAction: create2Action,
-		minStackDepth: 2,
-		enabled: true,
+		doAction:       create2Action,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 }
 

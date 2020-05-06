@@ -29,7 +29,7 @@ func loadStack() {
 			return nil, nil
 		},
 		minStackDepth: 1,
-		enabled: true,
+		enabled:       true,
 	}
 
 	setPushActions()
@@ -56,7 +56,7 @@ func setPushActions() {
 			},
 
 			minStackDepth: 0,
-			enabled: true,
+			enabled:       true,
 		}
 	}
 }
@@ -72,7 +72,7 @@ func setSwapActions()  {
 			},
 
 			minStackDepth: swapDepth + 1,
-			enabled: true,
+			enabled:       true,
 		}
 	}
 }
@@ -88,7 +88,7 @@ func setDupActions()  {
 			},
 
 			minStackDepth: dupDepth,
-			enabled: true,
+			enabled:       true,
 		}
 	}
 }

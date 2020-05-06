@@ -21,76 +21,76 @@ import (
 )
 
 func loadArithmetic() {
-	instructionTable[opcodes.STOP] = opCodeInstruction{
-		doAction: stopAction,
-		minStackDepth: 0,
-		enabled: true,
+	instructionTable[opcodes.STOP] = opCodeInstruction {
+		doAction:       stopAction,
+		minStackDepth:  0,
+		enabled:        true,
 	}
 
 	instructionTable[opcodes.ADD] = opCodeInstruction {
-		doAction: addAction,
-		minStackDepth: 2,
-		enabled: true,
+		doAction:       addAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.MUL] = opCodeInstruction{
-		doAction: mulAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.MUL] = opCodeInstruction {
+		doAction:       mulAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.SUB] = opCodeInstruction{
-		doAction: subAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.SUB] = opCodeInstruction {
+		doAction:       subAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.DIV] = opCodeInstruction{
-		doAction: divAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.DIV] = opCodeInstruction {
+		doAction:       divAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.SDIV] = opCodeInstruction{
-		doAction: sDivAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.SDIV] = opCodeInstruction {
+		doAction:       sDivAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.MOD] = opCodeInstruction{
-		doAction: modAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.MOD] = opCodeInstruction {
+		doAction:       modAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.SMOD] = opCodeInstruction{
-		doAction: sModAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.SMOD] = opCodeInstruction {
+		doAction:       sModAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.ADDMOD] = opCodeInstruction{
-		doAction: addModAction,
-		minStackDepth: 3,
-		enabled: true,
+	instructionTable[opcodes.ADDMOD] = opCodeInstruction {
+		doAction:       addModAction,
+		minStackDepth:  3,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.MULMOD] = opCodeInstruction{
-		doAction: mulModAction,
-		minStackDepth: 3,
-		enabled: true,
+	instructionTable[opcodes.MULMOD] = opCodeInstruction {
+		doAction:       mulModAction,
+		minStackDepth:  3,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.EXP] = opCodeInstruction{
-		doAction: expAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.EXP] = opCodeInstruction {
+		doAction:       expAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 
-	instructionTable[opcodes.SIGNEXTEND] = opCodeInstruction{
-		doAction: signExtendAction,
-		minStackDepth: 2,
-		enabled: true,
+	instructionTable[opcodes.SIGNEXTEND] = opCodeInstruction {
+		doAction:       signExtendAction,
+		minStackDepth:  2,
+		enabled:        true,
 	}
 }
 
