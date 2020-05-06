@@ -157,6 +157,12 @@ func loadEnvironment() {
 		enabled: true,
 	}
 
+	instructionTable[opcodes.GAS] = opCodeInstruction{
+		doAction: gasAction,
+		minStackDepth: 0,
+		enabled: true,
+	}
+
 }
 
 func addressAction(ctx *instructionsContext) ([]byte, error) {
@@ -176,7 +182,7 @@ func balanceAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func originAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Contract.Address)
+	err := ctx.stack.Push(ctx.environment.Transaction.Origin)
 	return nil, err
 }
 
@@ -326,5 +332,10 @@ func difficultyAction(ctx *instructionsContext) ([]byte, error) {
 
 func gasLimitAction(ctx *instructionsContext) ([]byte, error) {
 	err := ctx.stack.Push(ctx.environment.Block.GasLimit)
+	return nil, err
+}
+
+func gasAction(ctx *instructionsContext) ([]byte, error) {
+	err := ctx.stack.Push(ctx.gasRemaining)
 	return nil, err
 }

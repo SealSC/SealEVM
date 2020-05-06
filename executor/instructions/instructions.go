@@ -19,6 +19,7 @@ package instructions
 import (
 	"SealEVM/environment"
 	"SealEVM/evmErrors"
+	"SealEVM/evmInt256"
 	"SealEVM/memory"
 	"SealEVM/opcodes"
 	"SealEVM/stack"
@@ -28,11 +29,13 @@ import (
 type instructionsContext struct {
 	stack       *stack.Stack
 	memory      *memory.Memory
-	storage     storageCache.StorageCache
+	storage     *storageCache.StorageCache
 	environment environment.Context
 
-	pc          uint64
-	lastReturn  []byte
+	pc              uint64
+	lastReturn      []byte
+	gasRemaining    *evmInt256.Int
+	closureExec     ClosureExecute
 }
 
 type opCodeAction func(ctx *instructionsContext) ([]byte, error)
@@ -70,12 +73,18 @@ func Load()  {
 	loadLog()
 }
 
-func New(stack *stack.Stack, memory *memory.Memory, storage storageCache.StorageCache, context environment.Context) IInstructions {
+func New(
+	stack *stack.Stack,
+	memory *memory.Memory,
+	storage *storageCache.StorageCache,
+	context environment.Context,
+	closureExecute ClosureExecute) IInstructions {
 	is := &instructionsContext{
 		stack:       stack,
 		memory:      memory,
 		storage:     storage,
 		environment: context,
+		closureExec: closureExecute,
 	}
 	return is
 }

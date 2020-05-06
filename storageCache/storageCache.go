@@ -108,17 +108,21 @@ func (s *StorageCache) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.I
 	s.ResultCache.CachedData[cacheString] = v
 }
 
-func (s *StorageCache) BalanceChange(address *evmInt256.Int, change *evmInt256.Int) {
+func (s *StorageCache) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, neg bool) {
 	kString := address.String()
 
 	b, exist := s.ResultCache.Balance[kString]
 	if !exist {
 		s.ResultCache.Balance[kString] = &balance {
 			Address: address,
-			Balance: change,
+			Balance: value,
 		}
+	}
+
+	if neg {
+		b.Balance.Sub(value)
 	} else {
-		b.Balance.Add(change)
+		b.Balance.Add(value)
 	}
 }
 

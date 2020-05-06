@@ -32,23 +32,27 @@ type EVMParam struct {
 }
 
 type EVM struct {
-	stack           *stack.Stack
-	memory          *memory.Memory
-	iStore          *storageCache.StorageCache
-	context         environment.Context
-	instructions    instructions.IInstructions
+	stack        *stack.Stack
+	memory       *memory.Memory
+	storage      *storageCache.StorageCache
+	context      environment.Context
+	instructions instructions.IInstructions
 }
 
 func New(param EVMParam) *EVM {
 	evm := &EVM{
 		stack:        stack.New(param.MaxStackDepth),
 		memory:       memory.New(),
-		iStore:       storageCache.New(param.ExternalStore, param.ResultCallback),
+		storage:      storageCache.New(param.ExternalStore, param.ResultCallback),
 		context:      param.Context,
 		instructions: nil,
 	}
 
-	evm.instructions = instructions.New(evm.stack, evm.memory, evm.iStore, evm.context)
+	evm.instructions = instructions.New(evm.stack, evm.memory, evm.storage, evm.context, closure)
 
 	return evm
+}
+
+func closure(param instructions.ClosureParam) ([]byte, error){
+	return nil, nil
 }

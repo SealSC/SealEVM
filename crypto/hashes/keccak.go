@@ -14,12 +14,14 @@
  *  limitations under the License.
  */
 
-package environment
+package hashes
 
-import "SealEVM/evmInt256"
+import (
+	"golang.org/x/crypto/sha3"
+)
 
-type Transaction struct {
-	Origin      *evmInt256.Int
-	GasPrice    *evmInt256.Int
-	GasLimit    *evmInt256.Int
+func Keccak256(data []byte) []byte {
+	hasher := sha3.NewLegacyKeccak512()
+	hasher.Write(data)
+	return hasher.Sum(nil)
 }
