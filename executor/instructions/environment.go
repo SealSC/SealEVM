@@ -27,7 +27,7 @@ import (
 func loadEnvironment() {
 	instructionTable[opcodes.ADDRESS] = opCodeInstruction {
 		action:            addressAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
@@ -39,19 +39,19 @@ func loadEnvironment() {
 
 	instructionTable[opcodes.ORIGIN] = opCodeInstruction {
 		action:            originAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 	
 	instructionTable[opcodes.CALLER] = opCodeInstruction {
 		action:            callerAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
 	instructionTable[opcodes.CALLVALUE] = opCodeInstruction {
 		action:            callValueAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
@@ -63,7 +63,7 @@ func loadEnvironment() {
 
 	instructionTable[opcodes.CALLDATASIZE] = opCodeInstruction {
 		action:            callDataSizeAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
@@ -75,7 +75,7 @@ func loadEnvironment() {
 
 	instructionTable[opcodes.CODESIZE] = opCodeInstruction {
 		action:            codeSizeAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
@@ -87,7 +87,7 @@ func loadEnvironment() {
 
 	instructionTable[opcodes.GASPRICE] = opCodeInstruction {
 		action:            gasPriceAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
@@ -105,7 +105,7 @@ func loadEnvironment() {
 
 	instructionTable[opcodes.RETURNDATASIZE] = opCodeInstruction {
 		action:            returnDataSizeAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
@@ -129,37 +129,37 @@ func loadEnvironment() {
 
 	instructionTable[opcodes.COINBASE] = opCodeInstruction {
 		action:            coinbaseAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
 	instructionTable[opcodes.TIMESTAMP] = opCodeInstruction {
 		action:            timestampAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
 	instructionTable[opcodes.NUMBER] = opCodeInstruction {
 		action:            numberAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
 	instructionTable[opcodes.DIFFICULTY] = opCodeInstruction {
 		action:            difficultyAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
 	instructionTable[opcodes.GASLIMIT] = opCodeInstruction {
 		action:            gasLimitAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
 	instructionTable[opcodes.GAS] = opCodeInstruction {
 		action:            gasAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 

@@ -43,10 +43,9 @@ func loadMemory() {
 
 	instructionTable[opcodes.MSIZE] = opCodeInstruction {
 		action:            mSizeAction,
-		requireStackDepth: 0,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
-
 }
 
 func mLoadAction(ctx *instructionsContext) ([]byte, error) {

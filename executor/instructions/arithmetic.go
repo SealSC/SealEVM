@@ -23,7 +23,6 @@ import (
 func loadArithmetic() {
 	instructionTable[opcodes.STOP] = opCodeInstruction {
 		action:            stopAction,
-		requireStackDepth: 0,
 		enabled:           true,
 		finished:          true,
 	}

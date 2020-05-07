@@ -54,7 +54,7 @@ func setPushActions() {
 				return nil, nil
 			},
 
-			requireStackDepth: 0,
+			willIncreaseStack: 1,
 			enabled:           true,
 		}
 	}
@@ -87,6 +87,7 @@ func setDupActions()  {
 			},
 
 			requireStackDepth: dupDepth,
+			willIncreaseStack: 1,
 			enabled:           true,
 		}
 	}

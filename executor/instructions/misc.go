@@ -25,7 +25,7 @@ import (
 func loadMisc() {
 	instructionTable[opcodes.SHA3] =  opCodeInstruction {
 		action:            sha3Action,
-		requireStackDepth: 3,
+		requireStackDepth: 2,
 		enabled:           true,
 	}
 

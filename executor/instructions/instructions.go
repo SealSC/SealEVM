@@ -42,7 +42,7 @@ type opCodeAction func(ctx *instructionsContext) ([]byte, error)
 type opCodeInstruction struct {
 	action            opCodeAction
 	requireStackDepth int
-	willAddToStack    int
+	willIncreaseStack int
 	enabled           bool
 	jumps             bool
 	returns           bool
@@ -60,7 +60,6 @@ func (i *instructionsContext) ExecuteContract() ([]byte, error) {
 	contract := i.environment.Contract
 
 	//todo: check if program is precompiled or nil contract
-
 	var ret []byte
 	var err error = nil
 
@@ -68,10 +67,10 @@ func (i *instructionsContext) ExecuteContract() ([]byte, error) {
 		opCode := contract.Code[i.pc]
 		instruction := instructionTable[opCode]
 		if !instruction.enabled {
-			return nil, evmErrors.InvalidOpCode(byte(opCode))
+			return nil, evmErrors.InvalidOpCode(opCode)
 		}
 
-		err := i.stack.CheckStackDepth(instruction.requireStackDepth, instruction.willAddToStack)
+		err := i.stack.CheckStackDepth(instruction.requireStackDepth, instruction.willIncreaseStack)
 		if err != nil {
 			return nil, err
 		}

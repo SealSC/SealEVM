@@ -38,13 +38,12 @@ func loadPC() {
 
 	instructionTable[opcodes.JUMPDEST] = opCodeInstruction {
 		action:            jumpDestAction,
-		requireStackDepth: 0,
 		enabled:           true,
 	}
 
 	instructionTable[opcodes.PC] = opCodeInstruction {
 		action:            pcAction,
-		requireStackDepth: 1,
+		willIncreaseStack: 1,
 		enabled:           true,
 	}
 }
