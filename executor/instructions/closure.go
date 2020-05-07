@@ -24,50 +24,54 @@ import (
 type ClosureExecute func(ClosureParam) ([]byte, error)
 
 type ClosureParam struct {
+	VM              interface{}
 	OpCode          opcodes.OpCode
 	GasRemaining    *evmInt256.Int
-	Code            []byte
-	Hash            *evmInt256.Int
-	Data            []byte
-	Value           *evmInt256.Int
-	Salt            *evmInt256.Int
+
+	ContractAddress *evmInt256.Int
+	ContractHash    *evmInt256.Int
+	ContractCode    []byte
+
+	CallData        []byte
+	CallValue       *evmInt256.Int
+	CreateSalt      *evmInt256.Int
 }
 
 func loadClosure() {
 	instructionTable[opcodes.CALL] = opCodeInstruction {
-		doAction:       callAction,
-		minStackDepth:  7,
-		enabled:        true,
+		action:        callAction,
+		minStackDepth: 7,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.CALLCODE] = opCodeInstruction {
-		doAction:       callCodeAction,
-		minStackDepth:  7,
-		enabled:        true,
+		action:        callCodeAction,
+		minStackDepth: 7,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.DELEGATECALL] = opCodeInstruction {
-		doAction:       delegateCallAction,
-		minStackDepth:  6,
-		enabled:        true,
+		action:        delegateCallAction,
+		minStackDepth: 6,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.STATICCALL] = opCodeInstruction {
-		doAction:       staticCallAction,
-		minStackDepth:  6,
-		enabled:        true,
+		action:        staticCallAction,
+		minStackDepth: 6,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.CREATE] = opCodeInstruction {
-		doAction:       createAction,
-		minStackDepth:  3,
-		enabled:        true,
+		action:        createAction,
+		minStackDepth: 3,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.CREATE2] = opCodeInstruction {
-		doAction:       create2Action,
-		minStackDepth:  2,
-		enabled:        true,
+		action:        create2Action,
+		minStackDepth: 2,
+		enabled:       true,
 	}
 }
 
@@ -94,18 +98,19 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 	}
 
 	contractCodeHash, err := ctx.storage.GetCodeHash(addr)
-
 	if err != nil {
 		return nil, err
 	}
 
 	cParam := ClosureParam {
-		OpCode:       opCode,
-		GasRemaining: ctx.gasRemaining,
-		Code:         contractCode,
-		Hash:         contractCodeHash,
-		Data:         data,
-		Value:        v,
+		VM:                 ctx.vm,
+		OpCode:             opCode,
+		GasRemaining:       ctx.gasRemaining,
+		ContractAddress:    addr,
+		ContractCode:       contractCode,
+		ContractHash:       contractCodeHash,
+		CallData:           data,
+		CallValue:          v,
 	}
 
 	callRet, err := ctx.closureExec(cParam)
@@ -149,12 +154,13 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 	}
 
 	cParam := ClosureParam {
-		OpCode:         opCode,
-		GasRemaining:   ctx.gasRemaining,
-		Code:           code,
-		Data:           code,
-		Value:          v,
-		Salt:           salt,
+		VM:           ctx.vm,
+		OpCode:       opCode,
+		GasRemaining: ctx.gasRemaining,
+		ContractCode: code,
+		CallData:     code,
+		CallValue:    v,
+		CreateSalt:   salt,
 	}
 
 	ret, err := ctx.closureExec(cParam)

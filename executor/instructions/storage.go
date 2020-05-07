@@ -22,22 +22,22 @@ import (
 
 func loadStorage() {
 	instructionTable[opcodes.SLOAD] = opCodeInstruction {
-		doAction:       sLoadAction,
-		minStackDepth:  1,
-		enabled:        true,
+		action:        sLoadAction,
+		minStackDepth: 1,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.SSTORE] = opCodeInstruction {
-		doAction:       sStoreAction,
-		minStackDepth:  2,
-		enabled:        true,
+		action:        sStoreAction,
+		minStackDepth: 2,
+		enabled:       true,
 	}
 }
 
 func sLoadAction(ctx *instructionsContext) ([]byte, error) {
 	k := ctx.stack.Peek()
 
-	v, err := ctx.storage.SLoad(ctx.environment.Contract.Address, k)
+	v, err := ctx.storage.SLoad(ctx.environment.Contract.Namespace, k)
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +50,6 @@ func sStoreAction(ctx *instructionsContext) ([]byte, error) {
 	k, _ := ctx.stack.Pop()
 	v, _ := ctx.stack.Pop()
 
-	ctx.storage.SStore(ctx.environment.Contract.Address, k, v)
+	ctx.storage.SStore(ctx.environment.Contract.Namespace, k, v)
 	return nil, nil
 }

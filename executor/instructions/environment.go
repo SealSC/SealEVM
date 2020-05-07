@@ -26,147 +26,147 @@ import (
 
 func loadEnvironment() {
 	instructionTable[opcodes.ADDRESS] = opCodeInstruction {
-		doAction:       addressAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        addressAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.BALANCE] = opCodeInstruction {
-		doAction:       balanceAction,
-		minStackDepth:  1,
-		enabled:        true,
+		action:        balanceAction,
+		minStackDepth: 1,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.ORIGIN] = opCodeInstruction {
-		doAction:       originAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        originAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 	
 	instructionTable[opcodes.CALLER] = opCodeInstruction {
-		doAction:       callerAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        callerAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.CALLVALUE] = opCodeInstruction {
-		doAction:       callValueAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        callValueAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.CALLDATALOAD] = opCodeInstruction {
-		doAction:       callDataLoadAction,
-		minStackDepth:  1,
-		enabled:        true,
+		action:        callDataLoadAction,
+		minStackDepth: 1,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.CALLDATASIZE] = opCodeInstruction {
-		doAction:       callDataSizeAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        callDataSizeAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.CALLDATACOPY] = opCodeInstruction {
-		doAction:       callDataCopyAction,
-		minStackDepth:  3,
-		enabled:        true,
+		action:        callDataCopyAction,
+		minStackDepth: 3,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.CODESIZE] = opCodeInstruction {
-		doAction:      codeSizeAction,
+		action:        codeSizeAction,
 		minStackDepth: 0,
 		enabled:       true,
 	}
 
 	instructionTable[opcodes.CODECOPY] = opCodeInstruction {
-		doAction:       codeCopyAction,
-		minStackDepth:  3,
-		enabled:        true,
+		action:        codeCopyAction,
+		minStackDepth: 3,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.GASPRICE] = opCodeInstruction {
-		doAction:       gasPriceAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        gasPriceAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.EXTCODESIZE] = opCodeInstruction {
-		doAction:       extCodeSizeAction,
-		minStackDepth:  1,
-		enabled:        true,
+		action:        extCodeSizeAction,
+		minStackDepth: 1,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.EXTCODECOPY] = opCodeInstruction {
-		doAction:       extCodeCopyAction,
-		minStackDepth:  4,
-		enabled:        true,
+		action:        extCodeCopyAction,
+		minStackDepth: 4,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.RETURNDATASIZE] = opCodeInstruction {
-		doAction:       returnDataSizeAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        returnDataSizeAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.RETURNDATACOPY] = opCodeInstruction {
-		doAction:       returnDataCopyAction,
-		minStackDepth:  3,
-		enabled:        true,
+		action:        returnDataCopyAction,
+		minStackDepth: 3,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.EXTCODEHASH] = opCodeInstruction {
-		doAction:       extCodeHashAction,
-		minStackDepth:  1,
-		enabled:        true,
+		action:        extCodeHashAction,
+		minStackDepth: 1,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.BLOCKHASH] = opCodeInstruction {
-		doAction:       blockHashAction,
-		minStackDepth:  1,
-		enabled:        true,
+		action:        blockHashAction,
+		minStackDepth: 1,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.COINBASE] = opCodeInstruction {
-		doAction:       coinbaseAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        coinbaseAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.TIMESTAMP] = opCodeInstruction {
-		doAction:       timestampAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        timestampAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.NUMBER] = opCodeInstruction {
-		doAction:       numberAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        numberAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.DIFFICULTY] = opCodeInstruction {
-		doAction:       difficultyAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        difficultyAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.GASLIMIT] = opCodeInstruction {
-		doAction:       gasLimitAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        gasLimitAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.GAS] = opCodeInstruction {
-		doAction:       gasAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        gasAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 }
 
 func addressAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Contract.Address)
+	err := ctx.stack.Push(ctx.environment.Contract.Namespace)
 	return nil, err
 }
 

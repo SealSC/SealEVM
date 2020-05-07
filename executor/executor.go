@@ -18,41 +18,114 @@ package executor
 
 import (
 	"SealEVM/environment"
+	"SealEVM/evmErrors"
 	"SealEVM/executor/instructions"
 	"SealEVM/memory"
+	"SealEVM/opcodes"
 	"SealEVM/stack"
 	"SealEVM/storageCache"
 )
 
+type EVMResultCallback func(contractRet[]byte, result storageCache.ResultCache, err error)
 type EVMParam struct {
 	MaxStackDepth   int
 	ExternalStore   storageCache.IExternalStorage
-	ResultCallback  storageCache.EVMResultCallback
+	ResultCallback  EVMResultCallback
 	Context         environment.Context
 }
 
 type EVM struct {
-	stack        *stack.Stack
-	memory       *memory.Memory
-	storage      *storageCache.StorageCache
-	context      environment.Context
-	instructions instructions.IInstructions
+	stack           *stack.Stack
+	memory          *memory.Memory
+	storage         *storageCache.StorageCache
+	context         environment.Context
+	instructions    instructions.IInstructions
+	resultNotify    EVMResultCallback
+}
+
+func Load() {
+	instructions.Load()
 }
 
 func New(param EVMParam) *EVM {
 	evm := &EVM{
-		stack:        stack.New(param.MaxStackDepth),
-		memory:       memory.New(),
-		storage:      storageCache.New(param.ExternalStore, param.ResultCallback),
-		context:      param.Context,
-		instructions: nil,
+		stack:          stack.New(param.MaxStackDepth),
+		memory:         memory.New(),
+		storage:        storageCache.New(param.ExternalStore),
+		context:        param.Context,
+		instructions:   nil,
+		resultNotify:   param.ResultCallback,
 	}
 
-	evm.instructions = instructions.New(evm.stack, evm.memory, evm.storage, evm.context, closure)
+	evm.instructions = instructions.New(evm, evm.stack, evm.memory, evm.storage, evm.context, closure)
 
 	return evm
 }
 
+func (e *EVM) subResult(contractRet []byte, cache storageCache.ResultCache, err error) {
+	if err == nil {
+		//todo: merge cache to local
+	}
+}
+
+func (e *EVM) ExecuteContract() ([]byte, error) {
+	ret, err := e.instructions.ExecuteContract()
+	e.resultNotify(ret, e.storage.ResultCache, err)
+	return ret, err
+}
+
+func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
+	newEVM := New(EVMParam {
+		MaxStackDepth:  1024,
+		ExternalStore:  e.storage.ExternalStorage,
+		ResultCallback: e.subResult,
+		Context:        environment.Context {
+			Block:          e.context.Block,
+			Transaction:    e.context.Transaction,
+			Message:        environment.Message {
+				Data:   param.CallData,
+			},
+		},
+	})
+
+	newEVM.context.Contract = environment.Contract {
+		Namespace:  param.ContractAddress,
+		Code:       param.ContractCode,
+		Hash:       param.ContractHash,
+	}
+
+	//set storage namespace and call value
+	switch param.OpCode {
+	case opcodes.CALLCODE:
+		newEVM.context.Contract.Namespace = e.context.Contract.Namespace
+		newEVM.context.Message.Value = param.CallValue
+		newEVM.context.Message.Caller = e.context.Contract.Namespace
+
+	case opcodes.DELEGATECALL:
+		newEVM.context.Contract.Namespace = e.context.Contract.Namespace
+		newEVM.context.Message.Value = e.context.Message.Value
+		newEVM.context.Message.Caller = e.context.Message.Caller
+	}
+
+	return newEVM.instructions.ExecuteContract()
+}
+
+func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
+	return nil, nil
+}
+
 func closure(param instructions.ClosureParam) ([]byte, error){
+	evm, ok := param.VM.(*EVM)
+	if !ok {
+		return nil, evmErrors.InvalidEVMInstance
+	}
+
+	switch param.OpCode {
+	case opcodes.CALL, opcodes.CALLCODE, opcodes.DELEGATECALL, opcodes.STATICCALL:
+		return evm.commonCall(param)
+	case opcodes.CREATE, opcodes.CREATE2:
+		return evm.commonCreate(param)
+	}
+
 	return nil, nil
 }

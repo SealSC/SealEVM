@@ -25,7 +25,7 @@ func loadLog() {
 	for i := opcodes.LOG0; i <= opcodes.LOG4; i++ {
 		topicCount := int(i - opcodes.LOG0)
 		instructionTable[i] = opCodeInstruction {
-			doAction: func(ctx *instructionsContext) (bytes []byte, err error) {
+			action: func(ctx *instructionsContext) (bytes []byte, err error) {
 				mOffset, _ := ctx.stack.Pop()
 				lSize, _ := ctx.stack.Pop()
 				var topics [][]byte
@@ -41,7 +41,7 @@ func loadLog() {
 					return
 				}
 
-				ctx.storage.Log(ctx.environment.Contract.Address, topics, log, ctx.environment)
+				ctx.storage.Log(ctx.environment.Contract.Namespace, topics, log, ctx.environment)
 				return nil, nil
 			},
 

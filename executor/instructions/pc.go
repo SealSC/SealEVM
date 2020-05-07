@@ -23,27 +23,29 @@ import (
 
 func loadPC() {
 	instructionTable[opcodes.JUMP] = opCodeInstruction {
-		doAction:       jumpAction,
+		action:         jumpAction,
 		minStackDepth:  1,
 		enabled:        true,
+		jumps:          true,
 	}
 
 	instructionTable[opcodes.JUMPI] = opCodeInstruction {
-		doAction:       jumpIAction,
+		action:         jumpIAction,
 		minStackDepth:  2,
 		enabled:        true,
+		jumps:          true,
 	}
 
 	instructionTable[opcodes.JUMPDEST] = opCodeInstruction {
-		doAction:       jumpDestAction,
-		minStackDepth:  0,
-		enabled:        true,
+		action:        jumpDestAction,
+		minStackDepth: 0,
+		enabled:       true,
 	}
 
 	instructionTable[opcodes.PC] = opCodeInstruction {
-		doAction:       pcAction,
-		minStackDepth:  1,
-		enabled:        true,
+		action:        pcAction,
+		minStackDepth: 1,
+		enabled:       true,
 	}
 }
 

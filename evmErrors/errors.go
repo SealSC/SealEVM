@@ -24,7 +24,7 @@ import (
 var StackUnderFlow = errors.New("stack under flow")
 var StackOverFlow = errors.New("stack over flow")
 var StorageNotInitialized = errors.New("storage not initialized")
-
+var InvalidEVMInstance = errors.New("invalid EVM instance")
 var ReturnDataCopyOutOfBounds = errors.New("return data copy out of bounds")
 var JumpOutOfBounds = errors.New("jump out of range")
 var InvalidJumpDest = errors.New("invalid jump dest")

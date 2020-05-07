@@ -18,15 +18,15 @@ package memory
 
 import "SealEVM/evmErrors"
 
-type memory struct {
+type Memory struct {
 	cell []byte
 }
 
-func New() *memory {
-	return &memory{}
+func New() *Memory {
+	return &Memory{}
 }
 
-func (m *memory)Malloc(offset uint64, size uint64) []byte {
+func (m *Memory)Malloc(offset uint64, size uint64) []byte {
 	mLen := uint64(len(m.cell))
 	bound := offset + size
 	if mLen < bound {
@@ -37,7 +37,7 @@ func (m *memory)Malloc(offset uint64, size uint64) []byte {
 	return m.cell[offset : bound]
 }
 
-func (m *memory) Load(offset uint64, length uint64) ([]byte, error) {
+func (m *Memory) Map(offset uint64, length uint64) ([]byte, error) {
 	if offset + length > uint64(len(m.cell)) {
 		return nil, evmErrors.OutOfMemory
 	}
@@ -45,7 +45,7 @@ func (m *memory) Load(offset uint64, length uint64) ([]byte, error) {
 	return m.cell[offset : offset + length], nil
 }
 
-func (m *memory) Store(offset uint64, data []byte) error {
+func (m *Memory) Store(offset uint64, data []byte) error {
 	dLen := uint64(len(data))
 	if dLen + offset > uint64(len(m.cell)) {
 		return evmErrors.OutOfMemory
@@ -55,13 +55,30 @@ func (m *memory) Store(offset uint64, data []byte) error {
 	return nil
 }
 
-func (m *memory) Copy(offset uint64, length uint64) ([]byte, error) {
+func (m *Memory) StoreNBytes(offset uint64, n uint64, data []byte) error {
+	if offset + n > uint64(len(m.cell)) {
+		return evmErrors.OutOfMemory
+	}
+
+	copy(m.cell[offset : offset + n], data)
+	return nil
+}
+
+func (m *Memory) Set(idx uint64, data byte) error {
+	if idx > uint64(len(m.cell)) - 1 {
+		return evmErrors.OutOfMemory
+	}
+
+	m.cell[idx] = data
+	return nil
+}
+
+func (m *Memory) Copy(offset uint64, length uint64) ([]byte, error) {
 	if offset + length > uint64(len(m.cell)) {
 		return nil, evmErrors.OutOfMemory
 	}
 
-	var ret []byte
-
+	ret := make([]byte, length, length)
 	if length == 0 {
 		return ret, nil
 	}
@@ -70,7 +87,11 @@ func (m *memory) Copy(offset uint64, length uint64) ([]byte, error) {
 	return ret, nil
 }
 
-func (m *memory) All() []byte {
+func (m *Memory) Size() int64 {
+	return int64(len(m.cell))
+}
+
+func (m *Memory) All() []byte {
 	return m.cell
 }
 

@@ -23,9 +23,9 @@ import (
 )
 
 type Contract struct {
-	Address *evmInt256.Int
-	Code    []byte
-	Hash    *evmInt256.Int
+	Namespace   *evmInt256.Int
+	Code        []byte
+	Hash        *evmInt256.Int
 
 	codeDataFlag map[uint64] bool
 }

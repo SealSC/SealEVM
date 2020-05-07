@@ -24,7 +24,7 @@ import (
 
 func loadStack() {
 	instructionTable[opcodes.POP] = opCodeInstruction {
-		doAction: func(ctx *instructionsContext) (bytes []byte, err error) {
+		action: func(ctx *instructionsContext) (bytes []byte, err error) {
 			_, _ = ctx.stack.Pop()
 			return nil, nil
 		},
@@ -42,7 +42,7 @@ func setPushActions() {
 		bytesSize := uint64(i - opcodes.PUSH1 + 1)
 
 		instructionTable[i] = opCodeInstruction {
-			doAction: func(ctx *instructionsContext) ([]byte, error) {
+			action: func(ctx *instructionsContext) ([]byte, error) {
 				start := ctx.pc + 1
 
 				codeBytes := common.GetDataFrom(ctx.environment.Contract.Code, start, bytesSize)
@@ -66,7 +66,7 @@ func setSwapActions()  {
 		swapDepth := int(i - opcodes.SWAP1 + 1)
 
 		instructionTable[i] = opCodeInstruction {
-			doAction: func(ctx *instructionsContext) ([]byte, error) {
+			action: func(ctx *instructionsContext) ([]byte, error) {
 				_ = ctx.stack.Swap(swapDepth)
 				return nil, nil
 			},
@@ -82,7 +82,7 @@ func setDupActions()  {
 		dupDepth := int(i - opcodes.DUP1 + 1)
 
 		instructionTable[i] = opCodeInstruction {
-			doAction: func(ctx *instructionsContext) ([]byte, error) {
+			action: func(ctx *instructionsContext) ([]byte, error) {
 				err := ctx.stack.Dup(dupDepth)
 				return nil, err
 			},

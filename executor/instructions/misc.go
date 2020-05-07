@@ -24,27 +24,30 @@ import (
 
 func loadMisc() {
 	instructionTable[opcodes.SHA3] =  opCodeInstruction {
-		doAction:       sha3Action,
+		action:         sha3Action,
 		minStackDepth:  3,
 		enabled:        true,
 	}
 
 	instructionTable[opcodes.RETURN] =  opCodeInstruction {
-		doAction:       returnAction,
+		action:         returnAction,
 		minStackDepth:  2,
 		enabled:        true,
+		finished:       true,
 	}
 
 	instructionTable[opcodes.REVERT] =  opCodeInstruction {
-		doAction:       revertAction,
+		action:         revertAction,
 		minStackDepth:  2,
 		enabled:        true,
+		finished:       true,
 	}
 
 	instructionTable[opcodes.SELFDESTRUCT] =  opCodeInstruction {
-		doAction:       selfDestructAction,
+		action:         selfDestructAction,
 		minStackDepth:  1,
 		enabled:        true,
+		finished:       true,
 	}
 }
 
@@ -80,7 +83,7 @@ func revertAction(ctx *instructionsContext) ([]byte, error) {
 
 func selfDestructAction(ctx *instructionsContext) ([]byte, error) {
 	addr, _ := ctx.stack.Pop()
-	contractAddr := ctx.environment.Contract.Address
+	contractAddr := ctx.environment.Contract.Namespace
 	balance, _ := ctx.storage.Balance(contractAddr)
 	ctx.storage.BalanceModify(addr, balance, false)
 	ctx.storage.Destruct(contractAddr)

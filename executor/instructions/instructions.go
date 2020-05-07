@@ -21,7 +21,6 @@ import (
 	"SealEVM/evmErrors"
 	"SealEVM/evmInt256"
 	"SealEVM/memory"
-	"SealEVM/opcodes"
 	"SealEVM/stack"
 	"SealEVM/storageCache"
 )
@@ -32,6 +31,7 @@ type instructionsContext struct {
 	storage     *storageCache.StorageCache
 	environment environment.Context
 
+	vm              interface{}
 	pc              uint64
 	lastReturn      []byte
 	gasRemaining    *evmInt256.Int
@@ -40,28 +40,55 @@ type instructionsContext struct {
 
 type opCodeAction func(ctx *instructionsContext) ([]byte, error)
 type opCodeInstruction struct {
-	doAction      opCodeAction
-	minStackDepth int
-	enabled       bool
+	action          opCodeAction
+	minStackDepth   int
+	enabled         bool
+	jumps           bool
+	returns         bool
+	finished        bool
 }
 
 type IInstructions interface {
-	Execute(code opcodes.OpCode) ([]byte, error)
+	ExecuteContract() ([]byte, error)
 }
 
 var instructionTable [256]opCodeInstruction
 
-func (i *instructionsContext) Execute(code opcodes.OpCode) ([]byte, error) {
-	instruction := instructionTable[code]
-	if !instruction.enabled {
-		return nil, evmErrors.InvalidOpCode(byte(code))
+func (i *instructionsContext) ExecuteContract() ([]byte, error) {
+	i.pc = 0
+	contract := i.environment.Contract
+
+	//todo: check if program is precompiled or nil contract
+
+	var ret []byte
+	var err error = nil
+
+	for {
+		opCode := contract.Code[i.pc]
+		instruction := instructionTable[opCode]
+		if !instruction.enabled {
+			return nil, evmErrors.InvalidOpCode(byte(opCode))
+		}
+
+		if !i.stack.CheckMinDepth(instruction.minStackDepth) {
+			return nil, evmErrors.StackUnderFlow
+		}
+
+		ret, err = instruction.action(i)
+		if err != nil {
+			break
+		}
+
+		if !instruction.jumps {
+			i.pc += 1
+		}
+
+		if instruction.finished {
+			break
+		}
 	}
 
-	if !i.stack.CheckMinDepth(instruction.minStackDepth) {
-		return nil, evmErrors.StackUnderFlow
-	}
-
-	return instructionTable[int(code)].doAction(i)
+	return ret, err
 }
 
 func Load()  {
@@ -83,17 +110,20 @@ func GetInstructionsTable() [256]opCodeInstruction {
 }
 
 func New(
+	vm interface{},
 	stack *stack.Stack,
 	memory *memory.Memory,
 	storage *storageCache.StorageCache,
 	context environment.Context,
 	closureExecute ClosureExecute) IInstructions {
+
 	is := &instructionsContext{
-		stack:       stack,
-		memory:      memory,
-		storage:     storage,
-		environment: context,
-		closureExec: closureExecute,
+		vm:             vm,
+		stack:          stack,
+		memory:         memory,
+		storage:        storage,
+		environment:    context,
+		closureExec:    closureExecute,
 	}
 	return is
 }
