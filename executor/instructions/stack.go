@@ -25,11 +25,11 @@ import (
 func loadStack() {
 	instructionTable[opcodes.POP] = opCodeInstruction {
 		action: func(ctx *instructionsContext) (bytes []byte, err error) {
-			_, _ = ctx.stack.Pop()
+			_ = ctx.stack.Pop()
 			return nil, nil
 		},
-		minStackDepth: 1,
-		enabled:       true,
+		requireStackDepth: 1,
+		enabled:           true,
 	}
 
 	setPushActions()
@@ -49,14 +49,13 @@ func setPushActions() {
 
 				i := evmInt256.New(0)
 				i.SetBytes(codeBytes)
-				err := ctx.stack.Push(i)
-
+				ctx.stack.Push(i)
 				ctx.pc += bytesSize
-				return nil, err
+				return nil, nil
 			},
 
-			minStackDepth: 0,
-			enabled:       true,
+			requireStackDepth: 0,
+			enabled:           true,
 		}
 	}
 }
@@ -67,12 +66,12 @@ func setSwapActions()  {
 
 		instructionTable[i] = opCodeInstruction {
 			action: func(ctx *instructionsContext) ([]byte, error) {
-				_ = ctx.stack.Swap(swapDepth)
+				ctx.stack.Swap(swapDepth)
 				return nil, nil
 			},
 
-			minStackDepth: swapDepth + 1,
-			enabled:       true,
+			requireStackDepth: swapDepth + 1,
+			enabled:           true,
 		}
 	}
 }
@@ -83,12 +82,12 @@ func setDupActions()  {
 
 		instructionTable[i] = opCodeInstruction {
 			action: func(ctx *instructionsContext) ([]byte, error) {
-				err := ctx.stack.Dup(dupDepth)
-				return nil, err
+				ctx.stack.Dup(dupDepth)
+				return nil, nil
 			},
 
-			minStackDepth: dupDepth,
-			enabled:       true,
+			requireStackDepth: dupDepth,
+			enabled:           true,
 		}
 	}
 }

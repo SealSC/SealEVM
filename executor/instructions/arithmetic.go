@@ -22,76 +22,76 @@ import (
 
 func loadArithmetic() {
 	instructionTable[opcodes.STOP] = opCodeInstruction {
-		action:        stopAction,
-		minStackDepth: 0,
-		enabled:       true,
-		finished:      true,
+		action:            stopAction,
+		requireStackDepth: 0,
+		enabled:           true,
+		finished:          true,
 	}
 
 	instructionTable[opcodes.ADD] = opCodeInstruction {
-		action:        addAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            addAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.MUL] = opCodeInstruction {
-		action:        mulAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            mulAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.SUB] = opCodeInstruction {
-		action:        subAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            subAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.DIV] = opCodeInstruction {
-		action:        divAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            divAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.SDIV] = opCodeInstruction {
-		action:        sDivAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            sDivAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.MOD] = opCodeInstruction {
-		action:        modAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            modAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.SMOD] = opCodeInstruction {
-		action:        sModAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            sModAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.ADDMOD] = opCodeInstruction {
-		action:        addModAction,
-		minStackDepth: 3,
-		enabled:       true,
+		action:            addModAction,
+		requireStackDepth: 3,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.MULMOD] = opCodeInstruction {
-		action:        mulModAction,
-		minStackDepth: 3,
-		enabled:       true,
+		action:            mulModAction,
+		requireStackDepth: 3,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.EXP] = opCodeInstruction {
-		action:        expAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            expAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.SIGNEXTEND] = opCodeInstruction {
-		action:        signExtendAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            signExtendAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 }
 
@@ -100,7 +100,7 @@ func stopAction(_ *instructionsContext) ([]byte, error) {
 }
 
 func addAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	y.Add(x)
@@ -108,7 +108,7 @@ func addAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func mulAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	y.Mul(x)
@@ -116,7 +116,7 @@ func mulAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func subAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	y.Set(x.Sub(y).Int)
@@ -124,7 +124,7 @@ func subAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func divAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	y.Set(x.Div(y).Int)
@@ -132,7 +132,7 @@ func divAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func sDivAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	y.Set(x.SDiv(y).Int)
@@ -140,7 +140,7 @@ func sDivAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func modAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	y.Set(x.Mod(y).Int)
@@ -148,7 +148,7 @@ func modAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func sModAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	y.Set(x.SMod(y).Int)
@@ -156,8 +156,8 @@ func sModAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func addModAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
-	y, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
+	y := ctx.stack.Pop()
 	m := ctx.stack.Peek()
 
 	m.Set(x.AddMod(y, m).Int)
@@ -165,8 +165,8 @@ func addModAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func mulModAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
-	y, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
+	y := ctx.stack.Pop()
 	m := ctx.stack.Peek()
 
 	m.Set(x.MulMod(y, m).Int)
@@ -174,7 +174,7 @@ func mulModAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func expAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	e := ctx.stack.Peek()
 
 	e.Set(x.Exp(e).Int)
@@ -182,7 +182,7 @@ func expAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func signExtendAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	b := ctx.stack.Peek()
 
 	b.Set(x.SignExtend(b).Int)

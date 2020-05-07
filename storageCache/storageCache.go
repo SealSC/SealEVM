@@ -45,8 +45,8 @@ type IExternalStorage interface {
 	GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error)
 	GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
 
-	CreateAddress(caller *evmInt256.Int)
-	CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int)
+	CreateAddress(caller *evmInt256.Int) []byte
+	CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int) []byte
 
 	Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error)
 }
@@ -103,7 +103,7 @@ func (s *StorageCache) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int
 }
 
 func (s *StorageCache) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int)  {
-	cacheString := n.String() + ":" +  k.String()
+	cacheString := n.String() + "-" +  k.String()
 	s.ResultCache.CachedData[cacheString] = v
 }
 

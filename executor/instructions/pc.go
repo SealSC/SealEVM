@@ -23,34 +23,34 @@ import (
 
 func loadPC() {
 	instructionTable[opcodes.JUMP] = opCodeInstruction {
-		action:         jumpAction,
-		minStackDepth:  1,
-		enabled:        true,
-		jumps:          true,
+		action:            jumpAction,
+		requireStackDepth: 1,
+		enabled:           true,
+		jumps:             true,
 	}
 
 	instructionTable[opcodes.JUMPI] = opCodeInstruction {
-		action:         jumpIAction,
-		minStackDepth:  2,
-		enabled:        true,
-		jumps:          true,
+		action:            jumpIAction,
+		requireStackDepth: 2,
+		enabled:           true,
+		jumps:             true,
 	}
 
 	instructionTable[opcodes.JUMPDEST] = opCodeInstruction {
-		action:        jumpDestAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            jumpDestAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.PC] = opCodeInstruction {
-		action:        pcAction,
-		minStackDepth: 1,
-		enabled:       true,
+		action:            pcAction,
+		requireStackDepth: 1,
+		enabled:           true,
 	}
 }
 
 func jumpAction(ctx *instructionsContext) ([]byte, error) {
-	target, _ := ctx.stack.Pop()
+	target := ctx.stack.Pop()
 	nextPC := target.Uint64()
 
 	validJump, err := ctx.environment.Contract.IsValidJump(nextPC)
@@ -62,8 +62,8 @@ func jumpAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func jumpIAction(ctx *instructionsContext) ([]byte, error) {
-	target, _ := ctx.stack.Pop()
-	condition, _ := ctx.stack.Pop()
+	target := ctx.stack.Pop()
+	condition := ctx.stack.Pop()
 	nextPC := target.Uint64()
 
 	if condition.Sign() != 0 {
@@ -86,6 +86,6 @@ func pcAction(ctx *instructionsContext) ([]byte, error) {
 	i := evmInt256.New(0)
 	i.SetUint64(ctx.pc)
 
-	err := ctx.stack.Push(i)
-	return nil, err
+	ctx.stack.Push(i)
+	return nil, nil
 }

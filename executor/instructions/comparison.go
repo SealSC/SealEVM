@@ -22,44 +22,44 @@ import (
 
 func loadComparision() {
 	instructionTable[opcodes.LT] = opCodeInstruction {
-		action:        ltAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            ltAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.GT] = opCodeInstruction {
-		action:        gtAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            gtAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.SLT] = opCodeInstruction {
-		action:        sltAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            sltAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.SGT] = opCodeInstruction {
-		action:        sgtAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            sgtAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.EQ] = opCodeInstruction {
-		action:        eqAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            eqAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.ISZERO] = opCodeInstruction {
-		action:        isZeroAction,
-		minStackDepth: 1,
-		enabled:       true,
+		action:            isZeroAction,
+		requireStackDepth: 1,
+		enabled:           true,
 	}
 }
 
 func ltAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	if x.LT(y) {
@@ -71,7 +71,7 @@ func ltAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func gtAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	if x.GT(y) {
@@ -83,7 +83,7 @@ func gtAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func sltAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	if x.SLT(y) {
@@ -95,7 +95,7 @@ func sltAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func sgtAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	if x.SGT(y) {
@@ -107,7 +107,7 @@ func sgtAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func eqAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	if x.EQ(y) {

@@ -24,36 +24,36 @@ import (
 
 func loadMisc() {
 	instructionTable[opcodes.SHA3] =  opCodeInstruction {
-		action:         sha3Action,
-		minStackDepth:  3,
-		enabled:        true,
+		action:            sha3Action,
+		requireStackDepth: 3,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.RETURN] =  opCodeInstruction {
-		action:         returnAction,
-		minStackDepth:  2,
-		enabled:        true,
-		finished:       true,
+		action:            returnAction,
+		requireStackDepth: 2,
+		enabled:           true,
+		finished:          true,
 	}
 
 	instructionTable[opcodes.REVERT] =  opCodeInstruction {
-		action:         revertAction,
-		minStackDepth:  2,
-		enabled:        true,
-		finished:       true,
+		action:            revertAction,
+		requireStackDepth: 2,
+		enabled:           true,
+		finished:          true,
 	}
 
 	instructionTable[opcodes.SELFDESTRUCT] =  opCodeInstruction {
-		action:         selfDestructAction,
-		minStackDepth:  1,
-		enabled:        true,
-		finished:       true,
+		action:            selfDestructAction,
+		requireStackDepth: 1,
+		enabled:           true,
+		finished:          true,
 	}
 }
 
 func sha3Action(ctx *instructionsContext) ([]byte, error) {
-	mOffset, _ := ctx.stack.Pop()
-	mLen, _ := ctx.stack.Pop()
+	mOffset := ctx.stack.Pop()
+	mLen := ctx.stack.Pop()
 	bytes, err := ctx.memory.Copy(mOffset.Uint64(), mLen.Uint64())
 	if err != nil {
 		return nil, err
@@ -63,26 +63,26 @@ func sha3Action(ctx *instructionsContext) ([]byte, error) {
 
 	i := evmInt256.New(0)
 	i.SetBytes(hash)
-	err = ctx.stack.Push(i)
-	return nil, err
+	ctx.stack.Push(i)
+	return nil, nil
 }
 
 func returnAction(ctx *instructionsContext) ([]byte, error) {
-	mOffset, _ := ctx.stack.Pop()
-	mLen, _ := ctx.stack.Pop()
+	mOffset := ctx.stack.Pop()
+	mLen := ctx.stack.Pop()
 
 	return ctx.memory.Copy(mOffset.Uint64(), mLen.Uint64())
 }
 
 func revertAction(ctx *instructionsContext) ([]byte, error) {
-	mOffset, _ := ctx.stack.Pop()
-	mLen, _ := ctx.stack.Pop()
+	mOffset := ctx.stack.Pop()
+	mLen := ctx.stack.Pop()
 
 	return ctx.memory.Copy(mOffset.Uint64(), mLen.Uint64())
 }
 
 func selfDestructAction(ctx *instructionsContext) ([]byte, error) {
-	addr, _ := ctx.stack.Pop()
+	addr := ctx.stack.Pop()
 	contractAddr := ctx.environment.Contract.Namespace
 	balance, _ := ctx.storage.Balance(contractAddr)
 	ctx.storage.BalanceModify(addr, balance, false)

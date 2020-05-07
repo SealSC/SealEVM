@@ -40,12 +40,13 @@ type instructionsContext struct {
 
 type opCodeAction func(ctx *instructionsContext) ([]byte, error)
 type opCodeInstruction struct {
-	action          opCodeAction
-	minStackDepth   int
-	enabled         bool
-	jumps           bool
-	returns         bool
-	finished        bool
+	action            opCodeAction
+	requireStackDepth int
+	willAddToStack    int
+	enabled           bool
+	jumps             bool
+	returns           bool
+	finished          bool
 }
 
 type IInstructions interface {
@@ -70,8 +71,9 @@ func (i *instructionsContext) ExecuteContract() ([]byte, error) {
 			return nil, evmErrors.InvalidOpCode(byte(opCode))
 		}
 
-		if !i.stack.CheckMinDepth(instruction.minStackDepth) {
-			return nil, evmErrors.StackUnderFlow
+		err := i.stack.CheckStackDepth(instruction.requireStackDepth, instruction.willAddToStack)
+		if err != nil {
+			return nil, err
 		}
 
 		ret, err = instruction.action(i)

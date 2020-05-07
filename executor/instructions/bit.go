@@ -22,57 +22,57 @@ import (
 
 func loadBitOperations() {
 	instructionTable[opcodes.AND] = opCodeInstruction {
-		action:        andAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            andAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.OR] = opCodeInstruction {
-		action:        orAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            orAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.XOR] = opCodeInstruction {
-		action:        xorAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            xorAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.NOT] = opCodeInstruction {
-		action:        notAction,
-		minStackDepth: 1,
-		enabled:       true,
+		action:            notAction,
+		requireStackDepth: 1,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.BYTE] = opCodeInstruction {
-		action:        byteAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            byteAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.SHL] = opCodeInstruction {
-		action:        shlAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            shlAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.SHR] = opCodeInstruction {
-		action:        shrAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            shrAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.SAR] = opCodeInstruction {
-		action:        sarAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            sarAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 }
 
 func andAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	y.And(x)
@@ -80,7 +80,7 @@ func andAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func orAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	y.Or(x)
@@ -88,7 +88,7 @@ func orAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func xorAction(ctx *instructionsContext) ([]byte, error) {
-	x, _ := ctx.stack.Pop()
+	x := ctx.stack.Pop()
 	y := ctx.stack.Peek()
 
 	y.XOr(x)
@@ -103,7 +103,7 @@ func notAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func byteAction(ctx *instructionsContext) ([]byte, error) {
-	i, _ := ctx.stack.Pop()
+	i := ctx.stack.Pop()
 	x := ctx.stack.Peek()
 
 	b := x.ByteAt(int(i.Uint64()))
@@ -112,7 +112,7 @@ func byteAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func shlAction(ctx *instructionsContext) ([]byte, error) {
-	s, _ := ctx.stack.Pop()
+	s := ctx.stack.Pop()
 	x := ctx.stack.Peek()
 
 	x.SHL(s.Uint64())
@@ -120,7 +120,7 @@ func shlAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func shrAction(ctx *instructionsContext) ([]byte, error) {
-	s, _ := ctx.stack.Pop()
+	s := ctx.stack.Pop()
 	x := ctx.stack.Peek()
 
 	x.SHR(s.Uint64())
@@ -128,7 +128,7 @@ func shrAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func sarAction(ctx *instructionsContext) ([]byte, error) {
-	s, _ := ctx.stack.Pop()
+	s := ctx.stack.Pop()
 	x := ctx.stack.Peek()
 
 	x.SAR(s.Uint64())

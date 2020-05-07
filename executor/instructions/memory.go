@@ -24,27 +24,27 @@ import (
 
 func loadMemory() {
 	instructionTable[opcodes.MLOAD] = opCodeInstruction {
-		action:        mLoadAction,
-		minStackDepth: 1,
-		enabled:       true,
+		action:            mLoadAction,
+		requireStackDepth: 1,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.MSTORE] = opCodeInstruction {
-		action:        mStoreAction,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            mStoreAction,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.MSTORE8] = opCodeInstruction {
-		action:        mStore8Action,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            mStore8Action,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.MSIZE] = opCodeInstruction {
-		action:        mSizeAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            mSizeAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 }
@@ -63,8 +63,8 @@ func mLoadAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func mStoreAction(ctx *instructionsContext) ([]byte, error) {
-	mOffset, _ := ctx.stack.Pop()
-	v, _ := ctx.stack.Pop()
+	mOffset := ctx.stack.Pop()
+	v := ctx.stack.Pop()
 
 	valBytes := common.EVMIntToHashBytes(v)
 
@@ -73,8 +73,8 @@ func mStoreAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func mStore8Action(ctx *instructionsContext) ([]byte, error) {
-	mOffset, _ := ctx.stack.Pop()
-	v, _ := ctx.stack.Pop()
+	mOffset := ctx.stack.Pop()
+	v := ctx.stack.Pop()
 	valBytes := v.Uint64()
 
 	err := ctx.memory.Set(mOffset.Uint64(), byte(valBytes & 0xff))
@@ -82,6 +82,6 @@ func mStore8Action(ctx *instructionsContext) ([]byte, error) {
 }
 
 func mSizeAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(evmInt256.New(ctx.memory.Size()))
-	return nil, err
+	ctx.stack.Push(evmInt256.New(ctx.memory.Size()))
+	return nil, nil
 }

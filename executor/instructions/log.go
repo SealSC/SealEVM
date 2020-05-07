@@ -26,12 +26,12 @@ func loadLog() {
 		topicCount := int(i - opcodes.LOG0)
 		instructionTable[i] = opCodeInstruction {
 			action: func(ctx *instructionsContext) (bytes []byte, err error) {
-				mOffset, _ := ctx.stack.Pop()
-				lSize, _ := ctx.stack.Pop()
+				mOffset := ctx.stack.Pop()
+				lSize := ctx.stack.Pop()
 				var topics [][]byte
 
 				for t := 0; t < topicCount; t++ {
-					topic, _ := ctx.stack.Pop()
+					topic := ctx.stack.Pop()
 					topicBytes := common.EVMIntToHashBytes(topic)
 					topics = append(topics, topicBytes[:])
 				}
@@ -45,8 +45,8 @@ func loadLog() {
 				return nil, nil
 			},
 
-			minStackDepth: topicCount + 2,
-			enabled:       true,
+			requireStackDepth: topicCount + 2,
+			enabled:           true,
 		}
 	}
 }

@@ -26,148 +26,148 @@ import (
 
 func loadEnvironment() {
 	instructionTable[opcodes.ADDRESS] = opCodeInstruction {
-		action:        addressAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            addressAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.BALANCE] = opCodeInstruction {
-		action:        balanceAction,
-		minStackDepth: 1,
-		enabled:       true,
+		action:            balanceAction,
+		requireStackDepth: 1,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.ORIGIN] = opCodeInstruction {
-		action:        originAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            originAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 	
 	instructionTable[opcodes.CALLER] = opCodeInstruction {
-		action:        callerAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            callerAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.CALLVALUE] = opCodeInstruction {
-		action:        callValueAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            callValueAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.CALLDATALOAD] = opCodeInstruction {
-		action:        callDataLoadAction,
-		minStackDepth: 1,
-		enabled:       true,
+		action:            callDataLoadAction,
+		requireStackDepth: 1,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.CALLDATASIZE] = opCodeInstruction {
-		action:        callDataSizeAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            callDataSizeAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.CALLDATACOPY] = opCodeInstruction {
-		action:        callDataCopyAction,
-		minStackDepth: 3,
-		enabled:       true,
+		action:            callDataCopyAction,
+		requireStackDepth: 3,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.CODESIZE] = opCodeInstruction {
-		action:        codeSizeAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            codeSizeAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.CODECOPY] = opCodeInstruction {
-		action:        codeCopyAction,
-		minStackDepth: 3,
-		enabled:       true,
+		action:            codeCopyAction,
+		requireStackDepth: 3,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.GASPRICE] = opCodeInstruction {
-		action:        gasPriceAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            gasPriceAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.EXTCODESIZE] = opCodeInstruction {
-		action:        extCodeSizeAction,
-		minStackDepth: 1,
-		enabled:       true,
+		action:            extCodeSizeAction,
+		requireStackDepth: 1,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.EXTCODECOPY] = opCodeInstruction {
-		action:        extCodeCopyAction,
-		minStackDepth: 4,
-		enabled:       true,
+		action:            extCodeCopyAction,
+		requireStackDepth: 4,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.RETURNDATASIZE] = opCodeInstruction {
-		action:        returnDataSizeAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            returnDataSizeAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.RETURNDATACOPY] = opCodeInstruction {
-		action:        returnDataCopyAction,
-		minStackDepth: 3,
-		enabled:       true,
+		action:            returnDataCopyAction,
+		requireStackDepth: 3,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.EXTCODEHASH] = opCodeInstruction {
-		action:        extCodeHashAction,
-		minStackDepth: 1,
-		enabled:       true,
+		action:            extCodeHashAction,
+		requireStackDepth: 1,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.BLOCKHASH] = opCodeInstruction {
-		action:        blockHashAction,
-		minStackDepth: 1,
-		enabled:       true,
+		action:            blockHashAction,
+		requireStackDepth: 1,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.COINBASE] = opCodeInstruction {
-		action:        coinbaseAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            coinbaseAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.TIMESTAMP] = opCodeInstruction {
-		action:        timestampAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            timestampAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.NUMBER] = opCodeInstruction {
-		action:        numberAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            numberAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.DIFFICULTY] = opCodeInstruction {
-		action:        difficultyAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            difficultyAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.GASLIMIT] = opCodeInstruction {
-		action:        gasLimitAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            gasLimitAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.GAS] = opCodeInstruction {
-		action:        gasAction,
-		minStackDepth: 0,
-		enabled:       true,
+		action:            gasAction,
+		requireStackDepth: 0,
+		enabled:           true,
 	}
 
 }
 
 func addressAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Contract.Namespace)
-	return nil, err
+	ctx.stack.Push(ctx.environment.Contract.Namespace)
+	return nil, nil
 }
 
 func balanceAction(ctx *instructionsContext) ([]byte, error) {
@@ -182,18 +182,18 @@ func balanceAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func originAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Transaction.Origin)
-	return nil, err
+	ctx.stack.Push(ctx.environment.Transaction.Origin)
+	return nil, nil
 }
 
 func callerAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Message.Caller)
-	return nil, err
+	ctx.stack.Push(ctx.environment.Message.Caller)
+	return nil, nil
 }
 
 func callValueAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Message.Value)
-	return nil, err
+	ctx.stack.Push(ctx.environment.Message.Value)
+	return nil, nil
 }
 
 func callDataLoadAction(ctx *instructionsContext) ([]byte, error) {
@@ -213,9 +213,9 @@ func callDataSizeAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func callDataCopyAction(ctx *instructionsContext) ([]byte, error) {
-	mOffset, _ := ctx.stack.Pop()
-	dOffset, _ := ctx.stack.Pop()
-	size,_ := ctx.stack.Pop()
+	mOffset := ctx.stack.Pop()
+	dOffset := ctx.stack.Pop()
+	size := ctx.stack.Pop()
 
 	data := common.GetDataFrom(ctx.environment.Message.Data, dOffset.Uint64(), size.Uint64())
 	err := ctx.memory.Store(mOffset.Uint64(), data)
@@ -224,14 +224,14 @@ func callDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 
 func codeSizeAction(ctx *instructionsContext) ([]byte, error) {
 	s := evmInt256.New(int64(len(ctx.environment.Contract.Code)))
-	err := ctx.stack.Push(s)
-	return nil, err
+	ctx.stack.Push(s)
+	return nil, nil
 }
 
 func codeCopyAction(ctx *instructionsContext) ([]byte, error) {
-	mOffset, _ := ctx.stack.Pop()
-	dOffset, _ := ctx.stack.Pop()
-	size,_ := ctx.stack.Pop()
+	mOffset := ctx.stack.Pop()
+	dOffset := ctx.stack.Pop()
+	size := ctx.stack.Pop()
 
 	data := common.GetDataFrom(ctx.environment.Contract.Code, dOffset.Uint64(), size.Uint64())
 	err := ctx.memory.Store(mOffset.Uint64(), data)
@@ -239,8 +239,8 @@ func codeCopyAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func gasPriceAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Transaction.GasPrice)
-	return nil, err
+	ctx.stack.Push(ctx.environment.Transaction.GasPrice)
+	return nil, nil
 }
 
 func extCodeSizeAction(ctx *instructionsContext) ([]byte, error) {
@@ -249,15 +249,15 @@ func extCodeSizeAction(ctx *instructionsContext) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = ctx.stack.Push(s)
-	return nil, err
+	ctx.stack.Push(s)
+	return nil, nil
 }
 
 func extCodeCopyAction(ctx *instructionsContext) ([]byte, error) {
-	addr, _ := ctx.stack.Pop()
-	mOffset, _ := ctx.stack.Pop()
-	dOffset, _ := ctx.stack.Pop()
-	size,_ := ctx.stack.Pop()
+	addr := ctx.stack.Pop()
+	mOffset := ctx.stack.Pop()
+	dOffset := ctx.stack.Pop()
+	size := ctx.stack.Pop()
 
 	code, err := ctx.storage.GetCode(addr)
 	if err != nil {
@@ -270,14 +270,14 @@ func extCodeCopyAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func returnDataSizeAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(evmInt256.New(int64(len(ctx.lastReturn))))
-	return nil, err
+	ctx.stack.Push(evmInt256.New(int64(len(ctx.lastReturn))))
+	return nil, nil
 }
 
 func returnDataCopyAction(ctx *instructionsContext) ([]byte, error) {
-	mOffset, _ := ctx.stack.Pop()
-	dOffset, _ := ctx.stack.Pop()
-	size,_ := ctx.stack.Pop()
+	mOffset := ctx.stack.Pop()
+	dOffset := ctx.stack.Pop()
+	size := ctx.stack.Pop()
 
 	end := big.NewInt(0).Add(dOffset.Int, size.Int)
 	if !end.IsUint64() || end.Uint64() > uint64(len(ctx.lastReturn)) {
@@ -311,31 +311,31 @@ func blockHashAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func coinbaseAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Block.Coinbase)
-	return nil, err
+	ctx.stack.Push(ctx.environment.Block.Coinbase)
+	return nil, nil
 }
 
 func timestampAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Block.Timestamp)
-	return nil, err
+	ctx.stack.Push(ctx.environment.Block.Timestamp)
+	return nil, nil
 }
 
 func numberAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Block.Number)
-	return nil, err
+	ctx.stack.Push(ctx.environment.Block.Number)
+	return nil, nil
 }
 
 func difficultyAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Block.Difficulty)
-	return nil, err
+	ctx.stack.Push(ctx.environment.Block.Difficulty)
+	return nil, nil
 }
 
 func gasLimitAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.environment.Block.GasLimit)
-	return nil, err
+	ctx.stack.Push(ctx.environment.Block.GasLimit)
+	return nil, nil
 }
 
 func gasAction(ctx *instructionsContext) ([]byte, error) {
-	err := ctx.stack.Push(ctx.gasRemaining)
-	return nil, err
+	ctx.stack.Push(ctx.gasRemaining)
+	return nil, nil
 }

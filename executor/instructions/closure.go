@@ -39,53 +39,53 @@ type ClosureParam struct {
 
 func loadClosure() {
 	instructionTable[opcodes.CALL] = opCodeInstruction {
-		action:        callAction,
-		minStackDepth: 7,
-		enabled:       true,
+		action:            callAction,
+		requireStackDepth: 7,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.CALLCODE] = opCodeInstruction {
-		action:        callCodeAction,
-		minStackDepth: 7,
-		enabled:       true,
+		action:            callCodeAction,
+		requireStackDepth: 7,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.DELEGATECALL] = opCodeInstruction {
-		action:        delegateCallAction,
-		minStackDepth: 6,
-		enabled:       true,
+		action:            delegateCallAction,
+		requireStackDepth: 6,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.STATICCALL] = opCodeInstruction {
-		action:        staticCallAction,
-		minStackDepth: 6,
-		enabled:       true,
+		action:            staticCallAction,
+		requireStackDepth: 6,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.CREATE] = opCodeInstruction {
-		action:        createAction,
-		minStackDepth: 3,
-		enabled:       true,
+		action:            createAction,
+		requireStackDepth: 3,
+		enabled:           true,
 	}
 
 	instructionTable[opcodes.CREATE2] = opCodeInstruction {
-		action:        create2Action,
-		minStackDepth: 2,
-		enabled:       true,
+		action:            create2Action,
+		requireStackDepth: 2,
+		enabled:           true,
 	}
 }
 
 func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error) {
-	_, _ = ctx.stack.Pop()
-	addr, _ := ctx.stack.Pop()
+	_ = ctx.stack.Pop()
+	addr := ctx.stack.Pop()
 	var v *evmInt256.Int = nil
 	if opCode != opcodes.DELEGATECALL && opCode != opcodes.STATICCALL {
-		v, _ = ctx.stack.Pop()
+		v = ctx.stack.Pop()
 	}
-	dOffset, _ := ctx.stack.Pop()
-	dLen, _ := ctx.stack.Pop()
-	rOffset, _ := ctx.stack.Pop()
-	rLen, _ := ctx.stack.Pop()
+	dOffset := ctx.stack.Pop()
+	dLen := ctx.stack.Pop()
+	rOffset := ctx.stack.Pop()
+	rLen := ctx.stack.Pop()
 
 	data, err := ctx.memory.Copy(dOffset.Uint64(), dLen.Uint64())
 	if err != nil {
@@ -140,12 +140,12 @@ func staticCallAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error) {
-	v, _ := ctx.stack.Pop()
-	mOffset, _ := ctx.stack.Pop()
-	mSize, _ := ctx.stack.Pop()
+	v := ctx.stack.Pop()
+	mOffset := ctx.stack.Pop()
+	mSize := ctx.stack.Pop()
 	var salt *evmInt256.Int = nil
 	if opCode == opcodes.CREATE2 {
-		salt, _ = ctx.stack.Pop()
+		salt = ctx.stack.Pop()
 	}
 
 	code, err := ctx.memory.Copy(mOffset.Uint64(), mSize.Uint64())
@@ -165,9 +165,9 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 
 	ret, err := ctx.closureExec(cParam)
 	if err != nil {
-		_ = ctx.stack.Push(evmInt256.New(0))
+		ctx.stack.Push(evmInt256.New(0))
 	} else {
-		_ = ctx.stack.Push(evmInt256.New(1))
+		ctx.stack.Push(evmInt256.New(1))
 	}
 	return ret, err
 }
