@@ -26,16 +26,19 @@ type Contract struct {
 	Namespace   *evmInt256.Int
 	Code        []byte
 	Hash        *evmInt256.Int
-
+	
 	codeDataFlag map[uint64] bool
 }
 
-//todo: implement valid jump check
 func (c *Contract) IsValidJump(dest uint64) (bool, error) {
 	codeLen := uint64(len(c.Code))
 
 	if dest > codeLen {
 		return false, evmErrors.JumpOutOfBounds
+	}
+
+	if c.codeDataFlag == nil {
+		c.markCodeData()
 	}
 
 	if c.Code[dest] != byte(opcodes.JUMPDEST) {
@@ -47,4 +50,18 @@ func (c *Contract) IsValidJump(dest uint64) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (c *Contract) markCodeData() {
+	c.codeDataFlag = map[uint64] bool {}
+	codeLen := len(c.Code)
+	for i := 0; i < codeLen; i++ {
+		code := opcodes.OpCode(c.Code[i])
+		if code >= opcodes.PUSH1 && code <= opcodes.PUSH32 {
+			bytesCnt := int(code - opcodes.PUSH1 + 1)
+			for ; bytesCnt > 0; bytesCnt-- {
+				c.codeDataFlag[uint64(i + bytesCnt)] = true
+			}
+		}
+	}
 }
