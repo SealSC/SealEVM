@@ -17,6 +17,7 @@
 package instructions
 
 import (
+	"SealEVM/evmErrors"
 	"SealEVM/opcodes"
 )
 
@@ -175,6 +176,18 @@ func mulModAction(ctx *instructionsContext) ([]byte, error) {
 func expAction(ctx *instructionsContext) ([]byte, error) {
 	x := ctx.stack.Pop()
 	e := ctx.stack.Peek()
+
+	gasLeft := ctx.gasRemaining.Uint64()
+	if e.Sign() > 0 {
+		gasCost := uint64((e.BitLen() + 7) / 8) * ctx.gasSetting.DynamicCost.EXPBytesCost
+		if gasLeft < gasCost {
+			gasLeft -= gasCost
+		} else {
+			return nil, evmErrors.OutOfGas
+		}
+
+		ctx.gasRemaining.SetUint64(gasLeft)
+	}
 
 	e.Set(x.Exp(e).Int)
 	return nil, nil

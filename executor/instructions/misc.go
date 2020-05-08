@@ -18,6 +18,7 @@ package instructions
 
 import (
 	"SealEVM/crypto/hashes"
+	"SealEVM/evmErrors"
 	"SealEVM/evmInt256"
 	"SealEVM/opcodes"
 )
@@ -54,7 +55,22 @@ func loadMisc() {
 func sha3Action(ctx *instructionsContext) ([]byte, error) {
 	mOffset := ctx.stack.Pop()
 	mLen := ctx.stack.Pop()
-	bytes, err := ctx.memory.Copy(mOffset.Uint64(), mLen.Uint64())
+
+	//gas check
+	offset, size, gasLeft, err := ctx.memoryGasCostAndMalloc(mOffset, mLen)
+	if err != nil {
+		return nil, err
+	}
+
+	bytesCost := ctx.gasSetting.DynamicCost.SHA3ByteCost * size
+	if gasLeft < bytesCost {
+		return nil, evmErrors.OutOfGas
+	} else {
+		gasLeft -= bytesCost
+	}
+	ctx.gasRemaining.SetUint64(gasLeft)
+
+	bytes, err := ctx.memory.Copy(offset, size)
 	if err != nil {
 		return nil, err
 	}
@@ -70,15 +86,26 @@ func sha3Action(ctx *instructionsContext) ([]byte, error) {
 func returnAction(ctx *instructionsContext) ([]byte, error) {
 	mOffset := ctx.stack.Pop()
 	mLen := ctx.stack.Pop()
+	//gas check
+	offset, size, _, err := ctx.memoryGasCostAndMalloc(mOffset, mLen)
+	if err != nil {
+		return nil, err
+	}
 
-	return ctx.memory.Copy(mOffset.Uint64(), mLen.Uint64())
+	return ctx.memory.Copy(offset, size)
 }
 
 func revertAction(ctx *instructionsContext) ([]byte, error) {
 	mOffset := ctx.stack.Pop()
 	mLen := ctx.stack.Pop()
 
-	return ctx.memory.Copy(mOffset.Uint64(), mLen.Uint64())
+	//gas check
+	offset, size, _, err := ctx.memoryGasCostAndMalloc(mOffset, mLen)
+	if err != nil {
+		return nil, err
+	}
+
+	return ctx.memory.Copy(offset, size)
 }
 
 func selfDestructAction(ctx *instructionsContext) ([]byte, error) {

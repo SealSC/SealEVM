@@ -217,8 +217,14 @@ func callDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 	dOffset := ctx.stack.Pop()
 	size := ctx.stack.Pop()
 
+	//gas check
+	offset, _, _, err := ctx.memoryGasCostAndMalloc(mOffset, size)
+	if err != nil {
+		return nil, err
+	}
+
 	data := common.GetDataFrom(ctx.environment.Message.Data, dOffset.Uint64(), size.Uint64())
-	err := ctx.memory.Store(mOffset.Uint64(), data)
+	err = ctx.memory.Store(offset, data)
 	return nil, err
 }
 
@@ -233,8 +239,14 @@ func codeCopyAction(ctx *instructionsContext) ([]byte, error) {
 	dOffset := ctx.stack.Pop()
 	size := ctx.stack.Pop()
 
+	//gas check
+	offset, _, _, err := ctx.memoryGasCostAndMalloc(mOffset, size)
+	if err != nil {
+		return nil, err
+	}
+
 	data := common.GetDataFrom(ctx.environment.Contract.Code, dOffset.Uint64(), size.Uint64())
-	err := ctx.memory.Store(mOffset.Uint64(), data)
+	err = ctx.memory.Store(offset, data)
 	return nil, err
 }
 
@@ -264,8 +276,14 @@ func extCodeCopyAction(ctx *instructionsContext) ([]byte, error) {
 		return nil, err
 	}
 
+	//gas check
+	offset, _, _, err := ctx.memoryGasCostAndMalloc(mOffset, size)
+	if err != nil {
+		return nil, err
+	}
+
 	data := common.GetDataFrom(code, dOffset.Uint64(), size.Uint64())
-	err = ctx.memory.Store(mOffset.Uint64(), data)
+	err = ctx.memory.Store(offset, data)
 	return nil, err
 }
 
@@ -277,14 +295,20 @@ func returnDataSizeAction(ctx *instructionsContext) ([]byte, error) {
 func returnDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 	mOffset := ctx.stack.Pop()
 	dOffset := ctx.stack.Pop()
-	size := ctx.stack.Pop()
+	dLen := ctx.stack.Pop()
 
-	end := big.NewInt(0).Add(dOffset.Int, size.Int)
+	end := big.NewInt(0).Add(dOffset.Int, dLen.Int)
 	if !end.IsUint64() || end.Uint64() > uint64(len(ctx.lastReturn)) {
 		return nil, evmErrors.ReturnDataCopyOutOfBounds
 	}
 
-	err := ctx.memory.Store(mOffset.Uint64(), ctx.lastReturn[dOffset.Uint64() : end.Uint64()])
+	//gas check
+	offset, size, _, err := ctx.memoryGasCostAndMalloc(mOffset, dLen)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ctx.memory.Store(offset, ctx.lastReturn[dOffset.Uint64() : size])
 	return nil, err
 }
 

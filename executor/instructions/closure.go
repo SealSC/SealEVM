@@ -87,7 +87,13 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 	rOffset := ctx.stack.Pop()
 	rLen := ctx.stack.Pop()
 
-	data, err := ctx.memory.Copy(dOffset.Uint64(), dLen.Uint64())
+	//gas check
+	offset, size, _, err := ctx.memoryGasCostAndMalloc(dOffset, dLen)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := ctx.memory.Copy(offset, size)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +124,13 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 		return nil, err
 	}
 
-	err = ctx.memory.StoreNBytes(rOffset.Uint64(), rLen.Uint64(), callRet)
+	//gas check
+	offset, size, _, err = ctx.memoryGasCostAndMalloc(rOffset, rLen)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ctx.memory.StoreNBytes(offset, size, callRet)
 
 	return callRet, err
 }
@@ -148,7 +160,13 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		salt = ctx.stack.Pop()
 	}
 
-	code, err := ctx.memory.Copy(mOffset.Uint64(), mSize.Uint64())
+	//gas check
+	offset, size, _, err := ctx.memoryGasCostAndMalloc(mOffset, mSize)
+	if err != nil {
+		return nil, err
+	}
+
+	code, err := ctx.memory.Copy(offset, size)
 	if err != nil {
 		return nil, err
 	}

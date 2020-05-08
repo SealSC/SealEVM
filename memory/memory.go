@@ -16,7 +16,10 @@
 
 package memory
 
-import "SealEVM/evmErrors"
+import (
+	"SealEVM/evmErrors"
+	"SealEVM/evmInt256"
+)
 
 type Memory struct {
 	cell []byte
@@ -24,6 +27,24 @@ type Memory struct {
 
 func New() *Memory {
 	return &Memory{}
+}
+
+func (m *Memory) WillIncrease(offset *evmInt256.Int, size *evmInt256.Int) (o uint64, s uint64, i uint64, err error) {
+	mLen := uint64(len(m.cell))
+	bound := evmInt256.FromBigInt(offset.Int)
+	bound.Add(size)
+
+	if !bound.IsUint64() {
+		return 0, 0, 0, evmErrors.OutOfMemory
+	}
+
+	boundUint := bound.Uint64()
+
+	if mLen < boundUint {
+		i = boundUint - mLen
+	}
+
+	return offset.Uint64(), size.Uint64(), i, nil
 }
 
 func (m *Memory)Malloc(offset uint64, size uint64) []byte {

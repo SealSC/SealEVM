@@ -18,6 +18,7 @@ package instructions
 
 import (
 	"SealEVM/common"
+	"SealEVM/evmErrors"
 	"SealEVM/opcodes"
 )
 
@@ -30,13 +31,27 @@ func loadLog() {
 				lSize := ctx.stack.Pop()
 				var topics [][]byte
 
+				//gas check
+				offset, size, gasLeft, err := ctx.memoryGasCostAndMalloc(mOffset, lSize)
+				if err != nil {
+					return nil, err
+				}
+
+				logByteCost := ctx.gasSetting.DynamicCost.LogByteCost * lSize.Uint64()
+				if gasLeft < logByteCost {
+					return nil, evmErrors.OutOfGas
+				} else {
+					gasLeft -= logByteCost
+				}
+				ctx.gasRemaining.SetUint64(gasLeft)
+
 				for t := 0; t < topicCount; t++ {
 					topic := ctx.stack.Pop()
 					topicBytes := common.EVMIntToHashBytes(topic)
 					topics = append(topics, topicBytes[:])
 				}
 
-				log, err := ctx.memory.Copy(mOffset.Uint64(), lSize.Uint64())
+				log, err := ctx.memory.Copy(offset, size)
 				if err != nil {
 					return
 				}

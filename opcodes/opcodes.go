@@ -19,6 +19,10 @@ package opcodes
 type OpCode byte
 
 const (
+	MaxOpCodesCount = 256
+)
+
+const (
 	STOP OpCode = iota + 0x00
 	ADD
 	MUL

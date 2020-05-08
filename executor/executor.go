@@ -26,7 +26,7 @@ import (
 	"SealEVM/storageCache"
 )
 
-type EVMResultCallback func(contractRet[]byte, result storageCache.ResultCache, err error)
+type EVMResultCallback func(contractRet[]byte, gasLeft uint64, result storageCache.ResultCache, err error)
 type EVMParam struct {
 	MaxStackDepth   int
 	ExternalStore   storageCache.IExternalStorage
@@ -57,21 +57,21 @@ func New(param EVMParam) *EVM {
 		resultNotify:   param.ResultCallback,
 	}
 
-	evm.instructions = instructions.New(evm, evm.stack, evm.memory, evm.storage, evm.context, closure)
+	evm.instructions = instructions.New(evm, evm.stack, evm.memory, evm.storage, evm.context, nil, closure)
 
 	return evm
 }
 
-func (e *EVM) subResult(contractRet []byte, cache storageCache.ResultCache, err error) {
+func (e *EVM) subResult(contractRet []byte, gasLeft uint64, cache storageCache.ResultCache, err error) {
 	if err == nil {
 		//todo: merge cache to local
 	}
 }
 
-func (e *EVM) ExecuteContract() ([]byte, error) {
-	ret, err := e.instructions.ExecuteContract()
-	e.resultNotify(ret, e.storage.ResultCache, err)
-	return ret, err
+func (e *EVM) ExecuteContract() ([]byte, uint64, error) {
+	ret, gasLeft, err := e.instructions.ExecuteContract()
+	e.resultNotify(ret, gasLeft, e.storage.ResultCache, err)
+	return ret, gasLeft, err
 }
 
 func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
@@ -107,7 +107,10 @@ func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 		newEVM.context.Message.Caller = e.context.Message.Caller
 	}
 
-	return newEVM.instructions.ExecuteContract()
+	ret, gasLeft, err := newEVM.instructions.ExecuteContract()
+
+	e.instructions.SetGasLimit(gasLeft)
+	return ret, err
 }
 
 func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
