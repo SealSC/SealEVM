@@ -43,7 +43,7 @@ func DefaultGasSetting() *GasSetting {
 	gs := &GasSetting{}
 
 	for i, _ := range gs.ActionConstCost {
-		gs.ActionConstCost[i] = 2
+		gs.ActionConstCost[i] = 3
 	}
 
 	gs.ActionConstCost[opcodes.EXP] = 10
@@ -53,7 +53,7 @@ func DefaultGasSetting() *GasSetting {
 	gs.ActionConstCost[opcodes.LOG2] = 375 * 3
 	gs.ActionConstCost[opcodes.LOG3] = 375 * 4
 	gs.ActionConstCost[opcodes.LOG4] = 375 * 5
-	gs.ActionConstCost[opcodes.SLOAD] = 200
+	gs.ActionConstCost[opcodes.SLOAD] = 800
 	gs.ActionConstCost[opcodes.SSTORE] = 5000
 	gs.ActionConstCost[opcodes.SELFDESTRUCT] = 30000
 

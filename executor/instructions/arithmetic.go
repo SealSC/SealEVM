@@ -181,9 +181,9 @@ func expAction(ctx *instructionsContext) ([]byte, error) {
 	if e.Sign() > 0 {
 		gasCost := uint64((e.BitLen() + 7) / 8) * ctx.gasSetting.DynamicCost.EXPBytesCost
 		if gasLeft < gasCost {
-			gasLeft -= gasCost
-		} else {
 			return nil, evmErrors.OutOfGas
+		} else {
+			gasLeft -= gasCost
 		}
 
 		ctx.gasRemaining.SetUint64(gasLeft)
