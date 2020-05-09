@@ -21,7 +21,7 @@ import (
 )
 
 func Keccak256(data []byte) []byte {
-	hasher := sha3.NewLegacyKeccak512()
+	hasher := sha3.NewLegacyKeccak256()
 	hasher.Write(data)
 	return hasher.Sum(nil)
 }
