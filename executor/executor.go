@@ -22,6 +22,7 @@ import (
 	"SealEVM/executor/instructions"
 	"SealEVM/memory"
 	"SealEVM/opcodes"
+	"SealEVM/precompiledContracts"
 	"SealEVM/stack"
 	"SealEVM/storageCache"
 )
@@ -68,7 +69,32 @@ func (e *EVM) subResult(contractRet []byte, gasLeft uint64, cache storageCache.R
 	}
 }
 
+func (e *EVM) executePreCompiled(addr uint64, input []byte) ([]byte, uint64, error) {
+	contract := precompiledContracts.Contracts[addr]
+	gasCost := contract.GasCost(input)
+	gasLeft := e.instructions.GetGasLeft()
+
+	if gasLeft < gasCost {
+		return nil, gasLeft, evmErrors.OutOfGas
+	}
+
+	ret, err := contract.Execute(input)
+	gasLeft -= gasCost
+	e.instructions.SetGasLimit(gasLeft)
+	return ret, gasLeft, err
+}
+
 func (e *EVM) ExecuteContract() ([]byte, uint64, error) {
+	contractAddr := e.context.Contract.Namespace
+
+	if contractAddr != nil {
+		if contractAddr.IsUint64() {
+			addr := contractAddr.Uint64()
+			if addr < precompiledContracts.ContractsMaxAddress {
+				return e.executePreCompiled(addr, e.context.Message.Data)
+			}
+		}
+	}
 	ret, gasLeft, err := e.instructions.ExecuteContract()
 	e.resultNotify(ret, gasLeft, e.storage.ResultCache, err)
 	return ret, gasLeft, err
@@ -114,6 +140,7 @@ func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 }
 
 func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
+	//todo: implement create operation code
 	return nil, nil
 }
 

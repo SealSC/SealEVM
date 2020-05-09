@@ -31,6 +31,8 @@ var InvalidJumpDest = errors.New("invalid jump dest")
 var JumpToNoneOpCode = errors.New("jump to non-OpCode")
 var OutOfGas = errors.New("out of gas")
 
+var BN256BadPairingInput = errors.New("bn256 bad pairing input")
+
 func InvalidOpCode(code byte) error {
 	return errors.New(fmt.Sprintf("invalid op code: 0x%X", code))
 }

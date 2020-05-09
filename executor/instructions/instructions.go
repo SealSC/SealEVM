@@ -99,6 +99,7 @@ type opCodeInstruction struct {
 type IInstructions interface {
 	ExecuteContract() ([]byte, uint64, error)
 	SetGasLimit(uint64)
+	GetGasLeft() uint64
 }
 
 var instructionTable [opcodes.MaxOpCodesCount]opCodeInstruction
@@ -125,6 +126,10 @@ func (i *instructionsContext) memoryGasCostAndMalloc(offset *evmInt256.Int, size
 
 func (i *instructionsContext) SetGasLimit(gasLimit uint64) {
 	i.gasRemaining.SetUint64(gasLimit)
+}
+
+func (i *instructionsContext) GetGasLeft() uint64 {
+	return i.gasRemaining.Uint64()
 }
 
 func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {

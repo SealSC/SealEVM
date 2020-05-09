@@ -22,6 +22,7 @@ import (
 	"SealEVM/evmInt256"
 )
 
+//todo: improve cache struct, because they has namespace-liked prefix.
 type Cache map[string] *evmInt256.Int
 
 type balance struct {
@@ -85,7 +86,7 @@ func (s *StorageCache) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int
 		return nil, evmErrors.StorageNotInitialized
 	}
 
-	cacheKey := n.String() + ":" +  k.String()
+	cacheKey := n.String() + "-" +  k.String()
 	i, exists := s.ResultCache.CachedData[cacheKey]
 	if exists {
 		return i, nil
@@ -103,7 +104,7 @@ func (s *StorageCache) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int
 }
 
 func (s *StorageCache) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int)  {
-	cacheString := n.String() + "-" +  k.String()
+	cacheString := n.String() + "-" + k.String()
 	s.ResultCache.CachedData[cacheString] = v
 }
 

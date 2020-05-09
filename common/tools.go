@@ -61,3 +61,27 @@ func GetDataFrom(src []byte, offset uint64, size uint64) []byte {
 	copy(ret, src[offset:end])
 	return ret
 }
+
+func LeftPaddingSlice(src []byte, toSize int) []byte {
+	sLen := len(src)
+	if toSize <= sLen {
+		return src
+	}
+
+	ret := make([]byte, toSize, toSize)
+	copy(ret[toSize - sLen:], src)
+
+	return ret
+}
+
+func RightPaddingSlice(src []byte, toSize int) []byte {
+	sLen := len(src)
+	if toSize <= sLen {
+		return src
+	}
+
+	ret := make([]byte, toSize, toSize)
+	copy(ret, src)
+
+	return ret
+}
