@@ -88,6 +88,16 @@ func (e *EVM) ExecuteContract() ([]byte, uint64, error) {
 	contractAddr := e.context.Contract.Namespace
 
 	if contractAddr != nil {
+		//transfer first
+		msg := e.context.Message
+		if e.storage.ExternalStorage.CanTransfer(msg.Caller, contractAddr, msg.Value) {
+			e.storage.BalanceModify(msg.Caller, msg.Value, true)
+			e.storage.BalanceModify(contractAddr, msg.Value, false)
+		} else {
+			return nil, e.instructions.GetGasLeft(), evmErrors.InsufficientBalance
+		}
+
+		//check if is precompiled
 		if contractAddr.IsUint64() {
 			addr := contractAddr.Uint64()
 			if addr < precompiledContracts.ContractsMaxAddress {
@@ -95,6 +105,7 @@ func (e *EVM) ExecuteContract() ([]byte, uint64, error) {
 			}
 		}
 	}
+
 	ret, gasLeft, err := e.instructions.ExecuteContract()
 	e.resultNotify(ret, gasLeft, e.storage.ResultCache, err)
 	return ret, gasLeft, err

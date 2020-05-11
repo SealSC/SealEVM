@@ -136,7 +136,10 @@ func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
 	i.pc = 0
 	contract := i.environment.Contract
 
-	//todo: check if program is precompiled or nil contract
+	if len(contract.Code) == 0 {
+		return nil, i.gasRemaining.Uint64(), nil
+	}
+
 	var ret []byte
 	var err error = nil
 

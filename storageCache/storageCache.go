@@ -49,6 +49,8 @@ type IExternalStorage interface {
 	CreateAddress(caller *evmInt256.Int) []byte
 	CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int) []byte
 
+	CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool
+
 	Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error)
 }
 
