@@ -16,6 +16,8 @@
 
 package precompiledContracts
 
+import "SealEVM/evmInt256"
+
 type PrecompiledContract interface {
 	GasCost(input []byte) uint64
 	Execute(input []byte) ([]byte, error)
@@ -32,4 +34,13 @@ var Contracts = [ContractsMaxAddress] PrecompiledContract{
 	7: &bn256ScalarMulIstanbul{},
 	8: &bn256PairingIstanbul{},
 	9: &blake2F{},
+}
+
+func IsPrecompiledContract(address *evmInt256.Int) bool {
+	if address.IsUint64() {
+		addr := address.Uint64()
+		return addr < ContractsMaxAddress
+	}
+
+	return false
 }

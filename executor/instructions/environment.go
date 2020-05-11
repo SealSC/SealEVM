@@ -21,6 +21,7 @@ import (
 	"SealEVM/evmErrors"
 	"SealEVM/evmInt256"
 	"SealEVM/opcodes"
+	"SealEVM/precompiledContracts"
 	"math/big"
 )
 
@@ -257,6 +258,12 @@ func gasPriceAction(ctx *instructionsContext) ([]byte, error) {
 
 func extCodeSizeAction(ctx *instructionsContext) ([]byte, error) {
 	addr := ctx.stack.Peek()
+
+	if precompiledContracts.IsPrecompiledContract(addr) {
+		addr.SetUint64(0)
+		return nil, nil
+	}
+
 	s, err := ctx.storage.GetCodeSize(addr)
 	if err != nil {
 		return nil, err
@@ -270,6 +277,10 @@ func extCodeCopyAction(ctx *instructionsContext) ([]byte, error) {
 	mOffset := ctx.stack.Pop()
 	dOffset := ctx.stack.Pop()
 	size := ctx.stack.Pop()
+
+	if precompiledContracts.IsPrecompiledContract(addr) {
+		return nil, nil
+	}
 
 	code, err := ctx.storage.GetCode(addr)
 	if err != nil {
@@ -314,12 +325,22 @@ func returnDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 
 func extCodeHashAction(ctx *instructionsContext) ([]byte, error) {
 	addr:= ctx.stack.Peek()
+
+	if precompiledContracts.IsPrecompiledContract(addr) {
+		addr.SetBytes(common.ZeroHash)
+		return nil, nil
+	}
+
 	codeHash, err := ctx.storage.GetCodeHash(addr)
 	if err != nil {
 		return nil, err
 	}
 
-	addr.Set(codeHash.Int)
+	if codeHash == nil {
+		addr.SetUint64(0)
+	} else {
+		addr.Set(codeHash.Int)
+	}
 	return nil, nil
 }
 

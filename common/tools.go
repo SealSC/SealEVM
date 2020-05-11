@@ -17,11 +17,17 @@
 package common
 
 import (
+	"SealEVM/crypto/hashes"
 	"SealEVM/evmInt256"
 )
 
 const (
 	hashLength = 32
+)
+
+var (
+	BlankHash = make([]byte, hashLength, hashLength)
+	ZeroHash = hashes.Keccak256(nil)
 )
 
 func EVMIntToHashBytes(i *evmInt256.Int) [hashLength]byte {

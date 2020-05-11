@@ -40,7 +40,7 @@ type log struct {
 type LogCache map[string] []log
 
 type IExternalStorage interface {
-	Balance(address *evmInt256.Int) (*evmInt256.Int, error)
+	GetBalance(address *evmInt256.Int) (*evmInt256.Int, error)
 	GetCode(address *evmInt256.Int) ([]byte, error)
 	GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error)
 	GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error)
@@ -64,6 +64,16 @@ type ResultCache struct {
 type StorageCache struct {
 	ResultCache     ResultCache
 	ExternalStorage IExternalStorage
+	readOnlyCache   readOnlyCache
+}
+
+type CodeCache map[string] []byte
+
+type readOnlyCache struct {
+	Code      CodeCache
+	CodeSize  Cache
+	CodeHash  Cache
+	BlockHash Cache
 }
 
 func New(extStorage IExternalStorage) *StorageCache {
@@ -76,6 +86,12 @@ func New(extStorage IExternalStorage) *StorageCache {
 			Destructs:    Cache{},
 		},
 		ExternalStorage: extStorage,
+		readOnlyCache: readOnlyCache{
+			Code:      CodeCache{},
+			CodeSize:  Cache{},
+			CodeHash:  Cache{},
+			BlockHash: Cache{},
+		},
 	}
 
 	return s
@@ -145,26 +161,77 @@ func (s *StorageCache) Destruct(address *evmInt256.Int) {
 	s.ResultCache.Destructs[address.String()] = address
 }
 
-//todo: cache all the below methods's result
+type commonGetterFunc func(*evmInt256.Int) (*evmInt256.Int, error)
+func (s *StorageCache) commonGetter(key *evmInt256.Int, cache Cache, getterFunc commonGetterFunc) (*evmInt256.Int, error) {
+	keyStr := key.String()
+	if b, exists := cache[keyStr]; exists {
+		return evmInt256.FromBigInt(b.Int), nil
+	}
+
+	b, err := getterFunc(key)
+	if err == nil {
+		cache[keyStr] = b
+	}
+
+	return b, err
+}
+
 func (s *StorageCache) Balance(address *evmInt256.Int) (*evmInt256.Int, error) {
-	return s.ExternalStorage.Balance(address)
+	return s.ExternalStorage.GetBalance(address)
 }
 
 func (s *StorageCache) GetCode(address *evmInt256.Int) ([]byte, error) {
-	//todo: handle precompiled-contract and any other special addresses code
-	return s.ExternalStorage.GetCode(address)
+	keyStr := address.String()
+	if b, exists := s.readOnlyCache.Code[keyStr]; exists {
+		return b, nil
+	}
+
+	b, err := s.ExternalStorage.GetCode(address)
+	if err == nil {
+		s.readOnlyCache.Code[keyStr] = b
+	}
+
+	return b, err
 }
 
 func (s *StorageCache) GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error) {
-	//todo: handle precompiled-contract and any other special addresses code size
-	return s.ExternalStorage.GetCodeSize(address)
+	keyStr := address.String()
+	if size, exists := s.readOnlyCache.CodeSize[keyStr]; exists {
+		return size, nil
+	}
+
+	size, err := s.ExternalStorage.GetCodeSize(address)
+	if err == nil {
+		s.readOnlyCache.CodeSize[keyStr] = size
+	}
+
+	return size, err
 }
 
 func (s *StorageCache) GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error) {
-	//todo: handle precompiled-contract and any other special addresses code hash
-	return s.ExternalStorage.GetCodeHash(address)
+	keyStr := address.String()
+	if hash, exists := s.readOnlyCache.CodeHash[keyStr]; exists {
+		return hash, nil
+	}
+
+	hash, err := s.ExternalStorage.GetCodeHash(address)
+	if err == nil {
+		s.readOnlyCache.CodeHash[keyStr] = hash
+	}
+
+	return hash, err
 }
 
 func (s *StorageCache) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
-	return s.ExternalStorage.GetBlockHash(block)
+	keyStr := block.String()
+	if hash, exists := s.readOnlyCache.BlockHash[keyStr]; exists {
+		return hash, nil
+	}
+
+	hash, err := s.ExternalStorage.GetBlockHash(block)
+	if err == nil {
+		s.readOnlyCache.BlockHash[keyStr] = hash
+	}
+
+	return hash, err
 }
