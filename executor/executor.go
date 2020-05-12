@@ -24,21 +24,21 @@ import (
 	"SealEVM/opcodes"
 	"SealEVM/precompiledContracts"
 	"SealEVM/stack"
-	"SealEVM/storageCache"
+	"SealEVM/storage"
 )
 
-type EVMResultCallback func(contractRet[]byte, gasLeft uint64, result storageCache.ResultCache, err error)
+type EVMResultCallback func(contractRet[]byte, gasLeft uint64, result storage.ResultCache, err error)
 type EVMParam struct {
-	MaxStackDepth   int
-	ExternalStore   storageCache.IExternalStorage
-	ResultCallback  EVMResultCallback
-	Context         environment.Context
+	MaxStackDepth  int
+	ExternalStore  storage.IExternalStorage
+	ResultCallback EVMResultCallback
+	Context        environment.Context
 }
 
 type EVM struct {
 	stack           *stack.Stack
 	memory          *memory.Memory
-	storage         *storageCache.StorageCache
+	storage         *storage.Storage
 	context         environment.Context
 	instructions    instructions.IInstructions
 	resultNotify    EVMResultCallback
@@ -50,12 +50,12 @@ func Load() {
 
 func New(param EVMParam) *EVM {
 	evm := &EVM{
-		stack:          stack.New(param.MaxStackDepth),
-		memory:         memory.New(),
-		storage:        storageCache.New(param.ExternalStore),
-		context:        param.Context,
-		instructions:   nil,
-		resultNotify:   param.ResultCallback,
+		stack:        stack.New(param.MaxStackDepth),
+		memory:       memory.New(),
+		storage:      storage.New(param.ExternalStore),
+		context:      param.Context,
+		instructions: nil,
+		resultNotify: param.ResultCallback,
 	}
 
 	evm.instructions = instructions.New(evm, evm.stack, evm.memory, evm.storage, evm.context, nil, closure)
@@ -63,9 +63,9 @@ func New(param EVMParam) *EVM {
 	return evm
 }
 
-func (e *EVM) subResult(contractRet []byte, gasLeft uint64, cache storageCache.ResultCache, err error) {
+func (e *EVM) subResult(contractRet []byte, gasLeft uint64, cache storage.ResultCache, err error) {
 	if err == nil {
-		//todo: merge cache to local
+		storage.MergeResultCache(&cache, &e.storage.ResultCache)
 	}
 }
 

@@ -23,7 +23,7 @@ import (
 	"SealEVM/memory"
 	"SealEVM/opcodes"
 	"SealEVM/stack"
-	"SealEVM/storageCache"
+	"SealEVM/storage"
 )
 
 type DynamicGasCostSetting struct {
@@ -73,7 +73,7 @@ type ConstOpGasCostSetting [opcodes.MaxOpCodesCount] uint64
 type instructionsContext struct {
 	stack       *stack.Stack
 	memory      *memory.Memory
-	storage     *storageCache.StorageCache
+	storage     *storage.Storage
 	environment environment.Context
 
 	vm              interface{}
@@ -208,7 +208,7 @@ func New(
 	vm interface{},
 	stack *stack.Stack,
 	memory *memory.Memory,
-	storage *storageCache.StorageCache,
+	storage *storage.Storage,
 	context environment.Context,
 	gasSetting *GasSetting,
 	closureExecute ClosureExecute) IInstructions {
