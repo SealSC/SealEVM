@@ -22,60 +22,10 @@ import (
 	"SealEVM/evmInt256"
 )
 
-//todo: improve cache struct, because they has namespace-liked prefix.
-type Cache map[string] *evmInt256.Int
-
-type balance struct {
-	Address *evmInt256.Int
-	Balance *evmInt256.Int
-}
-
-type BalanceCache map[string] *balance
-
-type log struct {
-	Topics  [][]byte
-	Data    []byte
-	Context environment.Context
-}
-type LogCache map[string] []log
-
-type IExternalStorage interface {
-	GetBalance(address *evmInt256.Int) (*evmInt256.Int, error)
-	GetCode(address *evmInt256.Int) ([]byte, error)
-	GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error)
-	GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error)
-	GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
-
-	CreateAddress(caller *evmInt256.Int) []byte
-	CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int) []byte
-
-	CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool
-
-	Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error)
-}
-
-type ResultCache struct {
-	OriginalData    Cache
-	CachedData      Cache
-
-	Balance         BalanceCache
-	Logs            LogCache
-	Destructs       Cache
-}
-
 type StorageCache struct {
 	ResultCache     ResultCache
 	ExternalStorage IExternalStorage
 	readOnlyCache   readOnlyCache
-}
-
-type CodeCache map[string] []byte
-
-type readOnlyCache struct {
-	Code      CodeCache
-	CodeSize  Cache
-	CodeHash  Cache
-	BlockHash Cache
 }
 
 func New(extStorage IExternalStorage) *StorageCache {

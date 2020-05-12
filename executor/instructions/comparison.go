@@ -121,6 +121,10 @@ func eqAction(ctx *instructionsContext) ([]byte, error) {
 func isZeroAction(ctx *instructionsContext) ([]byte, error) {
 	x := ctx.stack.Peek()
 
-	x.IsZero()
+	if x.IsZero() {
+		x.SetUint64(1)
+	} else {
+		x.SetUint64(0)
+	}
 	return nil, nil
 }
