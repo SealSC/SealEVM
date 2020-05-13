@@ -56,7 +56,7 @@ func loadLog() {
 					return
 				}
 
-				ctx.storage.Log(ctx.environment.Contract.Namespace, topics, log, ctx.environment)
+				ctx.storage.Log(ctx.environment.Contract.Namespace, topics, log, *ctx.environment)
 				return nil, nil
 			},
 

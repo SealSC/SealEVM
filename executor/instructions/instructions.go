@@ -74,7 +74,7 @@ type instructionsContext struct {
 	stack       *stack.Stack
 	memory      *memory.Memory
 	storage     *storage.Storage
-	environment environment.Context
+	environment *environment.Context
 
 	vm              interface{}
 
@@ -169,10 +169,13 @@ func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
 
 		ret, err = instruction.action(i)
 
+		if instruction.returns {
+			i.lastReturn = ret
+		}
+
 		if err != nil {
 			break
 		}
-
 
 		if !instruction.jumps {
 			i.pc += 1
@@ -209,7 +212,7 @@ func New(
 	stack *stack.Stack,
 	memory *memory.Memory,
 	storage *storage.Storage,
-	context environment.Context,
+	context *environment.Context,
 	gasSetting *GasSetting,
 	closureExecute ClosureExecute) IInstructions {
 

@@ -19,6 +19,7 @@ package environment
 import "SealEVM/evmInt256"
 
 type Transaction struct {
+	TxHash      []byte
 	Origin      *evmInt256.Int
 	GasPrice    *evmInt256.Int
 	GasLimit    *evmInt256.Int

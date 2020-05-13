@@ -19,6 +19,7 @@ package executor
 import (
 	"SealEVM/environment"
 	"SealEVM/evmErrors"
+	"SealEVM/evmInt256"
 	"SealEVM/executor/instructions"
 	"SealEVM/memory"
 	"SealEVM/opcodes"
@@ -32,14 +33,14 @@ type EVMParam struct {
 	MaxStackDepth  int
 	ExternalStore  storage.IExternalStorage
 	ResultCallback EVMResultCallback
-	Context        environment.Context
+	Context        *environment.Context
 }
 
 type EVM struct {
 	stack           *stack.Stack
 	memory          *memory.Memory
 	storage         *storage.Storage
-	context         environment.Context
+	context         *environment.Context
 	instructions    instructions.IInstructions
 	resultNotify    EVMResultCallback
 }
@@ -49,7 +50,7 @@ func Load() {
 }
 
 func New(param EVMParam) *EVM {
-	evm := &EVM{
+	evm := &EVM {
 		stack:        stack.New(param.MaxStackDepth),
 		memory:       memory.New(),
 		storage:      storage.New(param.ExternalStore),
@@ -111,12 +112,12 @@ func (e *EVM) ExecuteContract() ([]byte, uint64, error) {
 	return ret, gasLeft, err
 }
 
-func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
+func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 	newEVM := New(EVMParam {
 		MaxStackDepth:  1024,
 		ExternalStore:  e.storage.ExternalStorage,
 		ResultCallback: e.subResult,
-		Context:        environment.Context {
+		Context:        &environment.Context {
 			Block:          e.context.Block,
 			Transaction:    e.context.Transaction,
 			Message:        environment.Message {
@@ -130,6 +131,14 @@ func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 		Code:       param.ContractCode,
 		Hash:       param.ContractHash,
 	}
+
+	return newEVM
+}
+
+func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
+	newEVM := e.getClosureDefaultEVM(param)
+
+	//todo: implement static call
 
 	//set storage namespace and call value
 	switch param.OpCode {
@@ -151,8 +160,23 @@ func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 }
 
 func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
-	//todo: implement create operation code
-	return nil, nil
+	var addr *evmInt256.Int
+	if opcodes.CREATE == param.OpCode {
+		addr = e.storage.ExternalStorage.CreateAddress(e.context.Message.Caller, e.context.Transaction)
+	} else {
+		addr = e.storage.ExternalStorage.CreateFixedAddress(e.context.Message.Caller, param.CreateSalt, e.context.Transaction)
+	}
+
+	newEVM := e.getClosureDefaultEVM(param)
+
+	newEVM.context.Contract.Namespace = addr
+	newEVM.context.Message.Value = param.CallValue
+	newEVM.context.Message.Caller = e.context.Contract.Namespace
+
+	ret, gasLeft, err := newEVM.instructions.ExecuteContract()
+
+	e.instructions.SetGasLimit(gasLeft)
+	return ret, err
 }
 
 func closure(param instructions.ClosureParam) ([]byte, error){

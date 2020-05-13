@@ -42,6 +42,7 @@ func loadMisc() {
 		requireStackDepth: 2,
 		enabled:           true,
 		finished:          true,
+		returns:           true,
 	}
 
 	instructionTable[opcodes.SELFDESTRUCT] =  opCodeInstruction {

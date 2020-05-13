@@ -42,36 +42,42 @@ func loadClosure() {
 		action:            callAction,
 		requireStackDepth: 7,
 		enabled:           true,
+		returns:           true,
 	}
 
 	instructionTable[opcodes.CALLCODE] = opCodeInstruction {
 		action:            callCodeAction,
 		requireStackDepth: 7,
 		enabled:           true,
+		returns:           true,
 	}
 
 	instructionTable[opcodes.DELEGATECALL] = opCodeInstruction {
 		action:            delegateCallAction,
 		requireStackDepth: 6,
 		enabled:           true,
+		returns:           true,
 	}
 
 	instructionTable[opcodes.STATICCALL] = opCodeInstruction {
 		action:            staticCallAction,
 		requireStackDepth: 6,
 		enabled:           true,
+		returns:           true,
 	}
 
 	instructionTable[opcodes.CREATE] = opCodeInstruction {
 		action:            createAction,
 		requireStackDepth: 3,
 		enabled:           true,
+		returns:           true,
 	}
 
 	instructionTable[opcodes.CREATE2] = opCodeInstruction {
 		action:            create2Action,
 		requireStackDepth: 2,
 		enabled:           true,
+		returns:           true,
 	}
 }
 
@@ -176,7 +182,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		OpCode:       opCode,
 		GasRemaining: ctx.gasRemaining,
 		ContractCode: code,
-		CallData:     code,
+		CallData:     []byte{},
 		CallValue:    v,
 		CreateSalt:   salt,
 	}

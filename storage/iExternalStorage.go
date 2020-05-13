@@ -16,7 +16,10 @@
 
 package storage
 
-import "SealEVM/evmInt256"
+import (
+	"SealEVM/environment"
+	"SealEVM/evmInt256"
+)
 
 type IExternalStorage interface {
 	GetBalance(address *evmInt256.Int) (*evmInt256.Int, error)
@@ -25,8 +28,8 @@ type IExternalStorage interface {
 	GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error)
 	GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
 
-	CreateAddress(caller *evmInt256.Int) []byte
-	CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int) []byte
+	CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int
+	CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, tx environment.Transaction) *evmInt256.Int
 
 	CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool
 
