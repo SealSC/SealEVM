@@ -79,6 +79,7 @@ type instructionsContext struct {
 	vm              interface{}
 
 	pc              uint64
+	readOnly        bool
 	gasSetting      *GasSetting
 	lastReturn      []byte
 	gasRemaining    *evmInt256.Int
@@ -90,16 +91,21 @@ type opCodeInstruction struct {
 	action            opCodeAction
 	requireStackDepth int
 	willIncreaseStack int
-	enabled           bool
-	jumps             bool
-	returns           bool
-	finished          bool
+
+	//flags
+	enabled  bool
+	jumps    bool
+	isWriter bool
+	returns  bool
+	finished bool
 }
 
 type IInstructions interface {
 	ExecuteContract() ([]byte, uint64, error)
 	SetGasLimit(uint64)
 	GetGasLeft() uint64
+	SetReadOnly()
+	IsReadOnly() bool
 }
 
 var instructionTable [opcodes.MaxOpCodesCount]opCodeInstruction
@@ -128,6 +134,14 @@ func (i *instructionsContext) SetGasLimit(gasLimit uint64) {
 	i.gasRemaining.SetUint64(gasLimit)
 }
 
+func (i *instructionsContext) SetReadOnly() {
+	i.readOnly = true
+}
+
+func (i *instructionsContext) IsReadOnly() bool {
+	return i.readOnly
+}
+
 func (i *instructionsContext) GetGasLeft() uint64 {
 	return i.gasRemaining.Uint64()
 }
@@ -149,6 +163,10 @@ func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
 		instruction := instructionTable[opCode]
 		if !instruction.enabled {
 			return nil, i.gasRemaining.Uint64(), evmErrors.InvalidOpCode(opCode)
+		}
+
+		if instruction.isWriter && i.readOnly {
+			return nil, i.gasRemaining.Uint64(), evmErrors.WriteProtection
 		}
 
 		err = i.stack.CheckStackDepth(instruction.requireStackDepth, instruction.willIncreaseStack)

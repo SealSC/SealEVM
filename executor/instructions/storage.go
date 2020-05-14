@@ -31,6 +31,7 @@ func loadStorage() {
 		action:            sStoreAction,
 		requireStackDepth: 2,
 		enabled:           true,
+		isWriter:          true,
 	}
 }
 

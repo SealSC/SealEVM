@@ -71,6 +71,7 @@ func loadClosure() {
 		requireStackDepth: 3,
 		enabled:           true,
 		returns:           true,
+		isWriter:          true,
 	}
 
 	instructionTable[opcodes.CREATE2] = opCodeInstruction {
@@ -78,6 +79,7 @@ func loadClosure() {
 		requireStackDepth: 2,
 		enabled:           true,
 		returns:           true,
+		isWriter:          true,
 	}
 }
 

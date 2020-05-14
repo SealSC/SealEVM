@@ -50,6 +50,7 @@ func loadMisc() {
 		requireStackDepth: 1,
 		enabled:           true,
 		finished:          true,
+		isWriter:          true,
 	}
 }
 

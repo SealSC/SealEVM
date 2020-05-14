@@ -85,19 +85,29 @@ func (e *EVM) executePreCompiled(addr uint64, input []byte) ([]byte, uint64, err
 	return ret, gasLeft, err
 }
 
-func (e *EVM) ExecuteContract() ([]byte, uint64, error) {
+func (e *EVM) ExecuteContract(doTransfer bool) ([]byte, uint64, error) {
 	contractAddr := e.context.Contract.Namespace
 
-	if contractAddr != nil {
-		//transfer first
+	if doTransfer {
 		msg := e.context.Message
-		if e.storage.ExternalStorage.CanTransfer(msg.Caller, contractAddr, msg.Value) {
-			e.storage.BalanceModify(msg.Caller, msg.Value, true)
-			e.storage.BalanceModify(contractAddr, msg.Value, false)
-		} else {
-			return nil, e.instructions.GetGasLeft(), evmErrors.InsufficientBalance
+
+		//doing transfer for non-zero value
+		if msg.Value.Sign() != 0 {
+			if e.instructions.IsReadOnly() {
+				return nil, e.instructions.GetGasLeft(), evmErrors.WriteProtection
+			}
+
+			if e.storage.ExternalStorage.CanTransfer(msg.Caller, contractAddr, msg.Value) {
+				e.storage.BalanceModify(msg.Caller, msg.Value, true)
+				e.storage.BalanceModify(contractAddr, msg.Value, false)
+			} else {
+				return nil, e.instructions.GetGasLeft(), evmErrors.InsufficientBalance
+			}
 		}
 
+	}
+
+	if contractAddr != nil {
 		//check if is precompiled
 		if contractAddr.IsUint64() {
 			addr := contractAddr.Uint64()
@@ -138,8 +148,6 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 	newEVM := e.getClosureDefaultEVM(param)
 
-	//todo: implement static call
-
 	//set storage namespace and call value
 	switch param.OpCode {
 	case opcodes.CALLCODE:
@@ -153,7 +161,11 @@ func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 		newEVM.context.Message.Caller = e.context.Message.Caller
 	}
 
-	ret, gasLeft, err := newEVM.instructions.ExecuteContract()
+	if param.OpCode == opcodes.STATICCALL || e.instructions.IsReadOnly() {
+		newEVM.instructions.SetReadOnly()
+	}
+
+	ret, gasLeft, err := newEVM.ExecuteContract(opcodes.CALL == param.OpCode)
 
 	e.instructions.SetGasLimit(gasLeft)
 	return ret, err
@@ -173,7 +185,7 @@ func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
 	newEVM.context.Message.Value = param.CallValue
 	newEVM.context.Message.Caller = e.context.Contract.Namespace
 
-	ret, gasLeft, err := newEVM.instructions.ExecuteContract()
+	ret, gasLeft, err := newEVM.ExecuteContract(true)
 
 	e.instructions.SetGasLimit(gasLeft)
 	return ret, err

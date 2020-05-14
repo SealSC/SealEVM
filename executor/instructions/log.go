@@ -62,6 +62,7 @@ func loadLog() {
 
 			requireStackDepth: topicCount + 2,
 			enabled:           true,
+			isWriter:          true,
 		}
 	}
 }
