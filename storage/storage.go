@@ -31,8 +31,8 @@ type Storage struct {
 func New(extStorage IExternalStorage) *Storage {
 	s := &Storage{
 		ResultCache: ResultCache{
-			OriginalData: Cache{},
-			CachedData:   Cache{},
+			OriginalData: CacheUnderNamespace{},
+			CachedData:   CacheUnderNamespace{},
 			Balance:      BalanceCache{},
 			Logs:         LogCache{},
 			Destructs:    Cache{},
@@ -54,26 +54,25 @@ func (s *Storage) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, err
 		return nil, evmErrors.StorageNotInitialized
 	}
 
-	cacheKey := n.String() + "-" +  k.String()
-	i, exists := s.ResultCache.CachedData[cacheKey]
-	if exists {
-		return i, nil
-	}
+	nsStr := n.String()
+	keyStr := k.String()
 
-	i, err := s.ExternalStorage.Load(n, k)
-	if err != nil {
-		return nil, evmErrors.NoSuchDataInTheStorage(err)
-	}
+	i := s.ResultCache.CachedData.Get(nsStr, keyStr)
+	if i == nil {
+		i, err := s.ExternalStorage.Load(n, k)
+		if err != nil {
+			return nil, evmErrors.NoSuchDataInTheStorage(err)
+		}
 
-	s.ResultCache.OriginalData[cacheKey] = evmInt256.FromBigInt(i.Int)
-	s.ResultCache.CachedData[cacheKey] = i
+		s.ResultCache.OriginalData.Set(nsStr, keyStr, i)
+		s.ResultCache.CachedData.Set(nsStr, keyStr, i)
+	}
 
 	return i, nil
 }
 
 func (s *Storage) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int)  {
-	cacheString := n.String() + "-" + k.String()
-	s.ResultCache.CachedData[cacheString] = v
+	s.ResultCache.CachedData.Set(n.String(), k.String(), v)
 }
 
 func (s *Storage) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, neg bool) {

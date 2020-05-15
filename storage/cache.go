@@ -21,8 +21,24 @@ import (
 	"SealEVM/evmInt256"
 )
 
-//todo: improve cache struct, because they has namespace-liked prefix.
 type Cache map[string] *evmInt256.Int
+type CacheUnderNamespace map[string] Cache
+
+func (c CacheUnderNamespace) Get(namespace string, key string) *evmInt256.Int {
+	if c[namespace] == nil {
+		return nil
+	} else {
+		return c[namespace][key]
+	}
+}
+
+func (c CacheUnderNamespace) Set(namespace string, key string, v *evmInt256.Int) {
+	if c[namespace] == nil {
+		c[namespace] = Cache{}
+	}
+
+	c[namespace][key] = v
+}
 
 type balance struct {
 	Address *evmInt256.Int
@@ -40,8 +56,8 @@ type log struct {
 type LogCache map[string] []log
 
 type ResultCache struct {
-	OriginalData    Cache
-	CachedData      Cache
+	OriginalData    CacheUnderNamespace
+	CachedData      CacheUnderNamespace
 
 	Balance         BalanceCache
 	Logs            LogCache
