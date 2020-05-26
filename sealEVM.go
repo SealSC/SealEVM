@@ -14,13 +14,13 @@
  *  limitations under the License.
  */
 
-package executor
+package SealEVM
 
 import (
 	"SealEVM/environment"
 	"SealEVM/evmErrors"
 	"SealEVM/evmInt256"
-	"SealEVM/executor/instructions"
+	"SealEVM/instructions"
 	"SealEVM/memory"
 	"SealEVM/opcodes"
 	"SealEVM/precompiledContracts"
@@ -37,12 +37,12 @@ type EVMParam struct {
 }
 
 type EVM struct {
-	stack           *stack.Stack
-	memory          *memory.Memory
-	storage         *storage.Storage
-	context         *environment.Context
-	instructions    instructions.IInstructions
-	resultNotify    EVMResultCallback
+	stack        *stack.Stack
+	memory       *memory.Memory
+	storage      *storage.Storage
+	context      *environment.Context
+	instructions instructions.IInstructions
+	resultNotify EVMResultCallback
 }
 
 func Load() {

@@ -25,7 +25,7 @@ import (
 func loadLog() {
 	for i := opcodes.LOG0; i <= opcodes.LOG4; i++ {
 		topicCount := int(i - opcodes.LOG0)
-		instructionTable[i] = opCodeInstruction {
+		instructionTable[i] = opCodeInstruction{
 			action: func(ctx *instructionsContext) (bytes []byte, err error) {
 				mOffset := ctx.stack.Pop()
 				lSize := ctx.stack.Pop()

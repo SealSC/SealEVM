@@ -22,73 +22,73 @@ import (
 )
 
 func loadArithmetic() {
-	instructionTable[opcodes.STOP] = opCodeInstruction {
+	instructionTable[opcodes.STOP] = opCodeInstruction{
 		action:            stopAction,
 		enabled:           true,
 		finished:          true,
 	}
 
-	instructionTable[opcodes.ADD] = opCodeInstruction {
+	instructionTable[opcodes.ADD] = opCodeInstruction{
 		action:            addAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.MUL] = opCodeInstruction {
+	instructionTable[opcodes.MUL] = opCodeInstruction{
 		action:            mulAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.SUB] = opCodeInstruction {
+	instructionTable[opcodes.SUB] = opCodeInstruction{
 		action:            subAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.DIV] = opCodeInstruction {
+	instructionTable[opcodes.DIV] = opCodeInstruction{
 		action:            divAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.SDIV] = opCodeInstruction {
+	instructionTable[opcodes.SDIV] = opCodeInstruction{
 		action:            sDivAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.MOD] = opCodeInstruction {
+	instructionTable[opcodes.MOD] = opCodeInstruction{
 		action:            modAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.SMOD] = opCodeInstruction {
+	instructionTable[opcodes.SMOD] = opCodeInstruction{
 		action:            sModAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.ADDMOD] = opCodeInstruction {
+	instructionTable[opcodes.ADDMOD] = opCodeInstruction{
 		action:            addModAction,
 		requireStackDepth: 3,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.MULMOD] = opCodeInstruction {
+	instructionTable[opcodes.MULMOD] = opCodeInstruction{
 		action:            mulModAction,
 		requireStackDepth: 3,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.EXP] = opCodeInstruction {
+	instructionTable[opcodes.EXP] = opCodeInstruction{
 		action:            expAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.SIGNEXTEND] = opCodeInstruction {
+	instructionTable[opcodes.SIGNEXTEND] = opCodeInstruction{
 		action:            signExtendAction,
 		requireStackDepth: 2,
 		enabled:           true,

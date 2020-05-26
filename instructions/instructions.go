@@ -78,12 +78,12 @@ type instructionsContext struct {
 
 	vm              interface{}
 
-	pc              uint64
-	readOnly        bool
-	gasSetting      *GasSetting
-	lastReturn      []byte
-	gasRemaining    *evmInt256.Int
-	closureExec     ClosureExecute
+	pc           uint64
+	readOnly     bool
+	gasSetting   *GasSetting
+	lastReturn   []byte
+	gasRemaining *evmInt256.Int
+	closureExec  ClosureExecute
 }
 
 type opCodeAction func(ctx *instructionsContext) ([]byte, error)

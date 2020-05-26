@@ -26,139 +26,139 @@ import (
 )
 
 func loadEnvironment() {
-	instructionTable[opcodes.ADDRESS] = opCodeInstruction {
+	instructionTable[opcodes.ADDRESS] = opCodeInstruction{
 		action:            addressAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.BALANCE] = opCodeInstruction {
+	instructionTable[opcodes.BALANCE] = opCodeInstruction{
 		action:            balanceAction,
 		requireStackDepth: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.ORIGIN] = opCodeInstruction {
+	instructionTable[opcodes.ORIGIN] = opCodeInstruction{
 		action:            originAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 	
-	instructionTable[opcodes.CALLER] = opCodeInstruction {
+	instructionTable[opcodes.CALLER] = opCodeInstruction{
 		action:            callerAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.CALLVALUE] = opCodeInstruction {
+	instructionTable[opcodes.CALLVALUE] = opCodeInstruction{
 		action:            callValueAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.CALLDATALOAD] = opCodeInstruction {
+	instructionTable[opcodes.CALLDATALOAD] = opCodeInstruction{
 		action:            callDataLoadAction,
 		requireStackDepth: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.CALLDATASIZE] = opCodeInstruction {
+	instructionTable[opcodes.CALLDATASIZE] = opCodeInstruction{
 		action:            callDataSizeAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.CALLDATACOPY] = opCodeInstruction {
+	instructionTable[opcodes.CALLDATACOPY] = opCodeInstruction{
 		action:            callDataCopyAction,
 		requireStackDepth: 3,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.CODESIZE] = opCodeInstruction {
+	instructionTable[opcodes.CODESIZE] = opCodeInstruction{
 		action:            codeSizeAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.CODECOPY] = opCodeInstruction {
+	instructionTable[opcodes.CODECOPY] = opCodeInstruction{
 		action:            codeCopyAction,
 		requireStackDepth: 3,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.GASPRICE] = opCodeInstruction {
+	instructionTable[opcodes.GASPRICE] = opCodeInstruction{
 		action:            gasPriceAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.EXTCODESIZE] = opCodeInstruction {
+	instructionTable[opcodes.EXTCODESIZE] = opCodeInstruction{
 		action:            extCodeSizeAction,
 		requireStackDepth: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.EXTCODECOPY] = opCodeInstruction {
+	instructionTable[opcodes.EXTCODECOPY] = opCodeInstruction{
 		action:            extCodeCopyAction,
 		requireStackDepth: 4,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.RETURNDATASIZE] = opCodeInstruction {
+	instructionTable[opcodes.RETURNDATASIZE] = opCodeInstruction{
 		action:            returnDataSizeAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.RETURNDATACOPY] = opCodeInstruction {
+	instructionTable[opcodes.RETURNDATACOPY] = opCodeInstruction{
 		action:            returnDataCopyAction,
 		requireStackDepth: 3,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.EXTCODEHASH] = opCodeInstruction {
+	instructionTable[opcodes.EXTCODEHASH] = opCodeInstruction{
 		action:            extCodeHashAction,
 		requireStackDepth: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.BLOCKHASH] = opCodeInstruction {
+	instructionTable[opcodes.BLOCKHASH] = opCodeInstruction{
 		action:            blockHashAction,
 		requireStackDepth: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.COINBASE] = opCodeInstruction {
+	instructionTable[opcodes.COINBASE] = opCodeInstruction{
 		action:            coinbaseAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.TIMESTAMP] = opCodeInstruction {
+	instructionTable[opcodes.TIMESTAMP] = opCodeInstruction{
 		action:            timestampAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.NUMBER] = opCodeInstruction {
+	instructionTable[opcodes.NUMBER] = opCodeInstruction{
 		action:            numberAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.DIFFICULTY] = opCodeInstruction {
+	instructionTable[opcodes.DIFFICULTY] = opCodeInstruction{
 		action:            difficultyAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.GASLIMIT] = opCodeInstruction {
+	instructionTable[opcodes.GASLIMIT] = opCodeInstruction{
 		action:            gasLimitAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.GAS] = opCodeInstruction {
+	instructionTable[opcodes.GAS] = opCodeInstruction{
 		action:            gasAction,
 		willIncreaseStack: 1,
 		enabled:           true,

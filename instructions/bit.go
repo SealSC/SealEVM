@@ -21,49 +21,49 @@ import (
 )
 
 func loadBitOperations() {
-	instructionTable[opcodes.AND] = opCodeInstruction {
+	instructionTable[opcodes.AND] = opCodeInstruction{
 		action:            andAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.OR] = opCodeInstruction {
+	instructionTable[opcodes.OR] = opCodeInstruction{
 		action:            orAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.XOR] = opCodeInstruction {
+	instructionTable[opcodes.XOR] = opCodeInstruction{
 		action:            xorAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.NOT] = opCodeInstruction {
+	instructionTable[opcodes.NOT] = opCodeInstruction{
 		action:            notAction,
 		requireStackDepth: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.BYTE] = opCodeInstruction {
+	instructionTable[opcodes.BYTE] = opCodeInstruction{
 		action:            byteAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.SHL] = opCodeInstruction {
+	instructionTable[opcodes.SHL] = opCodeInstruction{
 		action:            shlAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.SHR] = opCodeInstruction {
+	instructionTable[opcodes.SHR] = opCodeInstruction{
 		action:            shrAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.SAR] = opCodeInstruction {
+	instructionTable[opcodes.SAR] = opCodeInstruction{
 		action:            sarAction,
 		requireStackDepth: 2,
 		enabled:           true,

@@ -23,7 +23,7 @@ import (
 )
 
 func loadStack() {
-	instructionTable[opcodes.POP] = opCodeInstruction {
+	instructionTable[opcodes.POP] = opCodeInstruction{
 		action: func(ctx *instructionsContext) (bytes []byte, err error) {
 			_ = ctx.stack.Pop()
 			return nil, nil
@@ -41,7 +41,7 @@ func setPushActions() {
 	for i := opcodes.PUSH1; i <= opcodes.PUSH32; i++ {
 		bytesSize := uint64(i - opcodes.PUSH1 + 1)
 
-		instructionTable[i] = opCodeInstruction {
+		instructionTable[i] = opCodeInstruction{
 			action: func(ctx *instructionsContext) ([]byte, error) {
 				start := ctx.pc + 1
 
@@ -64,7 +64,7 @@ func setSwapActions()  {
 	for i := opcodes.SWAP1; i <= opcodes.SWAP16; i ++ {
 		swapDepth := int(i - opcodes.SWAP1 + 1)
 
-		instructionTable[i] = opCodeInstruction {
+		instructionTable[i] = opCodeInstruction{
 			action: func(ctx *instructionsContext) ([]byte, error) {
 				ctx.stack.Swap(swapDepth)
 				return nil, nil
@@ -80,7 +80,7 @@ func setDupActions()  {
 	for i := opcodes.DUP1; i <= opcodes.DUP16; i ++ {
 		dupDepth := int(i - opcodes.DUP1 + 1)
 
-		instructionTable[i] = opCodeInstruction {
+		instructionTable[i] = opCodeInstruction{
 			action: func(ctx *instructionsContext) ([]byte, error) {
 				ctx.stack.Dup(dupDepth)
 				return nil, nil

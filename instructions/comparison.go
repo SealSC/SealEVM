@@ -21,37 +21,37 @@ import (
 )
 
 func loadComparision() {
-	instructionTable[opcodes.LT] = opCodeInstruction {
+	instructionTable[opcodes.LT] = opCodeInstruction{
 		action:            ltAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.GT] = opCodeInstruction {
+	instructionTable[opcodes.GT] = opCodeInstruction{
 		action:            gtAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.SLT] = opCodeInstruction {
+	instructionTable[opcodes.SLT] = opCodeInstruction{
 		action:            sltAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.SGT] = opCodeInstruction {
+	instructionTable[opcodes.SGT] = opCodeInstruction{
 		action:            sgtAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.EQ] = opCodeInstruction {
+	instructionTable[opcodes.EQ] = opCodeInstruction{
 		action:            eqAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.ISZERO] = opCodeInstruction {
+	instructionTable[opcodes.ISZERO] = opCodeInstruction{
 		action:            isZeroAction,
 		requireStackDepth: 1,
 		enabled:           true,

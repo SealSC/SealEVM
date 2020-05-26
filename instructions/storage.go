@@ -21,13 +21,13 @@ import (
 )
 
 func loadStorage() {
-	instructionTable[opcodes.SLOAD] = opCodeInstruction {
+	instructionTable[opcodes.SLOAD] = opCodeInstruction{
 		action:            sLoadAction,
 		requireStackDepth: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.SSTORE] = opCodeInstruction {
+	instructionTable[opcodes.SSTORE] = opCodeInstruction{
 		action:            sStoreAction,
 		requireStackDepth: 2,
 		enabled:           true,

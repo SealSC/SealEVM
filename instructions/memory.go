@@ -23,25 +23,25 @@ import (
 )
 
 func loadMemory() {
-	instructionTable[opcodes.MLOAD] = opCodeInstruction {
+	instructionTable[opcodes.MLOAD] = opCodeInstruction{
 		action:            mLoadAction,
 		requireStackDepth: 1,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.MSTORE] = opCodeInstruction {
+	instructionTable[opcodes.MSTORE] = opCodeInstruction{
 		action:            mStoreAction,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.MSTORE8] = opCodeInstruction {
+	instructionTable[opcodes.MSTORE8] = opCodeInstruction{
 		action:            mStore8Action,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.MSIZE] = opCodeInstruction {
+	instructionTable[opcodes.MSIZE] = opCodeInstruction{
 		action:            mSizeAction,
 		willIncreaseStack: 1,
 		enabled:           true,
