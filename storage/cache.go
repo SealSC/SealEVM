@@ -47,13 +47,13 @@ type balance struct {
 
 type BalanceCache map[string] *balance
 
-type log struct {
+type Log struct {
 	Topics  [][]byte
 	Data    []byte
 	Context environment.Context
 }
 
-type LogCache map[string] []log
+type LogCache map[string] []Log
 
 type ResultCache struct {
 	OriginalData    CacheUnderNamespace

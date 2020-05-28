@@ -98,7 +98,7 @@ func (s *Storage) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, ne
 func (s *Storage) Log(address *evmInt256.Int, topics [][]byte, data []byte, context environment.Context) {
 	kString := address.String()
 
-	var theLog = log {
+	var theLog = Log{
 		Topics:   topics,
 		Data:    data,
 		Context: context,
