@@ -45,6 +45,12 @@ type EVM struct {
 	resultNotify EVMResultCallback
 }
 
+type ExecuteResult struct {
+	ResultData  []byte
+	GasLeft      uint64
+	StorageCache storage.ResultCache
+}
+
 func Load() {
 	instructions.Load()
 }
@@ -74,23 +80,37 @@ func (e *EVM) subResult(contractRet []byte, gasLeft uint64, cache storage.Result
 	}
 }
 
-func (e *EVM) executePreCompiled(addr uint64, input []byte) ([]byte, uint64, error) {
+func (e *EVM) executePreCompiled(addr uint64, input []byte) (ExecuteResult, error) {
 	contract := precompiledContracts.Contracts[addr]
 	gasCost := contract.GasCost(input)
 	gasLeft := e.instructions.GetGasLeft()
 
-	if gasLeft < gasCost {
-		return nil, gasLeft, evmErrors.OutOfGas
+	result := ExecuteResult{
+		ResultData:   nil,
+		GasLeft:      gasLeft,
+		StorageCache: e.storage.ResultCache,
 	}
 
-	ret, err := contract.Execute(input)
+	if gasLeft < gasCost {
+		return result, evmErrors.OutOfGas
+	}
+
+	execRet, err := contract.Execute(input)
 	gasLeft -= gasCost
 	e.instructions.SetGasLimit(gasLeft)
-	return ret, gasLeft, err
+	result.ResultData = execRet
+	return result, err
 }
 
-func (e *EVM) ExecuteContract(doTransfer bool) ([]byte, uint64, error) {
+func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 	contractAddr := e.context.Contract.Namespace
+	gasLeft := e.instructions.GetGasLeft()
+
+	result := ExecuteResult{
+		ResultData:   nil,
+		GasLeft:      gasLeft,
+		StorageCache: e.storage.ResultCache,
+	}
 
 	if doTransfer {
 		msg := e.context.Message
@@ -98,14 +118,14 @@ func (e *EVM) ExecuteContract(doTransfer bool) ([]byte, uint64, error) {
 		//doing transfer for non-zero value
 		if msg.Value.Sign() != 0 {
 			if e.instructions.IsReadOnly() {
-				return nil, e.instructions.GetGasLeft(), evmErrors.WriteProtection
+				return result, evmErrors.WriteProtection
 			}
 
 			if e.storage.ExternalStorage.CanTransfer(msg.Caller, contractAddr, msg.Value) {
 				e.storage.BalanceModify(msg.Caller, msg.Value, true)
 				e.storage.BalanceModify(contractAddr, msg.Value, false)
 			} else {
-				return nil, e.instructions.GetGasLeft(), evmErrors.InsufficientBalance
+				return result, evmErrors.InsufficientBalance
 			}
 		}
 
@@ -121,12 +141,14 @@ func (e *EVM) ExecuteContract(doTransfer bool) ([]byte, uint64, error) {
 		}
 	}
 
-	ret, gasLeft, err := e.instructions.ExecuteContract()
+	execRet, gasLeft, err := e.instructions.ExecuteContract()
 
 	if e.resultNotify != nil {
-		e.resultNotify(ret, gasLeft, e.storage.ResultCache, err)
+		e.resultNotify(execRet, gasLeft, e.storage.ResultCache, err)
 	}
-	return ret, gasLeft, err
+
+	result.ResultData = execRet
+	return result, err
 }
 
 func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
@@ -172,10 +194,10 @@ func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 		newEVM.instructions.SetReadOnly()
 	}
 
-	ret, gasLeft, err := newEVM.ExecuteContract(opcodes.CALL == param.OpCode)
+	ret, err := newEVM.ExecuteContract(opcodes.CALL == param.OpCode)
 
-	e.instructions.SetGasLimit(gasLeft)
-	return ret, err
+	e.instructions.SetGasLimit(ret.GasLeft)
+	return ret.ResultData, err
 }
 
 func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
@@ -192,10 +214,9 @@ func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
 	newEVM.context.Message.Value = param.CallValue
 	newEVM.context.Message.Caller = e.context.Contract.Namespace
 
-	ret, gasLeft, err := newEVM.ExecuteContract(true)
-
-	e.instructions.SetGasLimit(gasLeft)
-	return ret, err
+	ret, err := newEVM.ExecuteContract(true)
+	e.instructions.SetGasLimit(ret.GasLeft)
+	return ret.ResultData, err
 }
 
 func closure(param instructions.ClosureParam) ([]byte, error){
