@@ -122,7 +122,10 @@ func (e *EVM) ExecuteContract(doTransfer bool) ([]byte, uint64, error) {
 	}
 
 	ret, gasLeft, err := e.instructions.ExecuteContract()
-	e.resultNotify(ret, gasLeft, e.storage.ResultCache, err)
+
+	if e.resultNotify != nil {
+		e.resultNotify(ret, gasLeft, e.storage.ResultCache, err)
+	}
 	return ret, gasLeft, err
 }
 
