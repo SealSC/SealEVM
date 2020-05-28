@@ -50,6 +50,10 @@ func Load() {
 }
 
 func New(param EVMParam) *EVM {
+	if param.Context.Block.GasLimit.Cmp(param.Context.Transaction.GasLimit.Int) < 0 {
+		param.Context.Transaction.GasLimit = evmInt256.FromBigInt(param.Context.Block.GasLimit.Int)
+	}
+
 	evm := &EVM {
 		stack:        stack.New(param.MaxStackDepth),
 		memory:       memory.New(),
