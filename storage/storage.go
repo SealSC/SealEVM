@@ -54,8 +54,8 @@ func (s *Storage) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, err
 		return nil, evmErrors.StorageNotInitialized
 	}
 
-	nsStr := n.String()
-	keyStr := k.String()
+	nsStr := n.AsStringKey()
+	keyStr := k.AsStringKey()
 
 	i := s.ResultCache.CachedData.Get(nsStr, keyStr)
 	if i == nil {
@@ -72,11 +72,11 @@ func (s *Storage) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, err
 }
 
 func (s *Storage) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int)  {
-	s.ResultCache.CachedData.Set(n.String(), k.String(), v)
+	s.ResultCache.CachedData.Set(n.AsStringKey(), k.AsStringKey(), v)
 }
 
 func (s *Storage) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, neg bool) {
-	kString := address.String()
+	kString := address.AsStringKey()
 
 	b, exist := s.ResultCache.Balance[kString]
 	if !exist {
@@ -96,7 +96,7 @@ func (s *Storage) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, ne
 }
 
 func (s *Storage) Log(address *evmInt256.Int, topics [][]byte, data []byte, context environment.Context) {
-	kString := address.String()
+	kString := address.AsStringKey()
 
 	var theLog = Log{
 		Topics:   topics,
@@ -111,12 +111,12 @@ func (s *Storage) Log(address *evmInt256.Int, topics [][]byte, data []byte, cont
 }
 
 func (s *Storage) Destruct(address *evmInt256.Int) {
-	s.ResultCache.Destructs[address.String()] = address
+	s.ResultCache.Destructs[address.AsStringKey()] = address
 }
 
 type commonGetterFunc func(*evmInt256.Int) (*evmInt256.Int, error)
 func (s *Storage) commonGetter(key *evmInt256.Int, cache Cache, getterFunc commonGetterFunc) (*evmInt256.Int, error) {
-	keyStr := key.String()
+	keyStr := key.AsStringKey()
 	if b, exists := cache[keyStr]; exists {
 		return evmInt256.FromBigInt(b.Int), nil
 	}
@@ -134,7 +134,7 @@ func (s *Storage) Balance(address *evmInt256.Int) (*evmInt256.Int, error) {
 }
 
 func (s *Storage) GetCode(address *evmInt256.Int) ([]byte, error) {
-	keyStr := address.String()
+	keyStr := address.AsStringKey()
 	if b, exists := s.readOnlyCache.Code[keyStr]; exists {
 		return b, nil
 	}
@@ -148,7 +148,7 @@ func (s *Storage) GetCode(address *evmInt256.Int) ([]byte, error) {
 }
 
 func (s *Storage) GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error) {
-	keyStr := address.String()
+	keyStr := address.AsStringKey()
 	if size, exists := s.readOnlyCache.CodeSize[keyStr]; exists {
 		return size, nil
 	}
@@ -162,7 +162,7 @@ func (s *Storage) GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error) {
 }
 
 func (s *Storage) GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error) {
-	keyStr := address.String()
+	keyStr := address.AsStringKey()
 	if hash, exists := s.readOnlyCache.CodeHash[keyStr]; exists {
 		return hash, nil
 	}
@@ -176,7 +176,7 @@ func (s *Storage) GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error) {
 }
 
 func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
-	keyStr := block.String()
+	keyStr := block.AsStringKey()
 	if hash, exists := s.readOnlyCache.BlockHash[keyStr]; exists {
 		return hash, nil
 	}

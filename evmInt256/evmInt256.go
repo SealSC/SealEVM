@@ -52,6 +52,10 @@ type Int struct {
 	*big.Int
 }
 
+func (i *Int) AsStringKey() string {
+	return string(i.Bytes())
+}
+
 func New(i int64) *Int {
 	return &Int{big.NewInt(i)}
 }
