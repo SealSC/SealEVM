@@ -59,9 +59,12 @@ func (c *Contract) markCodeData() {
 		code := opcodes.OpCode(c.Code[i])
 		if code >= opcodes.PUSH1 && code <= opcodes.PUSH32 {
 			bytesCnt := int(code - opcodes.PUSH1 + 1)
+			nextPC := i + bytesCnt
 			for ; bytesCnt > 0; bytesCnt-- {
 				c.codeDataFlag[uint64(i + bytesCnt)] = true
 			}
+
+			i = nextPC
 		}
 	}
 }
