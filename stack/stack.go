@@ -114,7 +114,8 @@ func (s *Stack) Dup(n int) {
 	sLen := len(s.data)
 
 	i := s.data[sLen - n]
-	s.Push(i)
+	newI := evmInt256.FromBigInt(i.Int)
+	s.Push(newI)
 
 	return
 }
