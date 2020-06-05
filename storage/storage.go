@@ -57,9 +57,10 @@ func (s *Storage) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, err
 	nsStr := n.AsStringKey()
 	keyStr := k.AsStringKey()
 
+	var err error = nil
 	i := s.ResultCache.CachedData.Get(nsStr, keyStr)
 	if i == nil {
-		i, err := s.ExternalStorage.Load(nsStr, keyStr)
+		i, err = s.ExternalStorage.Load(nsStr, keyStr)
 		if err != nil {
 			return nil, evmErrors.NoSuchDataInTheStorage(err)
 		}
