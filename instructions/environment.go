@@ -206,10 +206,11 @@ func callDataLoadAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func callDataSizeAction(ctx *instructionsContext) ([]byte, error) {
-	i := ctx.stack.Peek()
+	i := evmInt256.New(0)
 	s := ctx.environment.Message.DataSize()
 
 	i.SetUint64(s)
+	ctx.stack.Push(i)
 	return nil, nil
 }
 
@@ -268,7 +269,7 @@ func extCodeSizeAction(ctx *instructionsContext) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	ctx.stack.Push(s)
+	addr.Set(s.Int)
 	return nil, nil
 }
 
