@@ -56,6 +56,10 @@ func (i *Int) AsStringKey() string {
 	return string(i.Bytes())
 }
 
+func (i Int) Clone() *Int {
+	return FromBigInt(i.Int)
+}
+
 func New(i int64) *Int {
 	return &Int{big.NewInt(i)}
 }

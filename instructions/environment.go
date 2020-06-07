@@ -167,7 +167,7 @@ func loadEnvironment() {
 }
 
 func addressAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Contract.Namespace)
+	ctx.stack.Push(ctx.environment.Contract.Namespace.Clone())
 	return nil, nil
 }
 
@@ -183,17 +183,17 @@ func balanceAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func originAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Transaction.Origin)
+	ctx.stack.Push(ctx.environment.Transaction.Origin.Clone())
 	return nil, nil
 }
 
 func callerAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Message.Caller)
+	ctx.stack.Push(ctx.environment.Message.Caller.Clone())
 	return nil, nil
 }
 
 func callValueAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Message.Value)
+	ctx.stack.Push(ctx.environment.Message.Value.Clone())
 	return nil, nil
 }
 
@@ -253,7 +253,7 @@ func codeCopyAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func gasPriceAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Transaction.GasPrice)
+	ctx.stack.Push(ctx.environment.Transaction.GasPrice.Clone())
 	return nil, nil
 }
 
@@ -357,31 +357,31 @@ func blockHashAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func coinbaseAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Block.Coinbase)
+	ctx.stack.Push(ctx.environment.Block.Coinbase.Clone())
 	return nil, nil
 }
 
 func timestampAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Block.Timestamp)
+	ctx.stack.Push(ctx.environment.Block.Timestamp.Clone())
 	return nil, nil
 }
 
 func numberAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Block.Number)
+	ctx.stack.Push(ctx.environment.Block.Number.Clone())
 	return nil, nil
 }
 
 func difficultyAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Block.Difficulty)
+	ctx.stack.Push(ctx.environment.Block.Difficulty.Clone())
 	return nil, nil
 }
 
 func gasLimitAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Block.GasLimit)
+	ctx.stack.Push(ctx.environment.Block.GasLimit.Clone())
 	return nil, nil
 }
 
 func gasAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.gasRemaining)
+	ctx.stack.Push(ctx.gasRemaining.Clone())
 	return nil, nil
 }

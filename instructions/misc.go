@@ -112,7 +112,7 @@ func revertAction(ctx *instructionsContext) ([]byte, error) {
 
 func selfDestructAction(ctx *instructionsContext) ([]byte, error) {
 	addr := ctx.stack.Pop()
-	contractAddr := ctx.environment.Contract.Namespace
+	contractAddr := ctx.environment.Contract.Namespace.Clone()
 	balance, _ := ctx.storage.Balance(contractAddr)
 	ctx.storage.BalanceModify(addr, balance, false)
 	ctx.storage.Destruct(contractAddr)
