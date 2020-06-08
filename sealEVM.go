@@ -28,7 +28,7 @@ import (
 	"SealEVM/storage"
 )
 
-type EVMResultCallback func(contractRet[]byte, gasLeft uint64, result storage.ResultCache, err error)
+type EVMResultCallback func(result ExecuteResult, err error)
 type EVMParam struct {
 	MaxStackDepth  int
 	ExternalStore  storage.IExternalStorage
@@ -46,9 +46,10 @@ type EVM struct {
 }
 
 type ExecuteResult struct {
-	ResultData  []byte
+	ResultData   []byte
 	GasLeft      uint64
 	StorageCache storage.ResultCache
+	ExitOpCode   opcodes.OpCode
 }
 
 func Load() {
@@ -74,9 +75,9 @@ func New(param EVMParam) *EVM {
 	return evm
 }
 
-func (e *EVM) subResult(contractRet []byte, gasLeft uint64, cache storage.ResultCache, err error) {
+func (e *EVM) subResult(result ExecuteResult, err error) {
 	if err == nil {
-		storage.MergeResultCache(&cache, &e.storage.ResultCache)
+		storage.MergeResultCache(&result.StorageCache, &e.storage.ResultCache)
 	}
 }
 
@@ -142,12 +143,13 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 	}
 
 	execRet, gasLeft, err := e.instructions.ExecuteContract()
+	result.ResultData = execRet
+	result.ExitOpCode = e.instructions.ExitOpCode()
 
 	if e.resultNotify != nil {
-		e.resultNotify(execRet, gasLeft, e.storage.ResultCache, err)
+		e.resultNotify(result, err)
 	}
 
-	result.ResultData = execRet
 	return result, err
 }
 

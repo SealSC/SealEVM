@@ -84,6 +84,7 @@ type instructionsContext struct {
 	lastReturn   []byte
 	gasRemaining *evmInt256.Int
 	closureExec  ClosureExecute
+	exitOpCode   opcodes.OpCode
 }
 
 type opCodeAction func(ctx *instructionsContext) ([]byte, error)
@@ -106,6 +107,7 @@ type IInstructions interface {
 	GetGasLeft() uint64
 	SetReadOnly()
 	IsReadOnly() bool
+	ExitOpCode() opcodes.OpCode
 }
 
 var instructionTable [opcodes.MaxOpCodesCount]opCodeInstruction
@@ -144,6 +146,10 @@ func (i *instructionsContext) IsReadOnly() bool {
 
 func (i *instructionsContext) GetGasLeft() uint64 {
 	return i.gasRemaining.Uint64()
+}
+
+func (i *instructionsContext) ExitOpCode() opcodes.OpCode {
+	return i.exitOpCode
 }
 
 func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
@@ -200,6 +206,7 @@ func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
 		}
 
 		if instruction.finished {
+			i.exitOpCode = opcodes.OpCode(opCode)
 			break
 		}
 	}
