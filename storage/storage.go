@@ -90,9 +90,9 @@ func (s *Storage) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, ne
 	}
 
 	if neg {
-		b.Balance.Sub(value)
+		b.Balance.Int.Sub(b.Balance.Int, value.Int)
 	} else {
-		b.Balance.Add(value)
+		b.Balance.Int.Add(b.Balance.Int, value.Int)
 	}
 }
 
