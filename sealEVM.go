@@ -76,7 +76,7 @@ func New(param EVMParam) *EVM {
 }
 
 func (e *EVM) subResult(result ExecuteResult, err error) {
-	if err == nil {
+	if err == nil && result.ExitOpCode != opcodes.REVERT {
 		storage.MergeResultCache(&result.StorageCache, &e.storage.ResultCache)
 	}
 }
