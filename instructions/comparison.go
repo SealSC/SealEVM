@@ -17,7 +17,7 @@
 package instructions
 
 import (
-	"SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/opcodes"
 )
 
 func loadComparision() {

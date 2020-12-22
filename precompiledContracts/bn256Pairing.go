@@ -17,7 +17,7 @@
 package precompiledContracts
 
 import (
-	"SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/ethereum/go-ethereum/crypto/bn256"
 	"github.com/ethereum/go-ethereum/params"
 )

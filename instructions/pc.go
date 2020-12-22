@@ -17,8 +17,8 @@
 package instructions
 
 import (
-	"SealEVM/evmInt256"
-	"SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/opcodes"
 )
 
 func loadPC() {

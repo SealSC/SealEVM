@@ -17,9 +17,9 @@
 package instructions
 
 import (
-	"SealEVM/common"
-	"SealEVM/evmErrors"
-	"SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/common"
+	"github.com/SealSC/SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/opcodes"
 )
 
 func loadLog() {

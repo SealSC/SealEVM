@@ -17,10 +17,10 @@
 package instructions
 
 import (
-	"SealEVM/crypto/hashes"
-	"SealEVM/evmErrors"
-	"SealEVM/evmInt256"
-	"SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/crypto/hashes"
+	"github.com/SealSC/SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/opcodes"
 )
 
 func loadMisc() {

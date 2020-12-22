@@ -16,7 +16,7 @@
 
 package environment
 
-import "SealEVM/evmInt256"
+import "github.com/SealSC/SealEVM/evmInt256"
 
 type Block struct {
 	Coinbase    *evmInt256.Int

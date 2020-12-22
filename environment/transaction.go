@@ -16,7 +16,7 @@
 
 package environment
 
-import "SealEVM/evmInt256"
+import "github.com/SealSC/SealEVM/evmInt256"
 
 type Transaction struct {
 	TxHash      []byte

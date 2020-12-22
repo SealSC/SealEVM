@@ -16,7 +16,7 @@
 
 package precompiledContracts
 
-import "SealEVM/evmInt256"
+import "github.com/SealSC/SealEVM/evmInt256"
 
 type PrecompiledContract interface {
 	GasCost(input []byte) uint64

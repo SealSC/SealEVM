@@ -17,9 +17,9 @@
 package storage
 
 import (
-	"SealEVM/environment"
-	"SealEVM/evmErrors"
-	"SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/environment"
+	"github.com/SealSC/SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/evmInt256"
 )
 
 type Storage struct {

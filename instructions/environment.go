@@ -17,11 +17,11 @@
 package instructions
 
 import (
-	"SealEVM/common"
-	"SealEVM/evmErrors"
-	"SealEVM/evmInt256"
-	"SealEVM/opcodes"
-	"SealEVM/precompiledContracts"
+	"github.com/SealSC/SealEVM/common"
+	"github.com/SealSC/SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/precompiledContracts"
 	"math/big"
 )
 

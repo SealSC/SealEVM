@@ -17,8 +17,8 @@
 package storage
 
 import (
-	"SealEVM/environment"
-	"SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/environment"
+	"github.com/SealSC/SealEVM/evmInt256"
 )
 
 type IExternalStorage interface {

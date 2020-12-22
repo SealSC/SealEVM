@@ -17,13 +17,13 @@
 package instructions
 
 import (
-	"SealEVM/environment"
-	"SealEVM/evmErrors"
-	"SealEVM/evmInt256"
-	"SealEVM/memory"
-	"SealEVM/opcodes"
-	"SealEVM/stack"
-	"SealEVM/storage"
+	"github.com/SealSC/SealEVM/environment"
+	"github.com/SealSC/SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/memory"
+	"github.com/SealSC/SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/stack"
+	"github.com/SealSC/SealEVM/storage"
 )
 
 type DynamicGasCostSetting struct {

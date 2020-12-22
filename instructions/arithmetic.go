@@ -17,8 +17,8 @@
 package instructions
 
 import (
-	"SealEVM/evmErrors"
-	"SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/opcodes"
 )
 
 func loadArithmetic() {

@@ -1,4 +1,4 @@
-module SealEVM
+module github.com/SealSC/SealEVM
 
 go 1.14
 

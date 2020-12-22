@@ -17,9 +17,9 @@
 package instructions
 
 import (
-	"SealEVM/common"
-	"SealEVM/evmInt256"
-	"SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/common"
+	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/opcodes"
 )
 
 func loadStack() {
