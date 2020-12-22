@@ -19,7 +19,6 @@ package precompiledContracts
 import (
 	"github.com/SealSC/SealEVM/common"
 	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/params"
 	"math/big"
 )
 
@@ -31,6 +30,7 @@ var (
 	big4      = big.NewInt(4)
 	big8      = big.NewInt(8)
 	big16     = big.NewInt(16)
+	big20     = big.NewInt(20)
 	big32     = big.NewInt(32)
 	big64     = big.NewInt(64)
 	big96     = big.NewInt(96)
@@ -92,7 +92,7 @@ func (c *bigModExp) GasCost(input []byte) uint64 {
 		)
 	}
 	gas.Mul(gas, math.BigMax(adjExpLen, big1))
-	gas.Div(gas, new(big.Int).SetUint64(params.ModExpQuadCoeffDiv))
+	gas.Div(gas, new(big.Int).SetUint64(big20.Uint64()))
 
 	if gas.BitLen() > 64 {
 		return math.MaxUint64
