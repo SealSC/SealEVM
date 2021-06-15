@@ -129,6 +129,12 @@ func loadEnvironment() {
 		enabled:           true,
 	}
 
+	instructionTable[opcodes.CHAINID] = opCodeInstruction{
+		action:            chainIDAction,
+		willIncreaseStack: 1,
+		enabled:           true,
+	}
+
 	instructionTable[opcodes.BLOCKHASH] = opCodeInstruction{
 		action:            blockHashAction,
 		requireStackDepth: 1,
@@ -363,14 +369,19 @@ func extCodeHashAction(ctx *instructionsContext) ([]byte, error) {
 	return nil, nil
 }
 
+func chainIDAction(ctx *instructionsContext) ([]byte, error) {
+	ctx.stack.Push(ctx.environment.Block.ChainID.Clone())
+	return nil, nil
+}
+
 func blockHashAction(ctx *instructionsContext) ([]byte, error) {
-	addr:= ctx.stack.Peek()
-	codeHash, err := ctx.storage.GetBlockHash(addr)
+	blk:= ctx.stack.Peek()
+	blkHash, err := ctx.storage.GetBlockHash(blk)
 	if err != nil {
 		return nil, err
 	}
 
-	addr.Set(codeHash.Int)
+	blk.Set(blkHash.Int)
 	return nil, nil
 }
 
