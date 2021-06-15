@@ -38,6 +38,13 @@ func loadEnvironment() {
 		enabled:           true,
 	}
 
+
+	instructionTable[opcodes.SELFBALANCE] =  opCodeInstruction{
+		action:            selfBalanceAction,
+		willIncreaseStack: 1,
+		enabled:           true,
+	}
+
 	instructionTable[opcodes.ORIGIN] = opCodeInstruction{
 		action:            originAction,
 		willIncreaseStack: 1,
@@ -179,6 +186,17 @@ func balanceAction(ctx *instructionsContext) ([]byte, error) {
 	}
 
 	addr.Set(balance.Int)
+	return nil, nil
+}
+
+func selfBalanceAction(ctx *instructionsContext) ([]byte, error) {
+	addr := ctx.environment.Contract.Namespace.Clone()
+	balance, err := ctx.storage.Balance(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.stack.Push(balance)
 	return nil, nil
 }
 

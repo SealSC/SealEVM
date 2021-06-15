@@ -117,9 +117,12 @@ const (
 )
 
 const (
-	unusedX46 OpCode = iota + 0x46
-	unusedX47
-	unusedX48
+	CHAINID OpCode = iota + 0x46
+	SELFBALANCE
+)
+
+const (
+	unusedX48 OpCode = iota + 0x48
 	unusedX49
 	unusedX4A
 	unusedX4B
