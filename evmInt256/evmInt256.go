@@ -266,7 +266,7 @@ func (i *Int) ByteAt(n int) byte {
 		return 0
 	}
 
-	return bnBytes[bytePos]
+	return bnBytes[n]
 }
 
 func (i *Int) SHL(n uint64) *Int  {
