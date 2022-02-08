@@ -106,8 +106,13 @@ func byteAction(ctx *instructionsContext) ([]byte, error) {
 	i := ctx.stack.Pop()
 	x := ctx.stack.Peek()
 
-	b := x.ByteAt(int(i.Uint64()))
-	x.SetUint64(uint64(b))
+	if !i.IsUint64() {
+		x.SetUint64(0)
+	} else {
+		b := x.ByteAt(int(i.Uint64()))
+		x.SetUint64(uint64(b))
+	}
+
 	return nil, nil
 }
 
