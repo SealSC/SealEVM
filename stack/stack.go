@@ -17,8 +17,10 @@
 package stack
 
 import (
+	"fmt"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"strings"
 )
 
 type Stack struct {
@@ -118,4 +120,14 @@ func (s *Stack) Dup(n int) {
 	s.Push(newI)
 
 	return
+}
+
+func (s Stack) DebugPrint() {
+	var hexData []string
+
+	for i := 0; i<len(s.data); i++ {
+		hexData = append(hexData, "0x" + s.data[i].Text(16) + ",\r\n")
+	}
+
+	fmt.Println(strings.Join(hexData, ""))
 }
