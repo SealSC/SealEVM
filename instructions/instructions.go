@@ -153,6 +153,15 @@ func (i *instructionsContext) ExitOpCode() opcodes.OpCode {
 }
 
 func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
+	var ret []byte
+	var err error = nil
+
+	defer func() {
+		if e := recover(); e != nil {
+			err = evmErrors.Panicked(e.(error))
+		}
+	}()
+
 	i.pc = 0
 	contract := i.environment.Contract
 
@@ -160,8 +169,6 @@ func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
 		return nil, i.gasRemaining.Uint64(), nil
 	}
 
-	var ret []byte
-	var err error = nil
 
 	for {
 		opCode := contract.Code[i.pc]

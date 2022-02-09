@@ -35,6 +35,10 @@ var WriteProtection = errors.New("write protection")
 
 var BN256BadPairingInput = errors.New("bn256 bad pairing input")
 
+func Panicked(err error) error {
+	return errors.New("panic error: " + err.Error())
+}
+
 func InvalidOpCode(code byte) error {
 	return errors.New(fmt.Sprintf("invalid op code: 0x%X", code))
 }
