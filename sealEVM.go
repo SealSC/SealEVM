@@ -82,7 +82,7 @@ func (e *EVM) subResult(result ExecuteResult, err error) {
 }
 
 func (e *EVM) executePreCompiled(addr uint64, input []byte) (ExecuteResult, error) {
-	contract := precompiledContracts.Contracts[addr]
+	contract := precompiledContracts.GetContract(addr)
 	gasCost := contract.GasCost(input)
 	gasLeft := e.instructions.GetGasLeft()
 
@@ -136,7 +136,7 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 		//check if is precompiled
 		if contractAddr.IsUint64() {
 			addr := contractAddr.Uint64()
-			if addr < precompiledContracts.ContractsMaxAddress {
+			if addr < precompiledContracts.PrecompiledContractCount() {
 				return e.executePreCompiled(addr, e.context.Message.Data)
 			}
 		}

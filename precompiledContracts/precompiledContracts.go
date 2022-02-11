@@ -23,8 +23,7 @@ type PrecompiledContract interface {
 	Execute(input []byte) ([]byte, error)
 }
 
-const ContractsMaxAddress = 10
-var Contracts = [ContractsMaxAddress] PrecompiledContract{
+var contracts = [] PrecompiledContract {
 	1: &ecRecover{},
 	2: &sha256hash{},
 	3: &ripemd160hash{},
@@ -36,10 +35,22 @@ var Contracts = [ContractsMaxAddress] PrecompiledContract{
 	9: &blake2F{},
 }
 
+func GetContract(addr uint64) PrecompiledContract {
+	return contracts[addr]
+}
+
+func PrecompiledContractCount() uint64 {
+	return uint64(len(contracts))
+}
+
+func RegisterContracts(c PrecompiledContract) {
+	contracts = append(contracts, c)
+}
+
 func IsPrecompiledContract(address *evmInt256.Int) bool {
 	if address.IsUint64() {
 		addr := address.Uint64()
-		return addr < ContractsMaxAddress
+		return addr < PrecompiledContractCount()
 	}
 
 	return false
