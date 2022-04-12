@@ -39,6 +39,7 @@ func pow(x, y int64) *big.Int {
 
 const (
 	maxBits = 256
+	maxBytes = 32
 )
 
 var (
@@ -254,19 +255,21 @@ func (i *Int) Not(y *Int) *Int {
 }
 
 func (i *Int) ByteAt(n int) byte {
-	if n > 31 {
+	if n > maxBytes - 1 {
 		return 0
 	}
 
+	fullBytes := make([]byte, maxBytes, maxBytes)
 	bnBytes := i.Int.Bytes()
 	bnLen := len(bnBytes)
-	bytePos := bnLen - n - 1
 
-	if bytePos < 0 {
-		return 0
+	if bnLen < maxBytes {
+		copy(fullBytes[maxBytes - bnLen:], bnBytes)
+	} else {
+		copy(fullBytes[:maxBytes], bnBytes[:maxBytes])
 	}
 
-	return bnBytes[n]
+	return fullBytes[n]
 }
 
 func (i *Int) SHL(n uint64) *Int  {
