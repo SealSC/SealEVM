@@ -38,15 +38,15 @@ func pow(x, y int64) *big.Int {
 }
 
 const (
-	maxBits = 256
+	maxBits  = 256
 	maxBytes = 32
 )
 
 var (
 	uint256MAX = maxUint(maxBits)
-	int256MAX = pow(2,maxBits - 1)
-	bit256 = bit(maxBits)
-	one = big.NewInt(1)
+	int256MAX  = pow(2, maxBits-1)
+	bit256     = bit(maxBits)
+	one        = big.NewInt(1)
 )
 
 type Int struct {
@@ -77,7 +77,9 @@ func FromDecimalString(s string) *Int {
 		i.toI256()
 		return i
 	} else {
-		return nil
+		i := &Int{big.NewInt(0)}
+		i.toI256()
+		return i
 	}
 }
 
@@ -209,7 +211,7 @@ func (i *Int) LT(y *Int) bool {
 }
 
 func (i *Int) GT(y *Int) bool {
-	return i.Int.Cmp(y.Int) > 0 
+	return i.Int.Cmp(y.Int) > 0
 }
 
 func (i *Int) SLT(y *Int) bool {
@@ -223,7 +225,7 @@ func (i *Int) SGT(y *Int) bool {
 	si := i.GetSigned()
 	sy := y.GetSigned()
 
-	return si.Int.Cmp(sy.Int) > 0 
+	return si.Int.Cmp(sy.Int) > 0
 }
 
 func (i *Int) EQ(y *Int) bool {
@@ -255,7 +257,7 @@ func (i *Int) Not(y *Int) *Int {
 }
 
 func (i *Int) ByteAt(n int) byte {
-	if n > maxBytes - 1 {
+	if n > maxBytes-1 {
 		return 0
 	}
 
@@ -264,7 +266,7 @@ func (i *Int) ByteAt(n int) byte {
 	bnLen := len(bnBytes)
 
 	if bnLen < maxBytes {
-		copy(fullBytes[maxBytes - bnLen:], bnBytes)
+		copy(fullBytes[maxBytes-bnLen:], bnBytes)
 	} else {
 		copy(fullBytes[:maxBytes], bnBytes[:maxBytes])
 	}
@@ -272,7 +274,7 @@ func (i *Int) ByteAt(n int) byte {
 	return fullBytes[n]
 }
 
-func (i *Int) SHL(n uint64) *Int  {
+func (i *Int) SHL(n uint64) *Int {
 	if n >= maxBits {
 		i.Int.SetUint64(0)
 	} else {
@@ -288,7 +290,7 @@ func (i *Int) SHR(n uint64) *Int {
 	} else {
 		i.Int.Rsh(i.Int, uint(n))
 	}
-	
+
 	return i.toI256()
 }
 
