@@ -131,6 +131,11 @@ func (s *Storage) commonGetter(key *evmInt256.Int, cache Cache, getterFunc commo
 }
 
 func (s *Storage) Balance(address *evmInt256.Int) (*evmInt256.Int, error) {
+	b, exist := s.ResultCache.Balance[address.AsStringKey()]
+	if exist {
+		return b.Balance.Clone(), nil
+	}
+
 	return s.ExternalStorage.GetBalance(address)
 }
 
