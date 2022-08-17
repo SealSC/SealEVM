@@ -122,7 +122,7 @@ const (
 )
 
 const (
-	unusedX48 OpCode = iota + 0x48
+	BASEFEE OpCode = iota + 0x48
 	unusedX49
 	unusedX4A
 	unusedX4B

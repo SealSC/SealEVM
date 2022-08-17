@@ -75,9 +75,12 @@ var opCodeToString = map[OpCode]string{
 	NUMBER:      "NUMBER",
 	DIFFICULTY:  "DIFFICULTY",
 	GASLIMIT:    "GASLIMIT",
+	CHAINID:     "CHAINID",
+	SELFBALANCE: "SELFBALANCE",
+	BASEFEE:     "BASEFEE",
 
 	// 0x50 range - 'storage' and execution.
-	POP: "POP",
+	POP:      "POP",
 	MLOAD:    "MLOAD",
 	MSTORE:   "MSTORE",
 	MSTORE8:  "MSTORE8",
