@@ -23,11 +23,11 @@ import (
 )
 
 type Contract struct {
-	Namespace   *evmInt256.Int
-	Code        []byte
-	Hash        *evmInt256.Int
-	
-	codeDataFlag map[uint64] bool
+	Namespace *evmInt256.Int
+	Code      []byte
+	Hash      *evmInt256.Int
+
+	codeDataFlag map[uint64]bool
 }
 
 func (c *Contract) IsValidJump(dest uint64) (bool, error) {
@@ -53,7 +53,7 @@ func (c *Contract) IsValidJump(dest uint64) (bool, error) {
 }
 
 func (c *Contract) markCodeData() {
-	c.codeDataFlag = map[uint64] bool {}
+	c.codeDataFlag = map[uint64]bool{}
 	codeLen := len(c.Code)
 	for i := 0; i < codeLen; i++ {
 		code := opcodes.OpCode(c.Code[i])
@@ -61,7 +61,7 @@ func (c *Contract) markCodeData() {
 			bytesCnt := int(code - opcodes.PUSH1 + 1)
 			nextPC := i + bytesCnt
 			for ; bytesCnt > 0; bytesCnt-- {
-				c.codeDataFlag[uint64(i + bytesCnt)] = true
+				c.codeDataFlag[uint64(i+bytesCnt)] = true
 			}
 
 			i = nextPC

@@ -49,7 +49,7 @@ func New(extStorage IExternalStorage) *Storage {
 	return s
 }
 
-func (s *Storage) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error ) {
+func (s *Storage) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error) {
 	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.ExternalStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
 	}
@@ -72,7 +72,7 @@ func (s *Storage) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, err
 	return i, nil
 }
 
-func (s *Storage) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int)  {
+func (s *Storage) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int) {
 	s.ResultCache.CachedData.Set(n.AsStringKey(), k.AsStringKey(), v)
 }
 
@@ -81,7 +81,7 @@ func (s *Storage) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, ne
 
 	b, exist := s.ResultCache.Balance[kString]
 	if !exist {
-		b = &balance {
+		b = &balance{
 			Address: evmInt256.FromBigInt(address.Int),
 			Balance: evmInt256.New(0),
 		}
@@ -100,7 +100,7 @@ func (s *Storage) Log(address *evmInt256.Int, topics [][]byte, data []byte, cont
 	kString := address.AsStringKey()
 
 	var theLog = Log{
-		Topics:   topics,
+		Topics:  topics,
 		Data:    data,
 		Context: context,
 	}
@@ -116,6 +116,7 @@ func (s *Storage) Destruct(address *evmInt256.Int) {
 }
 
 type commonGetterFunc func(*evmInt256.Int) (*evmInt256.Int, error)
+
 func (s *Storage) commonGetter(key *evmInt256.Int, cache Cache, getterFunc commonGetterFunc) (*evmInt256.Int, error) {
 	keyStr := key.AsStringKey()
 	if b, exists := cache[keyStr]; exists {

@@ -27,7 +27,7 @@ const (
 
 var (
 	BlankHash = make([]byte, hashLength, hashLength)
-	ZeroHash = hashes.Keccak256(nil)
+	ZeroHash  = hashes.Keccak256(nil)
 )
 
 func EVMIntToHashBytes(i *evmInt256.Int) [hashLength]byte {
@@ -36,9 +36,9 @@ func EVMIntToHashBytes(i *evmInt256.Int) [hashLength]byte {
 
 	var hash [hashLength]byte
 	if iLen > hashLength {
-		copy(hash[:], iBytes[iLen - hashLength:])
+		copy(hash[:], iBytes[iLen-hashLength:])
 	} else {
-		copy(hash[hashLength - iLen:], iBytes)
+		copy(hash[hashLength-iLen:], iBytes)
 	}
 
 	return hash
@@ -90,7 +90,7 @@ func LeftPaddingSlice(src []byte, toSize int) []byte {
 	}
 
 	ret := make([]byte, toSize, toSize)
-	copy(ret[toSize - sLen:], src)
+	copy(ret[toSize-sLen:], src)
 
 	return ret
 }

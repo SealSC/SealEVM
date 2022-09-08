@@ -35,7 +35,6 @@ func (c *bn256PairingIstanbul) Execute(input []byte) ([]byte, error) {
 	return runBn256Pairing(input)
 }
 
-
 // runBn256Pairing implements the Bn256Pairing precompile, referenced by both
 // Byzantium and Istanbul operations.
 func runBn256Pairing(input []byte) ([]byte, error) {

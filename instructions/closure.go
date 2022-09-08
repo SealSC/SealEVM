@@ -24,17 +24,17 @@ import (
 type ClosureExecute func(ClosureParam) ([]byte, error)
 
 type ClosureParam struct {
-	VM              interface{}
-	OpCode          opcodes.OpCode
-	GasRemaining    *evmInt256.Int
+	VM           interface{}
+	OpCode       opcodes.OpCode
+	GasRemaining *evmInt256.Int
 
 	ContractAddress *evmInt256.Int
 	ContractHash    *evmInt256.Int
 	ContractCode    []byte
 
-	CallData        []byte
-	CallValue       *evmInt256.Int
-	CreateSalt      *evmInt256.Int
+	CallData   []byte
+	CallValue  *evmInt256.Int
+	CreateSalt *evmInt256.Int
 }
 
 func loadClosure() {
@@ -116,30 +116,37 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 		return nil, err
 	}
 
-	cParam := ClosureParam {
-		VM:                 ctx.vm,
-		OpCode:             opCode,
-		GasRemaining:       ctx.gasRemaining,
-		ContractAddress:    addr,
-		ContractCode:       contractCode,
-		ContractHash:       contractCodeHash,
-		CallData:           data,
-		CallValue:          v,
+	cParam := ClosureParam{
+		VM:              ctx.vm,
+		OpCode:          opCode,
+		GasRemaining:    ctx.gasRemaining,
+		ContractAddress: addr,
+		ContractCode:    contractCode,
+		ContractHash:    contractCodeHash,
+		CallData:        data,
+		CallValue:       v,
 	}
 
 	callRet, err := ctx.closureExec(cParam)
 	if err != nil {
+		ctx.stack.Push(evmInt256.New(0))
 		return nil, err
 	}
 
 	//gas check
 	offset, size, _, err = ctx.memoryGasCostAndMalloc(rOffset, rLen)
 	if err != nil {
+		ctx.stack.Push(evmInt256.New(0))
 		return nil, err
 	}
 
 	err = ctx.memory.StoreNBytes(offset, size, callRet)
+	if err != nil {
+		ctx.stack.Push(evmInt256.New(0))
+		return nil, err
+	}
 
+	ctx.stack.Push(evmInt256.New(1))
 	return callRet, err
 }
 
@@ -179,7 +186,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		return nil, err
 	}
 
-	cParam := ClosureParam {
+	cParam := ClosureParam{
 		VM:           ctx.vm,
 		OpCode:       opCode,
 		GasRemaining: ctx.gasRemaining,

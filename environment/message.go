@@ -19,9 +19,9 @@ package environment
 import "github.com/SealSC/SealEVM/evmInt256"
 
 type Message struct {
-	Caller  *evmInt256.Int
-	Value   *evmInt256.Int
-	Data    []byte
+	Caller *evmInt256.Int
+	Value  *evmInt256.Int
+	Data   []byte
 }
 
 func (m Message) DataSize() uint64 {

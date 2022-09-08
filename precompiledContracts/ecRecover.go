@@ -23,7 +23,7 @@ import (
 	"math/big"
 )
 
-type ecRecover struct {}
+type ecRecover struct{}
 
 func (e ecRecover) GasCost(input []byte) uint64 {
 	return params.EcrecoverGas
@@ -37,7 +37,6 @@ func allZero(src []byte) bool {
 	}
 	return true
 }
-
 
 func (e ecRecover) Execute(input []byte) ([]byte, error) {
 	const ecRecoverInputLength = 128

@@ -16,7 +16,7 @@
 
 package precompiledContracts
 
-import 	"github.com/ethereum/go-ethereum/crypto/bn256"
+import "github.com/ethereum/go-ethereum/crypto/bn256"
 
 // newTwistPoint unmarshals a binary blob into a bn256 elliptic curve point,
 // returning it, or an error if the point is invalid.

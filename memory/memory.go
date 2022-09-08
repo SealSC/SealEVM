@@ -47,46 +47,46 @@ func (m *Memory) WillIncrease(offset *evmInt256.Int, size *evmInt256.Int) (o uin
 	return offset.Uint64(), size.Uint64(), i, nil
 }
 
-func (m *Memory)Malloc(offset uint64, size uint64) []byte {
+func (m *Memory) Malloc(offset uint64, size uint64) []byte {
 	mLen := uint64(len(m.cell))
 	bound := offset + size
 	if mLen < bound {
-		newMem := make([]byte, bound - mLen)
+		newMem := make([]byte, bound-mLen)
 		m.cell = append(m.cell, newMem...)
 	}
 
-	return m.cell[offset : bound]
+	return m.cell[offset:bound]
 }
 
 func (m *Memory) Map(offset uint64, length uint64) ([]byte, error) {
-	if offset + length > uint64(len(m.cell)) {
+	if offset+length > uint64(len(m.cell)) {
 		return nil, evmErrors.OutOfMemory
 	}
 
-	return m.cell[offset : offset + length], nil
+	return m.cell[offset : offset+length], nil
 }
 
 func (m *Memory) Store(offset uint64, data []byte) error {
 	dLen := uint64(len(data))
-	if dLen + offset > uint64(len(m.cell)) {
+	if dLen+offset > uint64(len(m.cell)) {
 		return evmErrors.OutOfMemory
 	}
 
-	copy(m.cell[offset : offset + dLen], data)
+	copy(m.cell[offset:offset+dLen], data)
 	return nil
 }
 
 func (m *Memory) StoreNBytes(offset uint64, n uint64, data []byte) error {
-	if offset + n > uint64(len(m.cell)) {
+	if offset+n > uint64(len(m.cell)) {
 		return evmErrors.OutOfMemory
 	}
 
-	copy(m.cell[offset : offset + n], data)
+	copy(m.cell[offset:offset+n], data)
 	return nil
 }
 
 func (m *Memory) Set(idx uint64, data byte) error {
-	if idx > uint64(len(m.cell)) - 1 {
+	if idx > uint64(len(m.cell))-1 {
 		return evmErrors.OutOfMemory
 	}
 
@@ -95,7 +95,7 @@ func (m *Memory) Set(idx uint64, data byte) error {
 }
 
 func (m *Memory) Copy(offset uint64, length uint64) ([]byte, error) {
-	if offset + length > uint64(len(m.cell)) {
+	if offset+length > uint64(len(m.cell)) {
 		return nil, evmErrors.OutOfMemory
 	}
 
@@ -104,7 +104,7 @@ func (m *Memory) Copy(offset uint64, length uint64) ([]byte, error) {
 		return ret, nil
 	}
 
-	copy(ret, m.cell[offset : offset + length])
+	copy(ret, m.cell[offset:offset+length])
 	return ret, nil
 }
 
@@ -115,4 +115,3 @@ func (m *Memory) Size() int64 {
 func (m *Memory) All() []byte {
 	return m.cell
 }
-
