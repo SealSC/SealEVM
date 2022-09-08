@@ -17,12 +17,13 @@
 package instructions
 
 import (
+	"math/big"
+
 	"github.com/SealSC/SealEVM/common"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
 	"github.com/SealSC/SealEVM/precompiledContracts"
-	"math/big"
 )
 
 func loadEnvironment() {
@@ -38,8 +39,7 @@ func loadEnvironment() {
 		enabled:           true,
 	}
 
-
-	instructionTable[opcodes.SELFBALANCE] =  opCodeInstruction{
+	instructionTable[opcodes.SELFBALANCE] = opCodeInstruction{
 		action:            selfBalanceAction,
 		willIncreaseStack: 1,
 		enabled:           true,
@@ -50,7 +50,7 @@ func loadEnvironment() {
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
-	
+
 	instructionTable[opcodes.CALLER] = opCodeInstruction{
 		action:            callerAction,
 		willIncreaseStack: 1,
@@ -131,6 +131,12 @@ func loadEnvironment() {
 
 	instructionTable[opcodes.CHAINID] = opCodeInstruction{
 		action:            chainIDAction,
+		willIncreaseStack: 1,
+		enabled:           true,
+	}
+
+	instructionTable[opcodes.BASEFEE] = opCodeInstruction{
+		action:            baseFeeAction,
 		willIncreaseStack: 1,
 		enabled:           true,
 	}
@@ -344,12 +350,12 @@ func returnDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 		return nil, err
 	}
 
-	err = ctx.memory.Store(offset, ctx.lastReturn[dOffset.Uint64() : size])
+	err = ctx.memory.Store(offset, ctx.lastReturn[dOffset.Uint64():size])
 	return nil, err
 }
 
 func extCodeHashAction(ctx *instructionsContext) ([]byte, error) {
-	addr:= ctx.stack.Peek()
+	addr := ctx.stack.Peek()
 
 	if precompiledContracts.IsPrecompiledContract(addr) {
 		addr.SetBytes(common.ZeroHash)
@@ -374,8 +380,13 @@ func chainIDAction(ctx *instructionsContext) ([]byte, error) {
 	return nil, nil
 }
 
+func baseFeeAction(ctx *instructionsContext) ([]byte, error) {
+	ctx.stack.Push(ctx.environment.Block.BaseFee.Clone())
+	return nil, nil
+}
+
 func blockHashAction(ctx *instructionsContext) ([]byte, error) {
-	blk:= ctx.stack.Peek()
+	blk := ctx.stack.Peek()
 	blkHash, err := ctx.storage.GetBlockHash(blk)
 	if err != nil {
 		return nil, err
