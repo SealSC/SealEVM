@@ -23,7 +23,7 @@ type PrecompiledContract interface {
 	Execute(input []byte) ([]byte, error)
 }
 
-var contracts = [] PrecompiledContract {
+var contracts = []PrecompiledContract{
 	1: &ecRecover{},
 	2: &sha256hash{},
 	3: &ripemd160hash{},

@@ -24,20 +24,20 @@ import (
 )
 
 func loadMisc() {
-	instructionTable[opcodes.SHA3] =  opCodeInstruction{
+	instructionTable[opcodes.SHA3] = opCodeInstruction{
 		action:            sha3Action,
 		requireStackDepth: 2,
 		enabled:           true,
 	}
 
-	instructionTable[opcodes.RETURN] =  opCodeInstruction{
+	instructionTable[opcodes.RETURN] = opCodeInstruction{
 		action:            returnAction,
 		requireStackDepth: 2,
 		enabled:           true,
 		finished:          true,
 	}
 
-	instructionTable[opcodes.REVERT] =  opCodeInstruction{
+	instructionTable[opcodes.REVERT] = opCodeInstruction{
 		action:            revertAction,
 		requireStackDepth: 2,
 		enabled:           true,
@@ -45,7 +45,7 @@ func loadMisc() {
 		returns:           true,
 	}
 
-	instructionTable[opcodes.SELFDESTRUCT] =  opCodeInstruction{
+	instructionTable[opcodes.SELFDESTRUCT] = opCodeInstruction{
 		action:            selfDestructAction,
 		requireStackDepth: 1,
 		enabled:           true,

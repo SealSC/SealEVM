@@ -127,4 +127,3 @@ func (c *bigModExp) Execute(input []byte) ([]byte, error) {
 	}
 	return common.LeftPaddingSlice(base.Exp(base, exp, mod).Bytes(), int(modLen)), nil
 }
-

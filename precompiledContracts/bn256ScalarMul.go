@@ -36,7 +36,6 @@ func (c *bn256ScalarMulIstanbul) Execute(input []byte) ([]byte, error) {
 	return runBn256ScalarMul(input)
 }
 
-
 // runBn256ScalarMul implements the Bn256ScalarMul precompile, referenced by
 // both Byzantium and Istanbul operations.
 func runBn256ScalarMul(input []byte) ([]byte, error) {

@@ -35,4 +35,3 @@ type IExternalStorage interface {
 
 	Load(n string, k string) (*evmInt256.Int, error)
 }
-

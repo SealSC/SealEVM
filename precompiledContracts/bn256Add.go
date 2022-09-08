@@ -35,7 +35,6 @@ func (c *bn256AddIstanbul) Execute(input []byte) ([]byte, error) {
 	return runBn256Add(input)
 }
 
-
 // runBn256Add implements the Bn256Add precompile, referenced by both
 // Byzantium and Istanbul operations.
 func runBn256Add(input []byte) ([]byte, error) {

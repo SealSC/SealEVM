@@ -27,14 +27,14 @@ import (
 )
 
 type DynamicGasCostSetting struct {
-	EXPBytesCost  uint64
-	SHA3ByteCost     uint64
-	MemoryByteCost   uint64
-	LogByteCost      uint64
+	EXPBytesCost   uint64
+	SHA3ByteCost   uint64
+	MemoryByteCost uint64
+	LogByteCost    uint64
 }
 
 type GasSetting struct {
-	ActionConstCost [opcodes.MaxOpCodesCount] uint64
+	ActionConstCost [opcodes.MaxOpCodesCount]uint64
 	NewAccountCost  uint64
 	DynamicCost     DynamicGasCostSetting
 }
@@ -42,7 +42,7 @@ type GasSetting struct {
 func DefaultGasSetting() *GasSetting {
 	gs := &GasSetting{}
 
-	for i, _ := range gs.ActionConstCost {
+	for i := range gs.ActionConstCost {
 		gs.ActionConstCost[i] = 3
 	}
 
@@ -68,7 +68,7 @@ func DefaultGasSetting() *GasSetting {
 	return gs
 }
 
-type ConstOpGasCostSetting [opcodes.MaxOpCodesCount] uint64
+type ConstOpGasCostSetting [opcodes.MaxOpCodesCount]uint64
 
 type instructionsContext struct {
 	stack       *stack.Stack
@@ -76,7 +76,7 @@ type instructionsContext struct {
 	storage     *storage.Storage
 	environment *environment.Context
 
-	vm              interface{}
+	vm interface{}
 
 	pc           uint64
 	readOnly     bool
@@ -169,7 +169,6 @@ func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
 		return nil, i.gasRemaining.Uint64(), nil
 	}
 
-
 	for {
 		opCode := contract.Code[i.pc]
 
@@ -221,7 +220,7 @@ func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
 	return ret, i.gasRemaining.Uint64(), err
 }
 
-func Load()  {
+func Load() {
 	loadStack()
 	loadMemory()
 	loadStorage()
@@ -249,12 +248,12 @@ func New(
 	closureExecute ClosureExecute) IInstructions {
 
 	is := &instructionsContext{
-		vm:             vm,
-		stack:          stack,
-		memory:         memory,
-		storage:        storage,
-		environment:    context,
-		closureExec:    closureExecute,
+		vm:          vm,
+		stack:       stack,
+		memory:      memory,
+		storage:     storage,
+		environment: context,
+		closureExec: closureExecute,
 	}
 
 	is.gasRemaining = evmInt256.FromBigInt(context.Transaction.GasLimit.Int)

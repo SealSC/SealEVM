@@ -60,8 +60,8 @@ func setPushActions() {
 	}
 }
 
-func setSwapActions()  {
-	for i := opcodes.SWAP1; i <= opcodes.SWAP16; i ++ {
+func setSwapActions() {
+	for i := opcodes.SWAP1; i <= opcodes.SWAP16; i++ {
 		swapDepth := int(i - opcodes.SWAP1 + 1)
 
 		instructionTable[i] = opCodeInstruction{
@@ -76,8 +76,8 @@ func setSwapActions()  {
 	}
 }
 
-func setDupActions()  {
-	for i := opcodes.DUP1; i <= opcodes.DUP16; i ++ {
+func setDupActions() {
+	for i := opcodes.DUP1; i <= opcodes.DUP16; i++ {
 		dupDepth := int(i - opcodes.DUP1 + 1)
 
 		instructionTable[i] = opCodeInstruction{

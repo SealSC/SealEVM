@@ -35,4 +35,3 @@ func (c *sha256hash) Execute(input []byte) ([]byte, error) {
 	h := sha256.Sum256(input)
 	return h[:], nil
 }
-

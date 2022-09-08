@@ -61,7 +61,7 @@ func New(param EVMParam) *EVM {
 		param.Context.Transaction.GasLimit = evmInt256.FromBigInt(param.Context.Block.GasLimit.Int)
 	}
 
-	evm := &EVM {
+	evm := &EVM{
 		stack:        stack.New(param.MaxStackDepth),
 		memory:       memory.New(),
 		storage:      storage.New(param.ExternalStore),
@@ -154,23 +154,23 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 }
 
 func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
-	newEVM := New(EVMParam {
+	newEVM := New(EVMParam{
 		MaxStackDepth:  1024,
 		ExternalStore:  e.storage.ExternalStorage,
 		ResultCallback: e.subResult,
-		Context:        &environment.Context {
-			Block:          e.context.Block,
-			Transaction:    e.context.Transaction,
-			Message:        environment.Message {
-				Data:   param.CallData,
+		Context: &environment.Context{
+			Block:       e.context.Block,
+			Transaction: e.context.Transaction,
+			Message: environment.Message{
+				Data: param.CallData,
 			},
 		},
 	})
 
-	newEVM.context.Contract = environment.Contract {
-		Namespace:  param.ContractAddress,
-		Code:       param.ContractCode,
-		Hash:       param.ContractHash,
+	newEVM.context.Contract = environment.Contract{
+		Namespace: param.ContractAddress,
+		Code:      param.ContractCode,
+		Hash:      param.ContractHash,
 	}
 
 	return newEVM
@@ -221,7 +221,7 @@ func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
 	return ret.ResultData, err
 }
 
-func closure(param instructions.ClosureParam) ([]byte, error){
+func closure(param instructions.ClosureParam) ([]byte, error) {
 	evm, ok := param.VM.(*EVM)
 	if !ok {
 		return nil, evmErrors.InvalidEVMInstance

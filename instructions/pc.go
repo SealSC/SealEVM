@@ -37,8 +37,8 @@ func loadPC() {
 	}
 
 	instructionTable[opcodes.JUMPDEST] = opCodeInstruction{
-		action:            jumpDestAction,
-		enabled:           true,
+		action:  jumpDestAction,
+		enabled: true,
 	}
 
 	instructionTable[opcodes.PC] = opCodeInstruction{

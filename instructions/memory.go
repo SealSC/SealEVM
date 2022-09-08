@@ -92,7 +92,7 @@ func mStore8Action(ctx *instructionsContext) ([]byte, error) {
 		return nil, err
 	}
 
-	err = ctx.memory.Set(offset, byte(valBytes & 0xff))
+	err = ctx.memory.Set(offset, byte(valBytes&0xff))
 	return nil, err
 }
 

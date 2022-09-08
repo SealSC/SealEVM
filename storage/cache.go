@@ -21,8 +21,8 @@ import (
 	"github.com/SealSC/SealEVM/evmInt256"
 )
 
-type Cache map[string] *evmInt256.Int
-type CacheUnderNamespace map[string] Cache
+type Cache map[string]*evmInt256.Int
+type CacheUnderNamespace map[string]Cache
 
 func (c CacheUnderNamespace) Get(namespace string, key string) *evmInt256.Int {
 	if c[namespace] == nil {
@@ -45,7 +45,7 @@ type balance struct {
 	Balance *evmInt256.Int
 }
 
-type BalanceCache map[string] *balance
+type BalanceCache map[string]*balance
 
 type Log struct {
 	Topics  [][]byte
@@ -53,18 +53,18 @@ type Log struct {
 	Context environment.Context
 }
 
-type LogCache map[string] []Log
+type LogCache map[string][]Log
 
 type ResultCache struct {
-	OriginalData    CacheUnderNamespace
-	CachedData      CacheUnderNamespace
+	OriginalData CacheUnderNamespace
+	CachedData   CacheUnderNamespace
 
-	Balance         BalanceCache
-	Logs            LogCache
-	Destructs       Cache
+	Balance   BalanceCache
+	Logs      LogCache
+	Destructs Cache
 }
 
-type CodeCache map[string] []byte
+type CodeCache map[string][]byte
 
 type readOnlyCache struct {
 	Code      CodeCache
@@ -98,4 +98,3 @@ func MergeResultCache(src *ResultCache, to *ResultCache) {
 		to.Destructs[k] = v
 	}
 }
-

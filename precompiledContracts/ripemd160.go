@@ -37,4 +37,3 @@ func (c *ripemd160hash) Execute(input []byte) ([]byte, error) {
 	ripemd.Write(input)
 	return common.LeftPadBytes(ripemd.Sum(nil), 32), nil
 }
-

@@ -23,9 +23,9 @@ import (
 
 func loadArithmetic() {
 	instructionTable[opcodes.STOP] = opCodeInstruction{
-		action:            stopAction,
-		enabled:           true,
-		finished:          true,
+		action:   stopAction,
+		enabled:  true,
+		finished: true,
 	}
 
 	instructionTable[opcodes.ADD] = opCodeInstruction{
@@ -179,7 +179,7 @@ func expAction(ctx *instructionsContext) ([]byte, error) {
 
 	gasLeft := ctx.gasRemaining.Uint64()
 	if e.Sign() > 0 {
-		gasCost := uint64((e.BitLen() + 7) / 8) * ctx.gasSetting.DynamicCost.EXPBytesCost
+		gasCost := uint64((e.BitLen()+7)/8) * ctx.gasSetting.DynamicCost.EXPBytesCost
 		if gasLeft < gasCost {
 			return nil, evmErrors.OutOfGas
 		} else {
