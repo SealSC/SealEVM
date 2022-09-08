@@ -17,6 +17,8 @@
 package instructions
 
 import (
+	"errors"
+
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
 )
@@ -128,26 +130,28 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 	}
 
 	callRet, err := ctx.closureExec(cParam)
-	if err != nil {
+	if err != nil && err != errors.New("revert") {
 		ctx.stack.Push(evmInt256.New(0))
-		return nil, err
+		return callRet, nil
+	} else if err == errors.New("revert") {
+		ctx.stack.Push(evmInt256.New(0))
+	} else {
+		ctx.stack.Push(evmInt256.New(1))
 	}
 
 	//gas check
 	offset, size, _, err = ctx.memoryGasCostAndMalloc(rOffset, rLen)
 	if err != nil {
-		ctx.stack.Push(evmInt256.New(0))
 		return nil, err
 	}
 
 	err = ctx.memory.StoreNBytes(offset, size, callRet)
 	if err != nil {
-		ctx.stack.Push(evmInt256.New(0))
 		return nil, err
 	}
 
 	ctx.stack.Push(evmInt256.New(1))
-	return callRet, err
+	return callRet, nil
 }
 
 func callAction(ctx *instructionsContext) ([]byte, error) {

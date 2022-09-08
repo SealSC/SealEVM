@@ -17,6 +17,8 @@
 package SealEVM
 
 import (
+	"errors"
+
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
@@ -205,6 +207,9 @@ func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 	}
 
 	ret, err := newEVM.ExecuteContract(opcodes.CALL == param.OpCode)
+	if ret.ExitOpCode == opcodes.REVERT {
+		err = errors.New("revert")
+	}
 
 	e.instructions.SetGasLimit(ret.GasLeft)
 	return ret.ResultData, err
