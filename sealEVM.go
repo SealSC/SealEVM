@@ -230,6 +230,9 @@ func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
 	newEVM.context.Message.Caller = e.context.Contract.Namespace
 
 	ret, err := newEVM.ExecuteContract(true)
+	if ret.ExitOpCode == opcodes.REVERT {
+		err = errors.New("revert")
+	}
 	e.instructions.SetGasLimit(ret.GasLeft)
 	return ret.ResultData, err
 }
