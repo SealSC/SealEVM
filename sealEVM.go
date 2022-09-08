@@ -181,6 +181,14 @@ func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 
 	//set storage namespace and call value
 	switch param.OpCode {
+	case opcodes.CALL:
+		newEVM.context.Contract.Namespace = param.ContractAddress
+		newEVM.context.Message.Value = param.CallValue
+		newEVM.context.Message.Caller = e.context.Contract.Namespace
+	case opcodes.STATICCALL:
+		newEVM.context.Contract.Namespace = param.ContractAddress
+		newEVM.context.Message.Value = param.CallValue
+		newEVM.context.Message.Caller = e.context.Contract.Namespace
 	case opcodes.CALLCODE:
 		newEVM.context.Contract.Namespace = e.context.Contract.Namespace
 		newEVM.context.Message.Value = param.CallValue

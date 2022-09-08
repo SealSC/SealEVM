@@ -129,17 +129,24 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 
 	callRet, err := ctx.closureExec(cParam)
 	if err != nil {
+		ctx.stack.Push(evmInt256.New(0))
 		return nil, err
 	}
 
 	//gas check
 	offset, size, _, err = ctx.memoryGasCostAndMalloc(rOffset, rLen)
 	if err != nil {
+		ctx.stack.Push(evmInt256.New(0))
 		return nil, err
 	}
 
 	err = ctx.memory.StoreNBytes(offset, size, callRet)
+	if err != nil {
+		ctx.stack.Push(evmInt256.New(0))
+		return nil, err
+	}
 
+	ctx.stack.Push(evmInt256.New(1))
 	return callRet, err
 }
 
