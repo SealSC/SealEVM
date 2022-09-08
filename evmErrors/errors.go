@@ -32,7 +32,7 @@ var JumpToNoneOpCode = errors.New("jump to non-OpCode")
 var OutOfGas = errors.New("out of gas")
 var InsufficientBalance = errors.New("insufficient balance")
 var WriteProtection = errors.New("write protection")
-
+var RevertErr = errors.New("revert")
 var BN256BadPairingInput = errors.New("bn256 bad pairing input")
 
 func Panicked(err error) error {

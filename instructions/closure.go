@@ -17,8 +17,7 @@
 package instructions
 
 import (
-	"errors"
-
+	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
 )
@@ -130,10 +129,10 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 	}
 
 	callRet, err := ctx.closureExec(cParam)
-	if err != nil && err != errors.New("revert") {
+	if err != nil && err != evmErrors.RevertErr {
 		ctx.stack.Push(evmInt256.New(0))
 		return callRet, nil
-	} else if err == errors.New("revert") {
+	} else if err == evmErrors.RevertErr {
 		ctx.stack.Push(evmInt256.New(0))
 	} else {
 		ctx.stack.Push(evmInt256.New(1))
@@ -150,7 +149,6 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 		return nil, err
 	}
 
-	ctx.stack.Push(evmInt256.New(1))
 	return callRet, nil
 }
 
@@ -214,7 +212,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		ctx.stack.Push(addr)
 	}
 
-	if err != errors.New("revert") {
+	if err != evmErrors.RevertErr {
 		ret = nil
 	}
 
