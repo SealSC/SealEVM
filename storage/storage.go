@@ -76,17 +76,26 @@ func (s *Storage) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int) {
 	s.ResultCache.CachedData.Set(n.AsStringKey(), k.AsStringKey(), v)
 }
 
+func (s *Storage) CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool {
+	balance, err := s.Balance(from)
+	if err != nil {
+		return false
+	}
+
+	return balance.Cmp(amount.Int) >= 0
+}
+
 func (s *Storage) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, neg bool) {
 	kString := address.AsStringKey()
+	s.Balance(address)
 
-	b, exist := s.ResultCache.Balance[kString]
-	if !exist {
+	b, exists := s.ResultCache.Balance[kString]
+	if !exists {
 		b = &balance{
 			Address: evmInt256.FromBigInt(address.Int),
 			Balance: evmInt256.New(0),
 		}
-
-		s.ResultCache.Balance[kString] = b
+		s.ResultCache.Balance[address.AsStringKey()] = b
 	}
 
 	if neg {
@@ -137,7 +146,22 @@ func (s *Storage) Balance(address *evmInt256.Int) (*evmInt256.Int, error) {
 		return b.Balance.Clone(), nil
 	}
 
-	return s.ExternalStorage.GetBalance(address)
+	ba, err := s.ExternalStorage.GetBalance(address)
+	if err != nil {
+		b = &balance{
+			Address: evmInt256.FromBigInt(address.Int),
+			Balance: evmInt256.New(0),
+		}
+	} else {
+		b = &balance{
+			Address: address,
+			Balance: ba,
+		}
+	}
+
+	s.ResultCache.Balance[address.AsStringKey()] = b
+
+	return b.Balance.Clone(), nil
 }
 
 func (s *Storage) GetCode(address *evmInt256.Int) ([]byte, error) {

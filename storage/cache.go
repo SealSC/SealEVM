@@ -83,15 +83,12 @@ func MergeResultCache(src *ResultCache, to *ResultCache) {
 	}
 
 	for k, v := range src.Balance {
-		if to.Balance[k] != nil {
-			to.Balance[k].Balance.Add(v.Balance)
-		} else {
-			to.Balance[k] = v
-		}
+		to.Balance[k] = v
 	}
 
+	//TODO check whether there are duplicate logs
 	for k, v := range src.Logs {
-		to.Logs[k] = append(to.Logs[k], v...)
+		to.Logs[k] = v
 	}
 
 	for k, v := range src.Destructs {
