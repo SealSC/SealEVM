@@ -75,6 +75,25 @@ func New(param EVMParam) *EVM {
 	return evm
 }
 
+func NewWithCache(param EVMParam, s *storage.Storage) *EVM {
+	if param.Context.Block.GasLimit.Cmp(param.Context.Transaction.GasLimit.Int) < 0 {
+		param.Context.Transaction.GasLimit = evmInt256.FromBigInt(param.Context.Block.GasLimit.Int)
+	}
+
+	evm := &EVM{
+		stack:        stack.New(param.MaxStackDepth),
+		memory:       memory.New(),
+		storage:      s,
+		context:      param.Context,
+		instructions: nil,
+		resultNotify: param.ResultCallback,
+	}
+
+	evm.instructions = instructions.New(evm, evm.stack, evm.memory, evm.storage, evm.context, nil, closure)
+
+	return evm
+}
+
 func (e *EVM) subResult(result ExecuteResult, err error) {
 	if err == nil && result.ExitOpCode != opcodes.REVERT {
 		storage.MergeResultCache(&result.StorageCache, &e.storage.ResultCache)
@@ -122,7 +141,7 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 				return result, evmErrors.WriteProtection
 			}
 
-			if e.storage.ExternalStorage.CanTransfer(msg.Caller, contractAddr, msg.Value) {
+			if e.storage.CanTransfer(msg.Caller, contractAddr, msg.Value) {
 				e.storage.BalanceModify(msg.Caller, msg.Value, true)
 				e.storage.BalanceModify(contractAddr, msg.Value, false)
 			} else {
@@ -154,7 +173,7 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 }
 
 func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
-	newEVM := New(EVMParam{
+	newEVM := NewWithCache(EVMParam{
 		MaxStackDepth:  1024,
 		ExternalStore:  e.storage.ExternalStorage,
 		ResultCallback: e.subResult,
@@ -165,7 +184,7 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 				Data: param.CallData,
 			},
 		},
-	})
+	}, e.storage)
 
 	newEVM.context.Contract = environment.Contract{
 		Namespace: param.ContractAddress,
