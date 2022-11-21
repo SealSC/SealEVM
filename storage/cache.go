@@ -95,3 +95,63 @@ func MergeResultCache(src *ResultCache, to *ResultCache) {
 		to.Destructs[k] = v
 	}
 }
+
+func DupResultCache(src *ResultCache) ResultCache {
+	dst := ResultCache{}
+
+	dst.OriginalData = make(CacheUnderNamespace)
+	for k, v := range src.OriginalData {
+		oriData := make(Cache)
+		for mk, mv := range v {
+			oriData[mk] = mv.Clone()
+		}
+		dst.OriginalData[k] = oriData
+	}
+
+	dst.CachedData = make(CacheUnderNamespace)
+	for k, v := range src.CachedData {
+		//TODO v is a map
+		cachedData := make(Cache)
+		for mk, mv := range v {
+			cachedData[mk] = mv.Clone()
+		}
+		dst.CachedData[k] = cachedData
+	}
+
+	dst.Balance = make(BalanceCache)
+	for k, v := range src.Balance {
+		dst.Balance[k] = &balance{
+			Address: v.Address.Clone(),
+			Balance: v.Balance.Clone(),
+		}
+	}
+
+	dst.Logs = make(LogCache)
+	for k, v := range src.Logs {
+		logSlice := make([]Log, len(v))
+		copy(logSlice, v)
+		for sk, sv := range v {
+			//Topics
+			logSlice[sk].Topics = make([][]byte, len(sv.Topics))
+			copy(logSlice[sk].Topics, sv.Topics)
+			for tsk, tsv := range sv.Topics {
+				logSlice[sk].Topics[tsk] = make([]byte, len(tsv))
+				copy(logSlice[sk].Topics[tsk], tsv)
+			}
+			//Data
+			logSlice[sk].Data = make([]byte, len(sv.Data))
+			copy(logSlice[sk].Data, sv.Data)
+
+			//Context
+			logSlice[sk].Context = sv.Context
+		}
+		dst.Logs[k] = logSlice
+	}
+
+	dst.Destructs = make(Cache)
+	for k, v := range src.Destructs {
+		dst.Destructs[k] = v.Clone()
+	}
+
+	return dst
+}

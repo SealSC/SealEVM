@@ -76,10 +76,6 @@ func New(param EVMParam) *EVM {
 }
 
 func NewWithCache(param EVMParam, s *storage.Storage) *EVM {
-	if param.Context.Block.GasLimit.Cmp(param.Context.Transaction.GasLimit.Int) < 0 {
-		param.Context.Transaction.GasLimit = evmInt256.FromBigInt(param.Context.Block.GasLimit.Int)
-	}
-
 	evm := &EVM{
 		stack:        stack.New(param.MaxStackDepth),
 		memory:       memory.New(),
@@ -162,6 +158,7 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 	}
 
 	execRet, gasLeft, err := e.instructions.ExecuteContract()
+	result.GasLeft = gasLeft
 	result.ResultData = execRet
 	result.ExitOpCode = e.instructions.ExitOpCode()
 
@@ -173,10 +170,11 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 }
 
 func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
+	closureStorage := e.storage.Dup()
 	newEVM := NewWithCache(EVMParam{
 		MaxStackDepth:  1024,
 		ExternalStore:  e.storage.ExternalStorage,
-		ResultCallback: e.subResult,
+		ResultCallback: nil,
 		Context: &environment.Context{
 			Block:       e.context.Block,
 			Transaction: e.context.Transaction,
@@ -184,13 +182,15 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 				Data: param.CallData,
 			},
 		},
-	}, e.storage)
+	}, &closureStorage)
 
 	newEVM.context.Contract = environment.Contract{
 		Namespace: param.ContractAddress,
 		Code:      param.ContractCode,
 		Hash:      param.ContractHash,
 	}
+
+	newEVM.instructions.SetGasLimit(param.GasRemaining.Uint64())
 
 	return newEVM
 }
@@ -224,8 +224,12 @@ func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 	}
 
 	ret, err := newEVM.ExecuteContract(opcodes.CALL == param.OpCode)
-	if ret.ExitOpCode == opcodes.REVERT {
+	if err == nil && ret.ExitOpCode == opcodes.REVERT {
 		err = evmErrors.RevertErr
+	}
+
+	if err == nil {
+		e.storage = newEVM.storage
 	}
 
 	e.instructions.SetGasLimit(ret.GasLeft)
@@ -247,9 +251,14 @@ func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
 	newEVM.context.Message.Caller = e.context.Contract.Namespace
 
 	ret, err := newEVM.ExecuteContract(true)
-	if ret.ExitOpCode == opcodes.REVERT {
+	if err == nil && ret.ExitOpCode == opcodes.REVERT {
 		err = evmErrors.RevertErr
 	}
+
+	if err == nil {
+		e.storage = newEVM.storage
+	}
+
 	e.instructions.SetGasLimit(ret.GasLeft)
 	return ret.ResultData, err
 }

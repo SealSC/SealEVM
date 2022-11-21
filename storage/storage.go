@@ -49,6 +49,16 @@ func New(extStorage IExternalStorage) *Storage {
 	return s
 }
 
+func (s *Storage) Dup() Storage {
+	st := Storage{
+		ResultCache:     DupResultCache(&s.ResultCache),
+		ExternalStorage: s.ExternalStorage,
+		readOnlyCache:   s.readOnlyCache,
+	}
+
+	return st
+}
+
 func (s *Storage) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error) {
 	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.ExternalStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
