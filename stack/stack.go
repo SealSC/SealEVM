@@ -125,8 +125,8 @@ func (s *Stack) Dup(n int) {
 func (s Stack) DebugPrint() {
 	var hexData []string
 
-	for i := 0; i < len(s.data); i++ {
-		hexData = append(hexData, "0x"+s.data[i].Text(16)+",\r\n")
+	for i := len(s.data); i > 0; i-- {
+		hexData = append(hexData, "0x"+s.data[i-1].Text(16)+",\r\n")
 	}
 
 	fmt.Println(strings.Join(hexData, ""))
