@@ -194,9 +194,9 @@ func expAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func signExtendAction(ctx *instructionsContext) ([]byte, error) {
-	x := ctx.stack.Pop()
-	b := ctx.stack.Peek()
+	b := ctx.stack.Pop()
+	x := ctx.stack.Peek()
 
-	b.Set(x.SignExtend(b).Int)
+	x.Set(x.SignExtend(b).Int)
 	return nil, nil
 }
