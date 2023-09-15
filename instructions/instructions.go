@@ -105,6 +105,7 @@ type IInstructions interface {
 	ExecuteContract() ([]byte, uint64, error)
 	SetGasLimit(uint64)
 	GetGasLeft() uint64
+	GetGasSetting() *GasSetting
 	SetReadOnly()
 	IsReadOnly() bool
 	ExitOpCode() opcodes.OpCode
@@ -112,7 +113,7 @@ type IInstructions interface {
 
 var instructionTable [opcodes.MaxOpCodesCount]opCodeInstruction
 
-//returns offset, size in type uint64
+// returns offset, size in type uint64
 func (i *instructionsContext) memoryGasCostAndMalloc(offset *evmInt256.Int, size *evmInt256.Int) (uint64, uint64, uint64, error) {
 	gasLeft := i.gasRemaining.Uint64()
 	o, s, increased, err := i.memory.WillIncrease(offset, size)
@@ -146,6 +147,10 @@ func (i *instructionsContext) IsReadOnly() bool {
 
 func (i *instructionsContext) GetGasLeft() uint64 {
 	return i.gasRemaining.Uint64()
+}
+
+func (i *instructionsContext) GetGasSetting() *GasSetting {
+	return i.gasSetting
 }
 
 func (i *instructionsContext) ExitOpCode() opcodes.OpCode {

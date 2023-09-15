@@ -34,6 +34,7 @@ type EVMParam struct {
 	ExternalStore  storage.IExternalStorage
 	ResultCallback EVMResultCallback
 	Context        *environment.Context
+	GasSetting     *instructions.GasSetting
 }
 
 type EVM struct {
@@ -70,7 +71,7 @@ func New(param EVMParam) *EVM {
 		resultNotify: param.ResultCallback,
 	}
 
-	evm.instructions = instructions.New(evm, evm.stack, evm.memory, evm.storage, evm.context, nil, closure)
+	evm.instructions = instructions.New(evm, evm.stack, evm.memory, evm.storage, evm.context, param.GasSetting, closure)
 
 	return evm
 }
@@ -89,7 +90,7 @@ func NewWithCache(param EVMParam, s *storage.Storage) *EVM {
 		resultNotify: param.ResultCallback,
 	}
 
-	evm.instructions = instructions.New(evm, evm.stack, evm.memory, evm.storage, evm.context, nil, closure)
+	evm.instructions = instructions.New(evm, evm.stack, evm.memory, evm.storage, evm.context, param.GasSetting, closure)
 
 	return evm
 }
@@ -184,6 +185,7 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 				Data: param.CallData,
 			},
 		},
+		GasSetting: e.instructions.GetGasSetting(),
 	}, e.storage)
 
 	newEVM.context.Contract = environment.Contract{
