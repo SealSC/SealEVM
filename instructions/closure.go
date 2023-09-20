@@ -208,12 +208,11 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 	ret, err := ctx.closureExec(cParam)
 	if err != nil {
 		ctx.stack.Push(evmInt256.New(0))
+		if err != evmErrors.RevertErr {
+			ret = nil
+		}
 	} else {
 		ctx.stack.Push(addr)
-	}
-
-	if err != evmErrors.RevertErr {
-		ret = nil
 	}
 
 	return ret, nil
