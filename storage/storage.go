@@ -219,3 +219,12 @@ func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
 
 	return hash, err
 }
+
+func (s *Storage) NewContract(address *evmInt256.Int, code []byte) error {
+	keyStr := address.AsStringKey()
+	if _, exists := s.readOnlyCache.Code[keyStr]; exists {
+		s.readOnlyCache.Code[keyStr] = code
+	}
+
+	return s.ExternalStorage.NewContract(keyStr, code)
+}

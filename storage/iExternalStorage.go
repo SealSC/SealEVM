@@ -34,4 +34,6 @@ type IExternalStorage interface {
 	CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool
 
 	Load(n string, k string) (*evmInt256.Int, error)
+
+	NewContract(n string, code []byte) error
 }

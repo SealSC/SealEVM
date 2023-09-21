@@ -17,121 +17,121 @@
 package stack
 
 import (
-    "fmt"
-    "github.com/SealSC/SealEVM/evmErrors"
-    "github.com/SealSC/SealEVM/evmInt256"
-    "strconv"
-    "strings"
+	"fmt"
+	"github.com/SealSC/SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/evmInt256"
+	"strconv"
+	"strings"
 )
 
 type Stack struct {
-    data []*evmInt256.Int
-    max  int
+	data []*evmInt256.Int
+	max  int
 }
 
 func New(max int) *Stack {
-    if max <= 0 {
-        max = int(^uint(0) >> 1)
-    }
+	if max <= 0 {
+		max = int(^uint(0) >> 1)
+	}
 
-    return &Stack{
-        max: max,
-    }
+	return &Stack{
+		max: max,
+	}
 }
 
 func (s *Stack) CheckStackDepth(minRequire int, willAdd int) error {
-    sLen := len(s.data)
-    if sLen < minRequire {
-        return evmErrors.StackUnderFlow
-    } else if sLen+willAdd > s.max {
-        return evmErrors.StackOverFlow
-    }
+	sLen := len(s.data)
+	if sLen < minRequire {
+		return evmErrors.StackUnderFlow
+	} else if sLen+willAdd > s.max {
+		return evmErrors.StackOverFlow
+	}
 
-    return nil
+	return nil
 }
 
 func (s *Stack) Len() int {
-    return len(s.data)
+	return len(s.data)
 }
 
 func (s *Stack) Push(i *evmInt256.Int) {
-    s.data = append(s.data, i)
-    return
+	s.data = append(s.data, i)
+	return
 }
 
 func (s *Stack) PushN(i []*evmInt256.Int) {
-    s.data = append(s.data, i...)
-    return
+	s.data = append(s.data, i...)
+	return
 }
 
 func (s *Stack) Pop() *evmInt256.Int {
-    sLen := len(s.data)
-    i := s.data[sLen-1]
-    s.data = s.data[:sLen-1]
-    return i
+	sLen := len(s.data)
+	i := s.data[sLen-1]
+	s.data = s.data[:sLen-1]
+	return i
 }
 
 func (s *Stack) PopN(n int) []*evmInt256.Int {
-    sLen := len(s.data)
-    var el []*evmInt256.Int
-    el = s.data[sLen-n:]
-    s.data = s.data[:sLen-n]
+	sLen := len(s.data)
+	var el []*evmInt256.Int
+	el = s.data[sLen-n:]
+	s.data = s.data[:sLen-n]
 
-    //reverse to make sure the order
-    for i, j := 0, len(el)-1; i < j; i, j = i+1, j-1 {
-        el[i], el[j] = el[j], el[i]
-    }
-    return el
+	//reverse to make sure the order
+	for i, j := 0, len(el)-1; i < j; i, j = i+1, j-1 {
+		el[i], el[j] = el[j], el[i]
+	}
+	return el
 }
 
 func (s *Stack) Peek() *evmInt256.Int {
-    sLen := len(s.data)
-    if sLen == 0 {
-        return nil
-    }
+	sLen := len(s.data)
+	if sLen == 0 {
+		return nil
+	}
 
-    i := s.data[sLen-1]
-    return i
+	i := s.data[sLen-1]
+	return i
 }
 
 func (s *Stack) PeekN(n int) []*evmInt256.Int {
-    sLen := len(s.data)
-    var el []*evmInt256.Int = nil
-    if sLen >= n {
-        el = s.data[sLen-n:]
-    }
+	sLen := len(s.data)
+	var el []*evmInt256.Int = nil
+	if sLen >= n {
+		el = s.data[sLen-n:]
+	}
 
-    return el
+	return el
 }
 
 func (s *Stack) Swap(n int) {
-    n += 1
-    sLen := len(s.data)
+	n += 1
+	sLen := len(s.data)
 
-    s.data[sLen-n], s.data[sLen-1] = s.data[sLen-1], s.data[sLen-n]
+	s.data[sLen-n], s.data[sLen-1] = s.data[sLen-1], s.data[sLen-n]
 
-    return
+	return
 }
 
 func (s *Stack) Dup(n int) {
-    sLen := len(s.data)
+	sLen := len(s.data)
 
-    i := s.data[sLen-n]
-    newI := evmInt256.FromBigInt(i.Int)
-    s.Push(newI)
+	i := s.data[sLen-n]
+	newI := evmInt256.FromBigInt(i.Int)
+	s.Push(newI)
 
-    return
+	return
 }
 
 func (s Stack) DebugPrint() {
-    var hexData []string
+	var hexData []string
 
-    stackLen := len(s.data)
-    fmt.Println("stack length:", stackLen)
+	stackLen := len(s.data)
+	fmt.Println("stack length:", stackLen)
 
-    for i := stackLen; i > 0; i-- {
-        hexData = append(hexData, strconv.Itoa(stackLen-i)+": 0x"+s.data[i-1].Text(16)+",\r\n")
-    }
+	for i := stackLen; i > 0; i-- {
+		hexData = append(hexData, strconv.Itoa(stackLen-i)+": 0x"+s.data[i-1].Text(16)+",\r\n")
+	}
 
-    fmt.Println(strings.Join(hexData, ""))
+	fmt.Println(strings.Join(hexData, ""))
 }

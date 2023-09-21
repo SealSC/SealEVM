@@ -213,6 +213,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		}
 	} else {
 		ctx.stack.Push(addr)
+		_ = ctx.storage.NewContract(addr, ret)
 	}
 
 	return ret, nil
