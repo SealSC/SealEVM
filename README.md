@@ -4,6 +4,9 @@ SealEVM is an independent EVM implementation that decouples from the storage sys
 
 ---
 
+- [中文](https://github.com/SealSC/SealEVM/blob/master/README_zh.md)
+
+##
 
 ### Example
 
