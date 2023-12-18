@@ -89,7 +89,7 @@ type ExecuteResult struct {
 ##
 
 >#### 执行结果的缓存
-下面是关于这些缓存变量的作用的描述，详细的结构请参考远吗
+下面是关于这些缓存变量的作用的描述，详细的结构请参考源码
 ```go
 type ResultCache struct {
     OriginalData CacheUnderNamespace //缓存执行过程中，从外部存储读取的信息
