@@ -37,7 +37,22 @@ func loadStack() {
 	setDupActions()
 }
 
+//EIP-3855 (https://eips.ethereum.org/EIPS/eip-3855)
+func setPush0() {
+	instructionTable[opcodes.PUSH0] = opCodeInstruction{
+		action: func(ctx *instructionsContext) ([]byte, error) {
+			ctx.stack.Push(evmInt256.New(0))
+			return nil, nil
+		},
+
+		willIncreaseStack: 1,
+		enabled:           true,
+	}
+}
+
 func setPushActions() {
+	setPush0()
+
 	for i := opcodes.PUSH1; i <= opcodes.PUSH32; i++ {
 		bytesSize := uint64(i - opcodes.PUSH1 + 1)
 

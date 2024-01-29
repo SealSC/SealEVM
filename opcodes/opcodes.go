@@ -151,11 +151,11 @@ const (
 	unusedX5C OpCode = iota + 0x5C
 	unusedX5D
 	unusedX5E
-	unusedX5F
 )
 
 const (
-	PUSH1 OpCode = iota + 0x60
+	PUSH0 OpCode = iota + 0x5F
+	PUSH1
 	PUSH2
 	PUSH3
 	PUSH4
