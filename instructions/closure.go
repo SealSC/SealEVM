@@ -77,7 +77,7 @@ func loadClosure() {
 
 	instructionTable[opcodes.CREATE2] = opCodeInstruction{
 		action:            create2Action,
-		requireStackDepth: 2,
+		requireStackDepth: 4,
 		enabled:           true,
 		returns:           true,
 		isWriter:          true,
