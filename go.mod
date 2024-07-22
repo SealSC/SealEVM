@@ -1,8 +1,15 @@
 module github.com/SealSC/SealEVM
 
-go 1.16
+go 1.21
 
 require (
-	github.com/ethereum/go-ethereum v1.10.22
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	github.com/ethereum/go-ethereum v1.13.14
+	golang.org/x/crypto v0.22.0
+)
+
+require (
+	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
+	github.com/holiman/uint256 v1.2.4 // indirect
+	golang.org/x/sys v0.19.0 // indirect
 )
