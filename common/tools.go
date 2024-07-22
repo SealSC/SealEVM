@@ -22,29 +22,29 @@ import (
 )
 
 const (
-	hashLength = 32
+	HashLength = 32
 )
 
 var (
-	BlankHash = make([]byte, hashLength, hashLength)
+	BlankHash = make([]byte, HashLength, HashLength)
 	ZeroHash  = hashes.Keccak256(nil)
 )
 
-func EVMIntToHashBytes(i *evmInt256.Int) [hashLength]byte {
+func EVMIntToHashBytes(i *evmInt256.Int) [HashLength]byte {
 	iBytes := i.Bytes()
 	iLen := len(iBytes)
 
-	var hash [hashLength]byte
-	if iLen > hashLength {
-		copy(hash[:], iBytes[iLen-hashLength:])
+	var hash [HashLength]byte
+	if iLen > HashLength {
+		copy(hash[:], iBytes[iLen-HashLength:])
 	} else {
-		copy(hash[hashLength-iLen:], iBytes)
+		copy(hash[HashLength-iLen:], iBytes)
 	}
 
 	return hash
 }
 
-func HashBytesToEVMInt(hash [hashLength]byte) (*evmInt256.Int, error) {
+func HashBytesToEVMInt(hash [HashLength]byte) (*evmInt256.Int, error) {
 
 	i := evmInt256.New(0)
 	i.SetBytes(hash[:])
@@ -55,10 +55,10 @@ func HashBytesToEVMInt(hash [hashLength]byte) (*evmInt256.Int, error) {
 func BytesDataToEVMIntHash(data []byte) *evmInt256.Int {
 	var hashBytes []byte
 	srcLen := len(data)
-	if srcLen < hashLength {
-		hashBytes = LeftPaddingSlice(data, hashLength)
+	if srcLen < HashLength {
+		hashBytes = LeftPaddingSlice(data, HashLength)
 	} else {
-		hashBytes = data[:hashLength]
+		hashBytes = data[:HashLength]
 	}
 
 	i := evmInt256.New(0)

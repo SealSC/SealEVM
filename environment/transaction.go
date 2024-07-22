@@ -16,11 +16,17 @@
 
 package environment
 
-import "github.com/SealSC/SealEVM/evmInt256"
+import (
+	"github.com/SealSC/SealEVM/common"
+	"github.com/SealSC/SealEVM/evmInt256"
+)
 
 type Transaction struct {
 	TxHash   []byte
 	Origin   *evmInt256.Int
 	GasPrice *evmInt256.Int
 	GasLimit *evmInt256.Int
+
+	BlobFeeCap *evmInt256.Int
+	BlobHashes [][common.HashLength]byte
 }
