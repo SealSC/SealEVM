@@ -18,6 +18,7 @@ package instructions
 
 import (
 	"github.com/SealSC/SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/storage"
 )
 
 func loadStorage() {
@@ -38,7 +39,7 @@ func loadStorage() {
 func sLoadAction(ctx *instructionsContext) ([]byte, error) {
 	k := ctx.stack.Peek()
 
-	v, err := ctx.storage.SLoad(ctx.environment.Contract.Namespace, k)
+	v, err := ctx.storage.XLoad(ctx.environment.Contract.Namespace, k, storage.SStorage)
 	if err != nil {
 		return nil, err
 	}

@@ -148,7 +148,7 @@ const (
 )
 
 const (
-	unusedX5C OpCode = iota + 0x5C
+	TLOAD OpCode = iota + 0x5C
 	unusedX5D
 	unusedX5E
 )

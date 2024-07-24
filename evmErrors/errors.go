@@ -47,4 +47,8 @@ func NoSuchDataInTheStorage(err error) error {
 	return errors.New("no such data in the storage: " + err.Error())
 }
 
+func InvalidTypeOfStorage() error {
+	return errors.New("invalid type of storage for reading or writing")
+}
+
 var OutOfMemory = errors.New("out of memory")

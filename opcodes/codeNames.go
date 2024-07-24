@@ -181,6 +181,7 @@ var opCodeToString = map[OpCode]string{
 	//Dencun range
 	BLOBHASH:    "BLOBHASH",
 	BLOBBASEFEE: "BLOBBASEFEE",
+	TLOAD:       "TLOAD",
 }
 
 func (c OpCode) String() string {

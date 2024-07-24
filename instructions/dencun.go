@@ -3,6 +3,7 @@ package instructions
 import (
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/storage"
 )
 
 func loadDencun() {
@@ -15,6 +16,12 @@ func loadDencun() {
 	instructionTable[opcodes.BLOBBASEFEE] = opCodeInstruction{
 		action:            blobBaseFeeAction,
 		willIncreaseStack: 1,
+		enabled:           true,
+	}
+
+	instructionTable[opcodes.TLOAD] = opCodeInstruction{
+		action:            tLoadAction,
+		requireStackDepth: 1,
 		enabled:           true,
 	}
 }
@@ -40,5 +47,15 @@ func blobBaseFeeAction(ctx *instructionsContext) ([]byte, error) {
 	}
 
 	ctx.stack.Push(bbf)
+	return nil, nil
+}
+
+func tLoadAction(ctx *instructionsContext) ([]byte, error) {
+	key := ctx.stack.Peek()
+	val, err := ctx.storage.XLoad(ctx.environment.Contract.Namespace, key, storage.TStorage)
+	if err != nil {
+		return nil, err
+	}
+	key.Set(val.Int)
 	return nil, nil
 }
