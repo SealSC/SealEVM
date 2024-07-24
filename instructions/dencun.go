@@ -11,6 +11,12 @@ func loadDencun() {
 		requireStackDepth: 1,
 		enabled:           true,
 	}
+
+	instructionTable[opcodes.BLOBBASEFEE] = opCodeInstruction{
+		action:            blobBaseFeeAction,
+		willIncreaseStack: 1,
+		enabled:           true,
+	}
 }
 
 func blobHashAction(ctx *instructionsContext) ([]byte, error) {
@@ -22,5 +28,17 @@ func blobHashAction(ctx *instructionsContext) ([]byte, error) {
 	} else {
 		index.SetUint64(0)
 	}
+	return nil, nil
+}
+
+func blobBaseFeeAction(ctx *instructionsContext) ([]byte, error) {
+	bbf := ctx.environment.Block.BlobBaseFee
+	if bbf == nil {
+		bbf = evmInt256.New(0)
+	} else {
+		bbf = bbf.Clone()
+	}
+
+	ctx.stack.Push(bbf)
 	return nil, nil
 }

@@ -124,7 +124,7 @@ const (
 const (
 	BASEFEE OpCode = iota + 0x48
 	BLOBHASH
-	unusedX4A
+	BLOBBASEFEE
 	unusedX4B
 	unusedX4C
 	unusedX4D
