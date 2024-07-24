@@ -64,23 +64,25 @@ func (s *Storage) XLoad(n *evmInt256.Int, k *evmInt256.Int, t TypeOfStorage) (*e
 	nsStr := n.AsStringKey()
 	keyStr := k.AsStringKey()
 
+	if t != SStorage && t != TStorage {
+		return nil, evmErrors.InvalidTypeOfStorage()
+	}
+
 	var err error = nil
-	i := s.ResultCache.CachedData.Get(nsStr, keyStr)
+	i := s.ResultCache.XCachedLoad(nsStr, keyStr, t)
 	if i == nil {
 		if t == SStorage {
 			i, err = s.ExternalStorage.Load(nsStr, keyStr)
-		} else if t == TStorage {
-			i, err = s.ExternalStorage.TLoad(nsStr, keyStr)
 		} else {
-			return nil, evmErrors.InvalidTypeOfStorage()
+			i, err = s.ExternalStorage.TLoad(nsStr, keyStr)
 		}
 
 		if err != nil {
 			return nil, evmErrors.NoSuchDataInTheStorage(err)
 		}
 
-		s.ResultCache.OriginalData.Set(nsStr, keyStr, i)
-		s.ResultCache.CachedData.Set(nsStr, keyStr, i)
+		s.ResultCache.XCachedStore(nsStr, keyStr, i, t)
+		s.ResultCache.XOriginalStore(nsStr, keyStr, i, t)
 	}
 
 	return i, nil
