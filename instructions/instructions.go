@@ -237,6 +237,7 @@ func Load() {
 	loadMisc()
 	loadClosure()
 	loadPC()
+	loadDencun()
 }
 
 func GetInstructionsTable() [opcodes.MaxOpCodesCount]opCodeInstruction {
