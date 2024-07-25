@@ -31,6 +31,12 @@ func loadDencun() {
 		enabled:           true,
 		isWriter:          true,
 	}
+
+	instructionTable[opcodes.MCOPY] = opCodeInstruction{
+		action:            memCopyAction,
+		requireStackDepth: 3,
+		enabled:           true,
+	}
 }
 
 func blobHashAction(ctx *instructionsContext) ([]byte, error) {
@@ -72,4 +78,18 @@ func tStoreAction(ctx *instructionsContext) ([]byte, error) {
 	val := ctx.stack.Pop()
 	ctx.storage.XStore(ctx.environment.Contract.Namespace, key, val, storage.TStorage)
 	return nil, nil
+}
+
+func memCopyAction(ctx *instructionsContext) ([]byte, error) {
+	dst := ctx.stack.Pop()
+	src := ctx.stack.Pop()
+	length := ctx.stack.Pop()
+
+	_, _, _, err := ctx.memoryGasCostAndMalloc(dst, length)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ctx.memory.MCopy(dst.Uint64(), src.Uint64(), length.Uint64())
+	return nil, err
 }

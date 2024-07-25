@@ -108,6 +108,24 @@ func (m *Memory) Copy(offset uint64, length uint64) ([]byte, error) {
 	return ret, nil
 }
 
+func (m *Memory) MCopy(dst uint64, src uint64, length uint64) error {
+	if length == 0 {
+		return nil
+	}
+
+	mSize := uint64(len(m.cell))
+	if src+length > mSize {
+		return evmErrors.OutOfMemory
+	}
+
+	if dst+length > mSize {
+		return evmErrors.OutOfMemory
+	}
+
+	copy(m.cell[dst:], m.cell[src:src+length])
+	return nil
+}
+
 func (m *Memory) Size() int64 {
 	return int64(len(m.cell))
 }

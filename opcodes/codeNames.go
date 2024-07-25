@@ -183,6 +183,7 @@ var opCodeToString = map[OpCode]string{
 	BLOBBASEFEE: "BLOBBASEFEE",
 	TLOAD:       "TLOAD",
 	TSTORE:      "TSTORE",
+	MCOPY:       "MCOPY",
 }
 
 func (c OpCode) String() string {
