@@ -52,6 +52,6 @@ func sStoreAction(ctx *instructionsContext) ([]byte, error) {
 	k := ctx.stack.Pop()
 	v := ctx.stack.Pop()
 
-	ctx.storage.SStore(ctx.environment.Contract.Namespace, k, v)
+	ctx.storage.XStore(ctx.environment.Contract.Namespace, k, v, storage.SStorage)
 	return nil, nil
 }

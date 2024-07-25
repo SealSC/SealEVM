@@ -88,8 +88,8 @@ func (s *Storage) XLoad(n *evmInt256.Int, k *evmInt256.Int, t TypeOfStorage) (*e
 	return i, nil
 }
 
-func (s *Storage) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int) {
-	s.ResultCache.CachedData.Set(n.AsStringKey(), k.AsStringKey(), v)
+func (s *Storage) XStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int, t TypeOfStorage) {
+	s.ResultCache.XCachedStore(n.AsStringKey(), k.AsStringKey(), v, t)
 }
 
 func (s *Storage) CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool {

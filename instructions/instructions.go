@@ -61,6 +61,7 @@ func DefaultGasSetting() *GasSetting {
 	gs.ActionConstCost[opcodes.CREATE2] = 32000
 
 	gs.ActionConstCost[opcodes.TLOAD] = 100
+	gs.ActionConstCost[opcodes.TSTORE] = 100
 
 	gs.DynamicCost.EXPBytesCost = 50
 	gs.DynamicCost.SHA3ByteCost = 6

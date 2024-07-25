@@ -24,6 +24,13 @@ func loadDencun() {
 		requireStackDepth: 1,
 		enabled:           true,
 	}
+
+	instructionTable[opcodes.TSTORE] = opCodeInstruction{
+		action:            tStoreAction,
+		requireStackDepth: 2,
+		enabled:           true,
+		isWriter:          true,
+	}
 }
 
 func blobHashAction(ctx *instructionsContext) ([]byte, error) {
@@ -57,5 +64,12 @@ func tLoadAction(ctx *instructionsContext) ([]byte, error) {
 		return nil, err
 	}
 	key.Set(val.Int)
+	return nil, nil
+}
+
+func tStoreAction(ctx *instructionsContext) ([]byte, error) {
+	key := ctx.stack.Pop()
+	val := ctx.stack.Pop()
+	ctx.storage.XStore(ctx.environment.Contract.Namespace, key, val, storage.TStorage)
 	return nil, nil
 }

@@ -149,7 +149,7 @@ const (
 
 const (
 	TLOAD OpCode = iota + 0x5C
-	unusedX5D
+	TSTORE
 	unusedX5E
 )
 
