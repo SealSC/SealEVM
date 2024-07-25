@@ -22,6 +22,13 @@ import (
 	"github.com/SealSC/SealEVM/evmInt256"
 )
 
+type TypeOfStorage int
+
+const (
+	SStorage TypeOfStorage = 1
+	TStorage TypeOfStorage = 2
+)
+
 type Storage struct {
 	ResultCache     ResultCache
 	ExternalStorage IExternalStorage
@@ -49,7 +56,7 @@ func New(extStorage IExternalStorage) *Storage {
 	return s
 }
 
-func (s *Storage) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error) {
+func (s *Storage) XLoad(n *evmInt256.Int, k *evmInt256.Int, t TypeOfStorage) (*evmInt256.Int, error) {
 	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.ExternalStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
 	}
@@ -57,23 +64,32 @@ func (s *Storage) SLoad(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, err
 	nsStr := n.AsStringKey()
 	keyStr := k.AsStringKey()
 
+	if t != SStorage && t != TStorage {
+		return nil, evmErrors.InvalidTypeOfStorage()
+	}
+
 	var err error = nil
-	i := s.ResultCache.CachedData.Get(nsStr, keyStr)
+	i := s.ResultCache.XCachedLoad(nsStr, keyStr, t)
 	if i == nil {
-		i, err = s.ExternalStorage.Load(nsStr, keyStr)
+		if t == SStorage {
+			i, err = s.ExternalStorage.Load(nsStr, keyStr)
+		} else {
+			i, err = s.ExternalStorage.TLoad(nsStr, keyStr)
+		}
+
 		if err != nil {
 			return nil, evmErrors.NoSuchDataInTheStorage(err)
 		}
 
-		s.ResultCache.OriginalData.Set(nsStr, keyStr, i)
-		s.ResultCache.CachedData.Set(nsStr, keyStr, i)
+		s.ResultCache.XCachedStore(nsStr, keyStr, i, t)
+		s.ResultCache.XOriginalStore(nsStr, keyStr, i, t)
 	}
 
 	return i, nil
 }
 
-func (s *Storage) SStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int) {
-	s.ResultCache.CachedData.Set(n.AsStringKey(), k.AsStringKey(), v)
+func (s *Storage) XStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int, t TypeOfStorage) {
+	s.ResultCache.XCachedStore(n.AsStringKey(), k.AsStringKey(), v, t)
 }
 
 func (s *Storage) CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool {

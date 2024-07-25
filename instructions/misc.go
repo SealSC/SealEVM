@@ -114,7 +114,11 @@ func selfDestructAction(ctx *instructionsContext) ([]byte, error) {
 	addr := ctx.stack.Pop()
 	contractAddr := ctx.environment.Contract.Namespace.Clone()
 	balance, _ := ctx.storage.Balance(contractAddr)
-	ctx.storage.BalanceModify(addr, balance, false)
+	if !contractAddr.EQ(addr) {
+		ctx.storage.BalanceModify(contractAddr, balance, true)
+		ctx.storage.BalanceModify(addr, balance, false)
+	}
+
 	ctx.storage.Destruct(contractAddr)
 	return nil, nil
 }

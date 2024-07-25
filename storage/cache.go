@@ -59,9 +59,44 @@ type ResultCache struct {
 	OriginalData CacheUnderNamespace
 	CachedData   CacheUnderNamespace
 
+	TOriginalData CacheUnderNamespace
+	TCachedData   CacheUnderNamespace
+
 	Balance   BalanceCache
 	Logs      LogCache
 	Destructs Cache
+}
+
+func (r *ResultCache) XOriginalLoad(namespace string, key string, t TypeOfStorage) *evmInt256.Int {
+	if t == SStorage {
+		return r.OriginalData.Get(namespace, key)
+	} else {
+		return r.TOriginalData.Get(namespace, key)
+	}
+}
+
+func (r *ResultCache) XCachedLoad(namespace string, key string, t TypeOfStorage) *evmInt256.Int {
+	if t == SStorage {
+		return r.CachedData.Get(namespace, key)
+	} else {
+		return r.TCachedData.Get(namespace, key)
+	}
+}
+
+func (r *ResultCache) XOriginalStore(namespace string, key string, v *evmInt256.Int, t TypeOfStorage) {
+	if t == SStorage {
+		r.OriginalData.Set(namespace, key, v)
+	} else {
+		r.TOriginalData.Set(namespace, key, v)
+	}
+}
+
+func (r *ResultCache) XCachedStore(namespace string, key string, v *evmInt256.Int, t TypeOfStorage) {
+	if t == SStorage {
+		r.CachedData.Set(namespace, key, v)
+	} else {
+		r.TCachedData.Set(namespace, key, v)
+	}
 }
 
 type CodeCache map[string][]byte

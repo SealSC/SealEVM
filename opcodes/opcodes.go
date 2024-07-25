@@ -124,7 +124,7 @@ const (
 const (
 	BASEFEE OpCode = iota + 0x48
 	BLOBHASH
-	unusedX4A
+	BLOBBASEFEE
 	unusedX4B
 	unusedX4C
 	unusedX4D
@@ -148,9 +148,9 @@ const (
 )
 
 const (
-	unusedX5C OpCode = iota + 0x5C
-	unusedX5D
-	unusedX5E
+	TLOAD OpCode = iota + 0x5C
+	TSTORE
+	MCOPY
 )
 
 const (
