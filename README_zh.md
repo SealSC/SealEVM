@@ -66,7 +66,11 @@ type IExternalStorage interface {
     //在执行opcode SLOAD(0x54) 时，从外部存储获取指定位置的256位数据
     //注意：参数n是当前执行的合约的地址，参数k是执行opcode SLOAD(0x54)时，给出的存储位置的key
     Load(n string, k string) (*evmInt256.Int, error)
-    
+
+    //在执行opcode TLOAD(0x5C) 时，从外部瞬时存储获取指定位置的256位数据
+    //注意：参数n是当前执行的合约的地址，参数k是执行opcode TLOAD(0x5C)时，给出的瞬时存储位置的key
+    TLoad(n string, k string) (*evmInt256.Int, error)
+
     //执行CREATE或CREATE2成功后的外部存储回调，创建的新合约的地址和代码，会通过该接口提供给外部存储
     //注意：n就是新合约的地址，code就是新合约的bytecode
     NewContract(n string, code []byte) error
@@ -94,7 +98,10 @@ type ExecuteResult struct {
 type ResultCache struct {
     OriginalData CacheUnderNamespace //缓存执行过程中，从外部存储读取的信息
     CachedData   CacheUnderNamespace //缓存执行过程中，所有的状态更新的最终结果
-    
+
+	TOriginalData CacheUnderNamespace //缓存执行过程中，从外部瞬时存储读取的信息
+	TCachedData   CacheUnderNamespace //缓存执行过程中，所有的瞬时存储状态更新的最终结果
+	
     Balance   BalanceCache //缓存执行过程中，所有的账户余额变化
     Logs      LogCache //缓存执行过程中，合约产生的所有日志
     Destructs Cache //缓存执行了opcode SELFDESTRUCT(0xff)的合约地址缓存
