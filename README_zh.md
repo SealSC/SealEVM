@@ -99,8 +99,8 @@ type ResultCache struct {
     OriginalData CacheUnderNamespace //缓存执行过程中，从外部存储读取的信息
     CachedData   CacheUnderNamespace //缓存执行过程中，所有的状态更新的最终结果
 
-	TOriginalData CacheUnderNamespace //缓存执行过程中，从外部瞬时存储读取的信息
-	TCachedData   CacheUnderNamespace //缓存执行过程中，所有的瞬时存储状态更新的最终结果
+    TOriginalData CacheUnderNamespace //缓存执行过程中，从外部瞬时存储读取的信息
+    TCachedData   CacheUnderNamespace //缓存执行过程中，所有的瞬时存储状态更新的最终结果
 	
     Balance   BalanceCache //缓存执行过程中，所有的账户余额变化
     Logs      LogCache //缓存执行过程中，合约产生的所有日志
