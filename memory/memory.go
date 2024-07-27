@@ -127,7 +127,12 @@ func (m *Memory) MCopy(dst uint64, src uint64, length uint64) error {
 }
 
 func (m *Memory) Size() int64 {
-	return int64(len(m.cell))
+	size := int64(len(m.cell))
+	// make sure the size is a multiple of 32
+	if size%32 != 0 {
+		size = ((size / 32) + 1) * 32
+	}
+	return size
 }
 
 func (m *Memory) All() []byte {
