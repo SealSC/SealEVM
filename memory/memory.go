@@ -21,6 +21,10 @@ import (
 	"github.com/SealSC/SealEVM/evmInt256"
 )
 
+const (
+	expandUnit = 32
+)
+
 type Memory struct {
 	cell []byte
 }
@@ -29,10 +33,10 @@ func New() *Memory {
 	return &Memory{}
 }
 
-func (m *Memory) WillIncrease(offset *evmInt256.Int, size *evmInt256.Int) (o uint64, s uint64, i uint64, err error) {
+func (m *Memory) WillIncrease(offset evmInt256.Int, size evmInt256.Int) (o uint64, s uint64, i uint64, err error) {
 	mLen := uint64(len(m.cell))
 	bound := evmInt256.FromBigInt(offset.Int)
-	bound.Add(size)
+	bound.Add(&size).ExtendedAlign(expandUnit)
 
 	if !bound.IsUint64() {
 		return 0, 0, 0, evmErrors.OutOfMemory
@@ -47,15 +51,12 @@ func (m *Memory) WillIncrease(offset *evmInt256.Int, size *evmInt256.Int) (o uin
 	return offset.Uint64(), size.Uint64(), i, nil
 }
 
-func (m *Memory) Malloc(offset uint64, size uint64) []byte {
-	mLen := uint64(len(m.cell))
-	bound := offset + size
-	if mLen < bound {
-		newMem := make([]byte, bound-mLen)
-		m.cell = append(m.cell, newMem...)
+func (m *Memory) Malloc(length uint64) {
+	if length == 0 {
+		return
 	}
-
-	return m.cell[offset:bound]
+	newMem := make([]byte, length)
+	m.cell = append(m.cell, newMem...)
 }
 
 func (m *Memory) Map(offset uint64, length uint64) ([]byte, error) {

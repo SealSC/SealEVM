@@ -119,7 +119,7 @@ var instructionTable [opcodes.MaxOpCodesCount]opCodeInstruction
 // returns offset, size in type uint64
 func (i *instructionsContext) memoryGasCostAndMalloc(offset *evmInt256.Int, size *evmInt256.Int) (uint64, uint64, uint64, error) {
 	gasLeft := i.gasRemaining.Uint64()
-	o, s, increased, err := i.memory.WillIncrease(offset, size)
+	o, s, increased, err := i.memory.WillIncrease(*offset, *size)
 	if err != nil {
 		return o, s, gasLeft, err
 	}
@@ -132,7 +132,7 @@ func (i *instructionsContext) memoryGasCostAndMalloc(offset *evmInt256.Int, size
 	gasLeft -= gasCost
 	i.gasRemaining.SetUint64(gasLeft)
 
-	i.memory.Malloc(o, s)
+	i.memory.Malloc(increased)
 	return o, s, gasLeft, err
 }
 

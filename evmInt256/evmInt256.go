@@ -98,6 +98,29 @@ func (i *Int) GetSigned() *Int {
 	return &Int{ensure256}
 }
 
+func (i *Int) ExtendedAlign(unit uint64) *Int {
+	if unit == 0 {
+		return i
+	}
+
+	v := i.Uint64()
+	if v == 0 {
+		return i
+	}
+
+	org := i.Clone()
+	base := New(int64(unit))
+	ext := org.Mod(base)
+
+	if ext.IsZero() {
+		return i
+	}
+
+	ext.SetUint64(unit - ext.Uint64())
+	i.Add(ext)
+	return i
+}
+
 func (i *Int) Add(y *Int) *Int {
 	i.Int.Add(i.Int, y.Int)
 	return i.toI256()
