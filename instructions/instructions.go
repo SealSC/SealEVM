@@ -124,6 +124,10 @@ func (i *instructionsContext) memoryGasCostAndMalloc(offset *evmInt256.Int, size
 		return o, s, gasLeft, err
 	}
 
+	if increased == 0 {
+		return o, s, increased, nil
+	}
+
 	gasCost := increased * i.gasSetting.DynamicCost.MemoryByteCost
 	if gasLeft < gasCost {
 		return o, s, gasLeft, evmErrors.OutOfGas
@@ -160,13 +164,11 @@ func (i *instructionsContext) ExitOpCode() opcodes.OpCode {
 	return i.exitOpCode
 }
 
-func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
-	var ret []byte
-	var err error = nil
-
+func (i *instructionsContext) ExecuteContract() (ret []byte, gasRemaining uint64, err error) {
 	defer func() {
 		if e := recover(); e != nil {
 			err = evmErrors.Panicked(e.(error))
+			gasRemaining = i.gasRemaining.Uint64()
 		}
 	}()
 
@@ -178,7 +180,7 @@ func (i *instructionsContext) ExecuteContract() ([]byte, uint64, error) {
 	}
 
 	for {
-		opCode := contract.Code[i.pc]
+		opCode := contract.GetOpCode(i.pc)
 
 		instruction := instructionTable[opCode]
 		if !instruction.enabled {

@@ -52,6 +52,14 @@ func (c *Contract) IsValidJump(dest uint64) (bool, error) {
 	return true, nil
 }
 
+func (c *Contract) GetOpCode(pc uint64) byte {
+	if pc < uint64(len(c.Code)) {
+		return c.Code[pc]
+	}
+
+	return byte(opcodes.STOP)
+}
+
 func (c *Contract) markCodeData() {
 	c.codeDataFlag = map[uint64]bool{}
 	codeLen := len(c.Code)

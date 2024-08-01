@@ -163,6 +163,8 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 	}
 
 	execRet, gasLeft, err := e.instructions.ExecuteContract()
+
+	result.GasLeft = gasLeft
 	result.ResultData = execRet
 	result.ExitOpCode = e.instructions.ExitOpCode()
 
@@ -193,6 +195,8 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 		Code:      param.ContractCode,
 		Hash:      param.ContractHash,
 	}
+
+	newEVM.instructions.SetGasLimit(param.GasRemaining.Uint64())
 
 	return newEVM
 }
