@@ -22,7 +22,8 @@ import (
 )
 
 const (
-	HashLength = 32
+	HashLength      = 32
+	MaxClosureDepth = 1024
 )
 
 var (

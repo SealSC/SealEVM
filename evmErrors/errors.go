@@ -23,6 +23,7 @@ import (
 
 var StackUnderFlow = errors.New("stack under flow")
 var StackOverFlow = errors.New("stack over flow")
+var ClosureDepthOverflow = errors.New("call/create depth overflow (>1024)")
 var StorageNotInitialized = errors.New("storage not initialized")
 var InvalidEVMInstance = errors.New("invalid EVM instance")
 var ReturnDataCopyOutOfBounds = errors.New("return data copy out of bounds")

@@ -17,6 +17,7 @@
 package SealEVM
 
 import (
+	"github.com/SealSC/SealEVM/common"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
@@ -38,6 +39,7 @@ type EVMParam struct {
 }
 
 type EVM struct {
+	depth        uint64
 	stack        *stack.Stack
 	memory       *memory.Memory
 	storage      *storage.Storage
@@ -201,8 +203,9 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 	return newEVM
 }
 
-func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
+func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte, error) {
 	newEVM := e.getClosureDefaultEVM(param)
+	newEVM.depth = depth
 
 	//set storage namespace and call value
 	switch param.OpCode {
@@ -238,7 +241,7 @@ func (e *EVM) commonCall(param instructions.ClosureParam) ([]byte, error) {
 	return ret.ResultData, err
 }
 
-func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
+func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byte, error) {
 	var addr *evmInt256.Int
 	if opcodes.CREATE == param.OpCode {
 		addr = e.storage.ExternalStorage.CreateAddress(e.context.Message.Caller, e.context.Transaction)
@@ -248,6 +251,7 @@ func (e *EVM) commonCreate(param instructions.ClosureParam) ([]byte, error) {
 
 	newEVM := e.getClosureDefaultEVM(param)
 
+	newEVM.depth = depth
 	newEVM.context.Contract.Namespace = addr
 	newEVM.context.Message.Value = param.CallValue
 	newEVM.context.Message.Caller = e.context.Contract.Namespace
@@ -266,11 +270,20 @@ func closure(param instructions.ClosureParam) ([]byte, error) {
 		return nil, evmErrors.InvalidEVMInstance
 	}
 
+	evm.depth += 1
+	defer func() {
+		evm.depth -= 1
+	}()
+
+	if evm.depth > common.MaxClosureDepth {
+		return nil, evmErrors.ClosureDepthOverflow
+	}
+
 	switch param.OpCode {
 	case opcodes.CALL, opcodes.CALLCODE, opcodes.DELEGATECALL, opcodes.STATICCALL:
-		return evm.commonCall(param)
+		return evm.commonCall(param, evm.depth)
 	case opcodes.CREATE, opcodes.CREATE2:
-		return evm.commonCreate(param)
+		return evm.commonCreate(param, evm.depth)
 	}
 
 	return nil, nil
