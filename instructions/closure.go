@@ -87,7 +87,7 @@ func loadClosure() {
 func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error) {
 	_ = ctx.stack.Pop()
 	addr := ctx.stack.Pop()
-	var v *evmInt256.Int = nil
+	v := evmInt256.New(0)
 	if opCode != opcodes.DELEGATECALL && opCode != opcodes.STATICCALL {
 		v = ctx.stack.Pop()
 	}
