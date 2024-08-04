@@ -17,7 +17,6 @@
 package instructions
 
 import (
-	"fmt"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
@@ -204,7 +203,6 @@ func (i *instructionsContext) ExecuteContract() (ret []byte, gasRemaining uint64
 			gasLeft -= constCost
 			i.gasRemaining.SetUint64(gasLeft)
 		} else {
-			fmt.Println("out of gas from executing")
 			err = evmErrors.OutOfGas
 			break
 		}
