@@ -299,7 +299,12 @@ func extCodeSizeAction(ctx *instructionsContext) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	addr.Set(s.Int)
+
+	if s == nil {
+		addr.SetUint64(0)
+	} else {
+		addr.Set(s.Int)
+	}
 	return nil, nil
 }
 
