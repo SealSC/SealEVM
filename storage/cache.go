@@ -17,12 +17,34 @@
 package storage
 
 import (
-	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmInt256"
 )
 
 type Cache map[string]*evmInt256.Int
+
+func (c Cache) Clone() Cache {
+	replica := make(map[string]*evmInt256.Int)
+
+	for k, v := range c {
+		replica[k] = v.Clone()
+	}
+
+	return replica
+}
+
 type CacheUnderNamespace map[string]Cache
+
+func (c CacheUnderNamespace) Clone() CacheUnderNamespace {
+	replica := CacheUnderNamespace{}
+
+	for namespace, keyMap := range c {
+		for key, val := range keyMap {
+			replica.Set(namespace, key, val.Clone())
+		}
+	}
+
+	return replica
+}
 
 func (c CacheUnderNamespace) Get(namespace string, key string) *evmInt256.Int {
 	if c[namespace] == nil {
@@ -47,13 +69,54 @@ type balance struct {
 
 type BalanceCache map[string]*balance
 
-type Log struct {
-	Topics  [][]byte
-	Data    []byte
-	Context environment.Context
+func (b BalanceCache) Clone() BalanceCache {
+	replica := BalanceCache{}
+
+	for k, v := range b {
+		replica[k] = &balance{
+			Address: v.Address.Clone(),
+			Balance: v.Balance.Clone(),
+		}
+	}
+
+	return replica
 }
 
-type LogCache map[string][]Log
+type Log struct {
+	Address *evmInt256.Int
+	Topics  [][]byte
+	Data    []byte
+}
+
+func (l Log) Clone() Log {
+	replica := Log{}
+
+	replica.Topics = make([][]byte, len(l.Topics))
+	for i := 0; i < len(l.Topics); i++ {
+		t := make([]byte, len(l.Topics[i]))
+		copy(t, l.Topics[i])
+		replica.Topics[i] = t
+	}
+
+	d := make([]byte, len(l.Data))
+	copy(d, l.Data)
+	replica.Data = d
+
+	replica.Address = l.Address.Clone()
+	return replica
+}
+
+type LogCache []Log
+
+func (l LogCache) Clone() LogCache {
+	replica := make(LogCache, len(l))
+
+	for i := 0; i < len(l); i++ {
+		replica[i] = l[i].Clone()
+	}
+
+	return replica
+}
 
 type ResultCache struct {
 	OriginalData CacheUnderNamespace
@@ -63,8 +126,33 @@ type ResultCache struct {
 	TCachedData   CacheUnderNamespace
 
 	Balance   BalanceCache
-	Logs      LogCache
+	Logs      *LogCache
 	Destructs Cache
+}
+
+func NewResultCache() ResultCache {
+	return ResultCache{
+		OriginalData: CacheUnderNamespace{},
+		CachedData:   CacheUnderNamespace{},
+		Balance:      BalanceCache{},
+		Logs:         &LogCache{},
+		Destructs:    Cache{},
+	}
+}
+
+func (r *ResultCache) Clone() ResultCache {
+	logsClone := r.Logs.Clone()
+	replica := ResultCache{
+		OriginalData:  r.OriginalData.Clone(),
+		CachedData:    r.CachedData.Clone(),
+		TOriginalData: r.TOriginalData.Clone(),
+		TCachedData:   r.TCachedData.Clone(),
+		Balance:       r.Balance.Clone(),
+		Logs:          &logsClone,
+		Destructs:     r.Destructs.Clone(),
+	}
+
+	return replica
 }
 
 func (r *ResultCache) XOriginalLoad(namespace string, key string, t TypeOfStorage) *evmInt256.Int {
@@ -121,10 +209,7 @@ func MergeResultCache(src *ResultCache, to *ResultCache) {
 		to.Balance[k] = v
 	}
 
-	//TODO check whether there are duplicate logs
-	for k, v := range src.Logs {
-		to.Logs[k] = v
-	}
+	*to.Logs = *src.Logs
 
 	for k, v := range src.Destructs {
 		to.Destructs[k] = v

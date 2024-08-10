@@ -227,6 +227,10 @@ func (i *instructionsContext) ExecuteContract() (ret []byte, gasRemaining uint64
 		}
 	}
 
+	if i.exitOpCode == opcodes.REVERT {
+		err = evmErrors.RevertErr
+	}
+
 	return ret, i.gasRemaining.Uint64(), err
 }
 

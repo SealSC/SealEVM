@@ -37,13 +37,7 @@ type Storage struct {
 
 func New(extStorage IExternalStorage) *Storage {
 	s := &Storage{
-		ResultCache: ResultCache{
-			OriginalData: CacheUnderNamespace{},
-			CachedData:   CacheUnderNamespace{},
-			Balance:      BalanceCache{},
-			Logs:         LogCache{},
-			Destructs:    Cache{},
-		},
+		ResultCache:     NewResultCache(),
 		externalStorage: extStorage,
 		readOnlyCache: readOnlyCache{
 			Code:      CodeCache{},
@@ -54,6 +48,16 @@ func New(extStorage IExternalStorage) *Storage {
 	}
 
 	return s
+}
+
+func (s *Storage) Clone() *Storage {
+	replica := &Storage{
+		ResultCache:     s.ResultCache.Clone(),
+		readOnlyCache:   s.readOnlyCache,
+		externalStorage: s.externalStorage,
+	}
+
+	return replica
 }
 
 func (s *Storage) XLoad(n *evmInt256.Int, k *evmInt256.Int, t TypeOfStorage) (*evmInt256.Int, error) {
@@ -122,16 +126,13 @@ func (s *Storage) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, ne
 }
 
 func (s *Storage) Log(address *evmInt256.Int, topics [][]byte, data []byte, context environment.Context) {
-	kString := address.AsStringKey()
-
 	var theLog = Log{
+		Address: address,
 		Topics:  topics,
 		Data:    data,
-		Context: context,
 	}
 
-	l := s.ResultCache.Logs[kString]
-	s.ResultCache.Logs[kString] = append(l, theLog)
+	*s.ResultCache.Logs = append(*s.ResultCache.Logs, theLog)
 
 	return
 }
@@ -255,4 +256,8 @@ func (s *Storage) CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int,
 
 func (s *Storage) GetExternalStorage() IExternalStorage {
 	return s.externalStorage
+}
+
+func (s *Storage) ClearCache() {
+	s.ResultCache = NewResultCache()
 }

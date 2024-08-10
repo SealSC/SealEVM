@@ -86,7 +86,7 @@ func NewWithCache(param EVMParam, s *storage.Storage) *EVM {
 	evm := &EVM{
 		stack:        stack.New(param.MaxStackDepth),
 		memory:       memory.New(),
-		storage:      s,
+		storage:      s.Clone(),
 		context:      param.Context,
 		instructions: nil,
 		resultNotify: param.ResultCallback,
@@ -169,6 +169,11 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 	result.GasLeft = gasLeft
 	result.ResultData = execRet
 	result.ExitOpCode = e.instructions.ExitOpCode()
+
+	if err != nil {
+		result.StorageCache = storage.NewResultCache()
+		e.storage.ClearCache()
+	}
 
 	if e.resultNotify != nil {
 		e.resultNotify(result, err)
