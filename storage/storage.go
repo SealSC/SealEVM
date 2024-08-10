@@ -31,8 +31,8 @@ const (
 
 type Storage struct {
 	ResultCache     ResultCache
-	ExternalStorage IExternalStorage
 	readOnlyCache   readOnlyCache
+	externalStorage IExternalStorage
 }
 
 func New(extStorage IExternalStorage) *Storage {
@@ -44,7 +44,7 @@ func New(extStorage IExternalStorage) *Storage {
 			Logs:         LogCache{},
 			Destructs:    Cache{},
 		},
-		ExternalStorage: extStorage,
+		externalStorage: extStorage,
 		readOnlyCache: readOnlyCache{
 			Code:      CodeCache{},
 			CodeSize:  Cache{},
@@ -57,7 +57,7 @@ func New(extStorage IExternalStorage) *Storage {
 }
 
 func (s *Storage) XLoad(n *evmInt256.Int, k *evmInt256.Int, t TypeOfStorage) (*evmInt256.Int, error) {
-	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.ExternalStorage == nil {
+	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.externalStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
 	}
 
@@ -72,9 +72,9 @@ func (s *Storage) XLoad(n *evmInt256.Int, k *evmInt256.Int, t TypeOfStorage) (*e
 	i := s.ResultCache.XCachedLoad(nsStr, keyStr, t)
 	if i == nil {
 		if t == SStorage {
-			i, err = s.ExternalStorage.Load(nsStr, keyStr)
+			i, err = s.externalStorage.Load(nsStr, keyStr)
 		} else {
-			i, err = s.ExternalStorage.TLoad(nsStr, keyStr)
+			i, err = s.externalStorage.TLoad(nsStr, keyStr)
 		}
 
 		if err != nil {
@@ -162,7 +162,7 @@ func (s *Storage) Balance(address *evmInt256.Int) (*evmInt256.Int, error) {
 		return b.Balance.Clone(), nil
 	}
 
-	ba, err := s.ExternalStorage.GetBalance(address)
+	ba, err := s.externalStorage.GetBalance(address)
 	if err != nil {
 		b = &balance{
 			Address: evmInt256.FromBigInt(address.Int),
@@ -186,7 +186,7 @@ func (s *Storage) GetCode(address *evmInt256.Int) ([]byte, error) {
 		return b, nil
 	}
 
-	b, err := s.ExternalStorage.GetCode(address)
+	b, err := s.externalStorage.GetCode(address)
 	if err == nil {
 		s.readOnlyCache.Code[keyStr] = b
 	}
@@ -200,7 +200,7 @@ func (s *Storage) GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error) {
 		return size, nil
 	}
 
-	size, err := s.ExternalStorage.GetCodeSize(address)
+	size, err := s.externalStorage.GetCodeSize(address)
 	if err == nil {
 		s.readOnlyCache.CodeSize[keyStr] = size
 	}
@@ -214,7 +214,7 @@ func (s *Storage) GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error) {
 		return hash, nil
 	}
 
-	hash, err := s.ExternalStorage.GetCodeHash(address)
+	hash, err := s.externalStorage.GetCodeHash(address)
 	if err == nil {
 		s.readOnlyCache.CodeHash[keyStr] = hash
 	}
@@ -228,7 +228,7 @@ func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
 		return hash, nil
 	}
 
-	hash, err := s.ExternalStorage.GetBlockHash(block)
+	hash, err := s.externalStorage.GetBlockHash(block)
 	if err == nil {
 		s.readOnlyCache.BlockHash[keyStr] = hash
 	}
@@ -242,5 +242,17 @@ func (s *Storage) NewContract(address *evmInt256.Int, code []byte) error {
 		s.readOnlyCache.Code[keyStr] = code
 	}
 
-	return s.ExternalStorage.NewContract(keyStr, code)
+	return s.externalStorage.NewContract(keyStr, code)
+}
+
+func (s *Storage) CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int {
+	return s.externalStorage.CreateAddress(caller, tx)
+}
+
+func (s *Storage) CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, tx environment.Transaction) *evmInt256.Int {
+	return s.externalStorage.CreateFixedAddress(caller, salt, tx)
+}
+
+func (s *Storage) GetExternalStorage() IExternalStorage {
+	return s.externalStorage
 }

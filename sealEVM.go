@@ -180,7 +180,7 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 	newEVM := NewWithCache(EVMParam{
 		MaxStackDepth:  1024,
-		ExternalStore:  e.storage.ExternalStorage,
+		ExternalStore:  e.storage.GetExternalStorage(),
 		ResultCallback: e.subResult,
 		Context: &environment.Context{
 			Block:       e.context.Block,
@@ -244,9 +244,9 @@ func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte,
 func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byte, error) {
 	var addr *evmInt256.Int
 	if opcodes.CREATE == param.OpCode {
-		addr = e.storage.ExternalStorage.CreateAddress(e.context.Message.Caller, e.context.Transaction)
+		addr = e.storage.CreateAddress(e.context.Message.Caller, e.context.Transaction)
 	} else {
-		addr = e.storage.ExternalStorage.CreateFixedAddress(e.context.Message.Caller, param.CreateSalt, e.context.Transaction)
+		addr = e.storage.CreateFixedAddress(e.context.Message.Caller, param.CreateSalt, e.context.Transaction)
 	}
 
 	newEVM := e.getClosureDefaultEVM(param)
