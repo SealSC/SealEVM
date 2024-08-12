@@ -49,20 +49,11 @@ func (r *memStorage) CreateAddress(caller *evmInt256.Int, tx environment.Transac
 	return evmInt256.New(time.Now().UnixNano())
 }
 
-func (r *memStorage) CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, tx environment.Transaction) *evmInt256.Int {
+func (r *memStorage) CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, code []byte, tx environment.Transaction) *evmInt256.Int {
 	return evmInt256.New(time.Now().UnixNano())
 }
 
 func (r *memStorage) Load(n string, k string) (*evmInt256.Int, error) {
-	ret := evmInt256.New(0)
-	if val, exists := r.storage[n+k]; exists {
-		ret.SetBytes(val)
-	}
-
-	return ret, nil
-}
-
-func (r *memStorage) TLoad(n string, k string) (*evmInt256.Int, error) {
 	ret := evmInt256.New(0)
 	if val, exists := r.storage[n+k]; exists {
 		ret.SetBytes(val)

@@ -202,7 +202,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 	if opcodes.CREATE == opCode {
 		addr = ctx.storage.CreateAddress(ctx.environment.Message.Caller, ctx.environment.Transaction)
 	} else {
-		addr = ctx.storage.CreateFixedAddress(ctx.environment.Message.Caller, salt, ctx.environment.Transaction)
+		addr = ctx.storage.CreateFixedAddress(ctx.environment.Message.Caller, salt, code, ctx.environment.Transaction)
 	}
 
 	ret, err := ctx.closureExec(cParam)

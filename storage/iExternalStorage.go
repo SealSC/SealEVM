@@ -29,7 +29,7 @@ type IExternalStorage interface {
 	GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
 
 	CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int
-	CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, tx environment.Transaction) *evmInt256.Int
+	CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, code []byte, tx environment.Transaction) *evmInt256.Int
 
 	CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool
 

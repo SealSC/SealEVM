@@ -250,8 +250,8 @@ func (s *Storage) CreateAddress(caller *evmInt256.Int, tx environment.Transactio
 	return s.externalStorage.CreateAddress(caller, tx)
 }
 
-func (s *Storage) CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, tx environment.Transaction) *evmInt256.Int {
-	return s.externalStorage.CreateFixedAddress(caller, salt, tx)
+func (s *Storage) CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, code []byte, tx environment.Transaction) *evmInt256.Int {
+	return s.externalStorage.CreateFixedAddress(caller, salt, code, tx)
 }
 
 func (s *Storage) GetExternalStorage() IExternalStorage {

@@ -251,7 +251,7 @@ func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byt
 	if opcodes.CREATE == param.OpCode {
 		addr = e.storage.CreateAddress(e.context.Message.Caller, e.context.Transaction)
 	} else {
-		addr = e.storage.CreateFixedAddress(e.context.Message.Caller, param.CreateSalt, e.context.Transaction)
+		addr = e.storage.CreateFixedAddress(e.context.Message.Caller, param.CreateSalt, param.ContractCode, e.context.Transaction)
 	}
 
 	newEVM := e.getClosureDefaultEVM(param)
