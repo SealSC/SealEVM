@@ -32,6 +32,12 @@ func (c Cache) Clone() Cache {
 	return replica
 }
 
+func (c Cache) Merge(cache Cache) {
+	for k, v := range cache {
+		c[k] = v
+	}
+}
+
 type CacheUnderNamespace map[string]Cache
 
 func (c CacheUnderNamespace) Clone() CacheUnderNamespace {
@@ -62,6 +68,12 @@ func (c CacheUnderNamespace) Set(namespace string, key string, v *evmInt256.Int)
 	c[namespace][key] = v
 }
 
+func (c CacheUnderNamespace) Merge(cache CacheUnderNamespace) {
+	for k, v := range cache {
+		c[k] = v
+	}
+}
+
 type balance struct {
 	Address *evmInt256.Int
 	Balance *evmInt256.Int
@@ -80,6 +92,12 @@ func (b BalanceCache) Clone() BalanceCache {
 	}
 
 	return replica
+}
+
+func (b BalanceCache) Merge(cache BalanceCache) {
+	for k, v := range cache {
+		b[k] = v
+	}
 }
 
 type Log struct {
@@ -132,11 +150,13 @@ type ResultCache struct {
 
 func NewResultCache() ResultCache {
 	return ResultCache{
-		OriginalData: CacheUnderNamespace{},
-		CachedData:   CacheUnderNamespace{},
-		Balance:      BalanceCache{},
-		Logs:         &LogCache{},
-		Destructs:    Cache{},
+		OriginalData:  CacheUnderNamespace{},
+		CachedData:    CacheUnderNamespace{},
+		TOriginalData: CacheUnderNamespace{},
+		TCachedData:   CacheUnderNamespace{},
+		Balance:       BalanceCache{},
+		Logs:          &LogCache{},
+		Destructs:     Cache{},
 	}
 }
 
@@ -197,21 +217,12 @@ type readOnlyCache struct {
 }
 
 func MergeResultCache(src *ResultCache, to *ResultCache) {
-	for k, v := range src.OriginalData {
-		to.OriginalData[k] = v
-	}
-
-	for k, v := range src.CachedData {
-		to.CachedData[k] = v
-	}
-
-	for k, v := range src.Balance {
-		to.Balance[k] = v
-	}
+	to.OriginalData.Merge(src.OriginalData)
+	to.CachedData.Merge(src.CachedData)
+	to.TOriginalData.Merge(src.TOriginalData)
+	to.TCachedData.Merge(src.TCachedData)
+	to.Balance.Merge(src.Balance)
+	to.Destructs.Merge(src.Destructs)
 
 	*to.Logs = *src.Logs
-
-	for k, v := range src.Destructs {
-		to.Destructs[k] = v
-	}
 }
