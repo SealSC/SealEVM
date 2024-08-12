@@ -78,7 +78,7 @@ func (s *Storage) XLoad(n *evmInt256.Int, k *evmInt256.Int, t TypeOfStorage) (*e
 		if t == SStorage {
 			i, err = s.externalStorage.Load(nsStr, keyStr)
 		} else {
-			i, err = s.externalStorage.TLoad(nsStr, keyStr)
+			i = evmInt256.New(0)
 		}
 
 		if err != nil {
