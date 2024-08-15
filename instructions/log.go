@@ -17,8 +17,8 @@
 package instructions
 
 import (
-	"github.com/SealSC/SealEVM/common"
 	"github.com/SealSC/SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
 )
 
@@ -47,7 +47,7 @@ func loadLog() {
 
 				for t := 0; t < topicCount; t++ {
 					topic := ctx.stack.Pop()
-					topicBytes := common.EVMIntToHashBytes(topic)
+					topicBytes := evmInt256.EVMIntToHashBytes(topic)
 					topics = append(topics, topicBytes[:])
 				}
 

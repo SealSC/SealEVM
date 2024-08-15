@@ -18,7 +18,6 @@ package common
 
 import (
 	"github.com/SealSC/SealEVM/crypto/hashes"
-	"github.com/SealSC/SealEVM/evmInt256"
 )
 
 const (
@@ -30,43 +29,6 @@ var (
 	BlankHash = make([]byte, HashLength, HashLength)
 	ZeroHash  = hashes.Keccak256(nil)
 )
-
-func EVMIntToHashBytes(i *evmInt256.Int) [HashLength]byte {
-	iBytes := i.Bytes()
-	iLen := len(iBytes)
-
-	var hash [HashLength]byte
-	if iLen > HashLength {
-		copy(hash[:], iBytes[iLen-HashLength:])
-	} else {
-		copy(hash[HashLength-iLen:], iBytes)
-	}
-
-	return hash
-}
-
-func HashBytesToEVMInt(hash [HashLength]byte) (*evmInt256.Int, error) {
-
-	i := evmInt256.New(0)
-	i.SetBytes(hash[:])
-
-	return i, nil
-}
-
-func BytesDataToEVMIntHash(data []byte) *evmInt256.Int {
-	var hashBytes []byte
-	srcLen := len(data)
-	if srcLen < HashLength {
-		hashBytes = LeftPaddingSlice(data, HashLength)
-	} else {
-		hashBytes = data[:HashLength]
-	}
-
-	i := evmInt256.New(0)
-	i.SetBytes(hashBytes)
-
-	return i
-}
 
 func GetDataFrom(src []byte, offset uint64, size uint64) []byte {
 	ret := make([]byte, size, size)

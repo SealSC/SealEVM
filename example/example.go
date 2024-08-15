@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/SealSC/SealEVM"
-	"github.com/SealSC/SealEVM/common"
 	"github.com/SealSC/SealEVM/crypto/hashes"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmInt256"
@@ -48,7 +47,7 @@ func newEvm(code []byte, callData []byte, caller []byte, ms *memStorage) *SealEV
 
 	var callHash [32]byte
 	copy(callHash[12:], caller)
-	callerInt, _ := common.HashBytesToEVMInt(callHash)
+	callerInt, _ := evmInt256.HashBytesToEVMInt(callHash)
 	evm := SealEVM.New(SealEVM.EVMParam{
 		MaxStackDepth:  0,
 		ExternalStore:  ms,

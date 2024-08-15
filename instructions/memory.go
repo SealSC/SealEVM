@@ -17,7 +17,6 @@
 package instructions
 
 import (
-	"github.com/SealSC/SealEVM/common"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
 )
@@ -76,7 +75,7 @@ func mStoreAction(ctx *instructionsContext) ([]byte, error) {
 		return nil, err
 	}
 
-	valBytes := common.EVMIntToHashBytes(v)
+	valBytes := evmInt256.EVMIntToHashBytes(v)
 	err = ctx.memory.Store(offset, valBytes[:])
 	return nil, err
 }
