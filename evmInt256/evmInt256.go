@@ -38,6 +38,11 @@ func pow(x, y int64) *big.Int {
 	return bx.Exp(bx, by, nil)
 }
 
+func exp256Modulus() *big.Int {
+	m := &big.Int{}
+	return m.Exp(big.NewInt(2), big.NewInt(256), nil)
+}
+
 const (
 	maxBits  = 256
 	maxBytes = 32
@@ -48,6 +53,7 @@ var (
 	int256MAX  = pow(2, maxBits-1)
 	bit256     = bit(maxBits)
 	one        = big.NewInt(1)
+	expModulus = exp256Modulus()
 )
 
 type Int struct {
@@ -153,8 +159,11 @@ func (i *Int) SDiv(y *Int) *Int {
 		return i
 	}
 
-	needNeg := i.Sign() != y.Sign()
-	i.Int.Div(i.Int.Abs(i.Int), y.Int.Abs(y.Int))
+	x := i.GetSigned()
+	y = y.GetSigned()
+
+	needNeg := x.Sign() != y.Sign()
+	i.Int.Div(x.Int.Abs(x.Int), y.Int.Abs(y.Int))
 
 	if needNeg {
 		i.Neg(i.Int)
@@ -173,20 +182,24 @@ func (i *Int) Mod(m *Int) *Int {
 }
 
 func (i *Int) SMod(m *Int) *Int {
+	m = m.GetSigned()
+	n := i.GetSigned()
+
 	mAbs := big.NewInt(0)
 	mAbs.Abs(m.Int)
 
-	if m.Sign() == 0 || i.Sign() == 0 || m.Int.Cmp(one) == 0 {
+	if m.Sign() == 0 || n.Sign() == 0 || m.Int.Cmp(one) == 0 {
 		i.SetUint64(0)
 		return i
 	}
 
-	needNeg := i.Sign() < 0
-	i.Int.Mod(i.Abs(i.Int), mAbs)
+	needNeg := n.Sign() < 0
+	n.Int.Mod(n.Abs(n.Int), mAbs)
 	if needNeg {
-		i.Neg(i.Int)
+		n.Neg(n.Int)
 	}
 
+	i.Set(n.Int)
 	return i.toI256()
 }
 
@@ -211,7 +224,7 @@ func (i *Int) MulMod(y *Int, m *Int) *Int {
 }
 
 func (i *Int) Exp(e *Int) *Int {
-	i.Int.Exp(i.Int, e.Int, nil)
+	i.Int.Exp(i.Int, e.Int, expModulus)
 	return i.toI256()
 }
 
@@ -280,8 +293,8 @@ func (i *Int) Not(y *Int) *Int {
 	return i.toI256()
 }
 
-func (i *Int) ByteAt(n int) byte {
-	if n > maxBytes-1 {
+func (i *Int) ByteAt(n *Int) byte {
+	if n.GT(New(maxBytes - 1)) {
 		return 0
 	}
 
@@ -295,40 +308,40 @@ func (i *Int) ByteAt(n int) byte {
 		copy(fullBytes[:maxBytes], bnBytes[:maxBytes])
 	}
 
-	return fullBytes[n]
+	return fullBytes[n.Uint64()]
 }
 
-func (i *Int) SHL(n uint64) *Int {
-	if n >= maxBits {
-		i.Int.SetUint64(0)
+func (i *Int) SHL(n *Int) *Int {
+	if n.LT(New(maxBits)) {
+		i.Int.Lsh(i.Int, uint(n.Uint64()))
 	} else {
-		i.Int.Lsh(i.Int, uint(n))
+		i.Int.SetUint64(0)
 	}
 
 	return i.toI256()
 }
 
-func (i *Int) SHR(n uint64) *Int {
-	if n >= maxBits {
-		i.Int.SetUint64(0)
+func (i *Int) SHR(n *Int) *Int {
+	if n.LT(New(maxBits)) {
+		i.Int.Rsh(i.Int, uint(n.Uint64()))
 	} else {
-		i.Int.Rsh(i.Int, uint(n))
+		i.Int.SetUint64(0)
 	}
 
 	return i.toI256()
 }
 
-func (i *Int) SAR(n uint64) *Int {
+func (i *Int) SAR(n *Int) *Int {
 	si := i.GetSigned()
 
-	if n >= maxBits {
+	if n.GT(New(maxBits)) {
 		if si.Sign() >= 0 {
 			si.SetUint64(0)
 		} else {
 			si.SetInt64(-1)
 		}
 	} else {
-		si.Rsh(si.Int, uint(n))
+		si.Rsh(si.Int, uint(n.Uint64()))
 	}
 
 	i.Set(si.Int)

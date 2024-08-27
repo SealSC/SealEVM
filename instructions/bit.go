@@ -109,7 +109,7 @@ func byteAction(ctx *instructionsContext) ([]byte, error) {
 	if !i.IsUint64() {
 		x.SetUint64(0)
 	} else {
-		b := x.ByteAt(int(i.Uint64()))
+		b := x.ByteAt(i)
 		x.SetUint64(uint64(b))
 	}
 
@@ -120,7 +120,7 @@ func shlAction(ctx *instructionsContext) ([]byte, error) {
 	s := ctx.stack.Pop()
 	x := ctx.stack.Peek()
 
-	x.SHL(s.Uint64())
+	x.SHL(s)
 	return nil, nil
 }
 
@@ -128,7 +128,7 @@ func shrAction(ctx *instructionsContext) ([]byte, error) {
 	s := ctx.stack.Pop()
 	x := ctx.stack.Peek()
 
-	x.SHR(s.Uint64())
+	x.SHR(s)
 	return nil, nil
 }
 
@@ -136,6 +136,6 @@ func sarAction(ctx *instructionsContext) ([]byte, error) {
 	s := ctx.stack.Pop()
 	x := ctx.stack.Peek()
 
-	x.SAR(s.Uint64())
+	x.SAR(s)
 	return nil, nil
 }
