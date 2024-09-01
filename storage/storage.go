@@ -76,7 +76,7 @@ func (s *Storage) XLoad(n *evmInt256.Int, k *evmInt256.Int, t TypeOfStorage) (*e
 	i := s.ResultCache.XCachedLoad(nsStr, keyStr, t)
 	if i == nil {
 		if t == SStorage {
-			i, err = s.externalStorage.Load(nsStr, keyStr)
+			i, err = s.externalStorage.Load(n, k)
 		} else {
 			i = evmInt256.New(0)
 		}
@@ -243,7 +243,7 @@ func (s *Storage) NewContract(address *evmInt256.Int, code []byte) error {
 		s.readOnlyCache.Code[keyStr] = code
 	}
 
-	return s.externalStorage.NewContract(keyStr, code)
+	return s.externalStorage.NewContract(address, code)
 }
 
 func (s *Storage) CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int {

@@ -53,16 +53,16 @@ func (r *memStorage) CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.I
 	return evmInt256.New(time.Now().UnixNano())
 }
 
-func (r *memStorage) Load(n string, k string) (*evmInt256.Int, error) {
+func (r *memStorage) Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error) {
 	ret := evmInt256.New(0)
-	if val, exists := r.storage[n+k]; exists {
+	if val, exists := r.storage[n.AsStringKey()+k.AsStringKey()]; exists {
 		ret.SetBytes(val)
 	}
 
 	return ret, nil
 }
 
-func (r *memStorage) NewContract(n string, code []byte) error {
-	r.contracts[n] = code
+func (r *memStorage) NewContract(n *evmInt256.Int, code []byte) error {
+	r.contracts[n.AsStringKey()] = code
 	return nil
 }
