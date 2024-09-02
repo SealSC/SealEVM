@@ -65,15 +65,11 @@ type IExternalStorage interface {
     
     //在执行opcode SLOAD(0x54) 时，从外部存储获取指定位置的256位数据
     //注意：参数n是当前执行的合约的地址，参数k是执行opcode SLOAD(0x54)时，给出的存储位置的key
-    Load(n string, k string) (*evmInt256.Int, error)
-
-    //在执行opcode TLOAD(0x5C) 时，从外部瞬时存储获取指定位置的256位数据
-    //注意：参数n是当前执行的合约的地址，参数k是执行opcode TLOAD(0x5C)时，给出的瞬时存储位置的key
-    TLoad(n string, k string) (*evmInt256.Int, error)
+    Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error)
 
     //执行CREATE或CREATE2成功后的外部存储回调，创建的新合约的地址和代码，会通过该接口提供给外部存储
     //注意：n就是新合约的地址，code就是新合约的bytecode
-    NewContract(n string, code []byte) error
+    NewContract(n *evmInt256.Int, code []byte) error
 }
 ```
 

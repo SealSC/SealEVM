@@ -65,15 +65,11 @@ type IExternalStorage interface {
     
     //When executing opcode SLOAD(0x54), get 256-bit data from external storage at the specified location
     //Note: The parameter n is the address of the current executing contract, and the parameter k is the key of the storage location given when executing opcode SLOAD(0x54)
-    Load(n string, k string) (*evmInt256.Int, error)
-
-    //When executing opcode TLOAD(0x5C), get 256-bit data from external transient storage at the specified location
-    //Note: The parameter n is the address of the current executing contract, and the parameter k is the key of the storage location given when executing opcode TLOAD(0x5C)
-    TLoad(n string, k string) (*evmInt256.Int, error)
+    Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error)
 
     //External storage callback after successful execution of CREATE or CREATE2. The address and code of the newly created contract will be provided to external storage through this interface
     //Note: n is the address of the new contract, and code is the bytecode of the new contract
-    NewContract(n string, code []byte) error
+    NewContract(n *evmInt256.Int, code []byte) error
 }
 ```
 
