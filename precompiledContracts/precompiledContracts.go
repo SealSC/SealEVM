@@ -50,7 +50,7 @@ func RegisterContracts(c PrecompiledContract) {
 func IsPrecompiledContract(address *evmInt256.Int) bool {
 	if address.IsUint64() {
 		addr := address.Uint64()
-		return addr < PrecompiledContractCount()
+		return addr < PrecompiledContractCount() && addr != 0
 	}
 
 	return false
