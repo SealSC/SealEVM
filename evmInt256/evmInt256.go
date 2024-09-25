@@ -73,7 +73,11 @@ func New(i int64) *Int {
 }
 
 func FromBigInt(i *big.Int) *Int {
-	return &Int{big.NewInt(0).Set(i)}
+	ret := &Int{big.NewInt(0)}
+	if i != nil {
+		ret.Set(i)
+	}
+	return ret
 }
 
 func FromDecimalString(s string) *Int {
