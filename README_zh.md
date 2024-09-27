@@ -41,19 +41,16 @@ SealEVM将通过该接口，与外部存储进行交互，来实现必要的状�
 type IExternalStorage interface {
     //从外部存储获取指定地址的账户余额
     GetBalance(address *evmInt256.Int) (*evmInt256.Int, error)
-    
-    //从外部存储获取指定地址的合约代码
-    GetCode(address *evmInt256.Int) ([]byte, error)
-    
-    //从外部存储获取指定地址的合约代码大小
-    GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error)
-    
-    //从外部存储获取指定地址合约代码的哈希
-    GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error)
-    
+
+    //从外部存储获取指定地址的合约数据结构体
+    GetContract(address *evmInt256.Int) (*Contract, error)
+
     //从外部存储获取指定区块的哈希
     GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
-    
+
+    //计算并返回给定code的哈希值，该哈希值会作为CodeHash使用
+    HashOfCode(code []byte) *evmInt256.Int
+
     //在执行opcode CREAT(0xF0)时，将调用该方法来获取创建的合约的地址
     CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int
     

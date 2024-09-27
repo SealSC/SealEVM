@@ -41,20 +41,17 @@ SealEVM will interact with external storage through this interface to implement 
 type IExternalStorage interface {
     //Get the account balance of the specified address from external storage
     GetBalance(address *evmInt256.Int) (*evmInt256.Int, error)
-    
-    //Get the contract code of the specified address from external storage
-    GetCode(address *evmInt256.Int) ([]byte, error)
-    
-    //Get the contract code size of the specified address from external storage
-    GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error)
-    
-    //Get the contract code hash of the specified address from external storage
-    GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error)
-    
+
+    //Get the contract of the specified address from external storage
+    GetContract(address *evmInt256.Int) (*Contract, error)
+
     //Get the hash of the specified block from external storage
     GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
+
+    //Calculates and returns the hash value of the given Code, which will be used as CodeHash
+	HashOfCode(code []byte) *evmInt256.Int
     
-    //When executing opcode CREAT(0xF0), this method will be called to get the address of the created contract
+	//When executing opcode CREAT(0xF0), this method will be called to get the address of the created contract
     CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int
     
     //When executing opcode CREAT2(0xF5), this method will be called to get the address of the created contract
@@ -66,10 +63,6 @@ type IExternalStorage interface {
     //When executing opcode SLOAD(0x54), get 256-bit data from external storage at the specified location
     //Note: The parameter n is the address of the current executing contract, and the parameter k is the key of the storage location given when executing opcode SLOAD(0x54)
     Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error)
-
-    //External storage callback after successful execution of CREATE or CREATE2. The address and code of the newly created contract will be provided to external storage through this interface
-    //Note: n is the address of the new contract, and code is the bytecode of the new contract
-    NewContract(n *evmInt256.Int, code []byte) error
 }
 ```
 
