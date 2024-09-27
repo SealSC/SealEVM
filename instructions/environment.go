@@ -19,11 +19,11 @@ package instructions
 import (
 	"math/big"
 
-	"github.com/SealSC/SealEVM/common"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
 	"github.com/SealSC/SealEVM/precompiledContracts"
+	"github.com/SealSC/SealEVM/utils"
 )
 
 func loadEnvironment() {
@@ -229,7 +229,7 @@ func callValueAction(ctx *instructionsContext) ([]byte, error) {
 
 func callDataLoadAction(ctx *instructionsContext) ([]byte, error) {
 	i := ctx.stack.Peek()
-	data := common.GetDataFrom(ctx.environment.Message.Data, i.Uint64(), 32)
+	data := utils.GetDataFrom(ctx.environment.Message.Data, i.Uint64(), 32)
 
 	i.SetBytes(data)
 	return nil, nil
@@ -255,7 +255,7 @@ func callDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 		return nil, err
 	}
 
-	data := common.GetDataFrom(ctx.environment.Message.Data, dOffset.Uint64(), size.Uint64())
+	data := utils.GetDataFrom(ctx.environment.Message.Data, dOffset.Uint64(), size.Uint64())
 	err = ctx.memory.Store(offset, data)
 	return nil, err
 }
@@ -277,7 +277,7 @@ func codeCopyAction(ctx *instructionsContext) ([]byte, error) {
 		return nil, err
 	}
 
-	data := common.GetDataFrom(ctx.environment.Contract.Code, dOffset.Uint64(), size.Uint64())
+	data := utils.GetDataFrom(ctx.environment.Contract.Code, dOffset.Uint64(), size.Uint64())
 	err = ctx.memory.Store(offset, data)
 	return nil, err
 }
@@ -329,7 +329,7 @@ func extCodeCopyAction(ctx *instructionsContext) ([]byte, error) {
 		return nil, err
 	}
 
-	data := common.GetDataFrom(code, dOffset.Uint64(), size.Uint64())
+	data := utils.GetDataFrom(code, dOffset.Uint64(), size.Uint64())
 	err = ctx.memory.Store(offset, data)
 	return nil, err
 }
@@ -363,7 +363,7 @@ func extCodeHashAction(ctx *instructionsContext) ([]byte, error) {
 	addr := ctx.stack.Peek()
 
 	if precompiledContracts.IsPrecompiledContract(addr) {
-		addr.SetBytes(common.ZeroHash)
+		addr.SetBytes(utils.ZeroHash)
 		return nil, nil
 	}
 

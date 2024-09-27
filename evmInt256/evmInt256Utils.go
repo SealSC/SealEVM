@@ -2,24 +2,24 @@ package evmInt256
 
 import (
 	"encoding/hex"
-	"github.com/SealSC/SealEVM/common"
+	"github.com/SealSC/SealEVM/utils"
 )
 
-func EVMIntToHashBytes(i *Int) [common.HashLength]byte {
+func EVMIntToHashBytes(i *Int) [utils.HashLength]byte {
 	iBytes := i.Bytes()
 	iLen := len(iBytes)
 
-	var hash [common.HashLength]byte
-	if iLen > common.HashLength {
-		copy(hash[:], iBytes[iLen-common.HashLength:])
+	var hash [utils.HashLength]byte
+	if iLen > utils.HashLength {
+		copy(hash[:], iBytes[iLen-utils.HashLength:])
 	} else {
-		copy(hash[common.HashLength-iLen:], iBytes)
+		copy(hash[utils.HashLength-iLen:], iBytes)
 	}
 
 	return hash
 }
 
-func HashBytesToEVMInt(hash [common.HashLength]byte) (*Int, error) {
+func HashBytesToEVMInt(hash [utils.HashLength]byte) (*Int, error) {
 
 	i := New(0)
 	i.SetBytes(hash[:])
@@ -39,8 +39,8 @@ func HexToEVMInt(hStr string) *Int {
 func BytesDataToEVMInt(data []byte) *Int {
 	var bytes []byte
 	srcLen := len(data)
-	if srcLen > common.MaxIntBytes {
-		bytes = data[:common.MaxIntBytes]
+	if srcLen > utils.MaxIntBytes {
+		bytes = data[:utils.MaxIntBytes]
 	} else {
 		bytes = data
 	}

@@ -17,8 +17,8 @@
 package environment
 
 import (
-	"github.com/SealSC/SealEVM/common"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/utils"
 )
 
 type Transaction struct {
@@ -28,5 +28,5 @@ type Transaction struct {
 	GasLimit *evmInt256.Int
 
 	BlobFeeCap *evmInt256.Int
-	BlobHashes [][common.HashLength]byte
+	BlobHashes [][utils.HashLength]byte
 }

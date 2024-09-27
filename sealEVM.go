@@ -17,7 +17,6 @@
 package SealEVM
 
 import (
-	"github.com/SealSC/SealEVM/common"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
@@ -27,6 +26,7 @@ import (
 	"github.com/SealSC/SealEVM/precompiledContracts"
 	"github.com/SealSC/SealEVM/stack"
 	"github.com/SealSC/SealEVM/storage"
+	"github.com/SealSC/SealEVM/utils"
 )
 
 type EVMResultCallback func(result ExecuteResult, err error)
@@ -273,7 +273,7 @@ func closure(param instructions.ClosureParam) ([]byte, error) {
 		evm.depth -= 1
 	}()
 
-	if evm.depth > common.MaxClosureDepth {
+	if evm.depth > utils.MaxClosureDepth {
 		return nil, evmErrors.ClosureDepthOverflow
 	}
 

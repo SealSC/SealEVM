@@ -17,9 +17,9 @@
 package instructions
 
 import (
-	"github.com/SealSC/SealEVM/common"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/utils"
 )
 
 func loadStack() {
@@ -60,7 +60,7 @@ func setPushActions() {
 			action: func(ctx *instructionsContext) ([]byte, error) {
 				start := ctx.pc + 1
 
-				codeBytes := common.GetDataFrom(ctx.environment.Contract.Code, start, bytesSize)
+				codeBytes := utils.GetDataFrom(ctx.environment.Contract.Code, start, bytesSize)
 
 				i := evmInt256.New(0)
 				i.SetBytes(codeBytes)

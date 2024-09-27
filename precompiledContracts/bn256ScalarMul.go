@@ -17,7 +17,7 @@
 package precompiledContracts
 
 import (
-	"github.com/SealSC/SealEVM/common"
+	"github.com/SealSC/SealEVM/utils"
 	"github.com/ethereum/go-ethereum/crypto/bn256"
 	"github.com/ethereum/go-ethereum/params"
 	"math/big"
@@ -39,11 +39,11 @@ func (c *bn256ScalarMulIstanbul) Execute(input []byte) ([]byte, error) {
 // runBn256ScalarMul implements the Bn256ScalarMul precompile, referenced by
 // both Byzantium and Istanbul operations.
 func runBn256ScalarMul(input []byte) ([]byte, error) {
-	p, err := newCurvePoint(common.GetDataFrom(input, 0, 64))
+	p, err := newCurvePoint(utils.GetDataFrom(input, 0, 64))
 	if err != nil {
 		return nil, err
 	}
 	res := new(bn256.G1)
-	res.ScalarMult(p, new(big.Int).SetBytes(common.GetDataFrom(input, 64, 32)))
+	res.ScalarMult(p, new(big.Int).SetBytes(utils.GetDataFrom(input, 64, 32)))
 	return res.Marshal(), nil
 }

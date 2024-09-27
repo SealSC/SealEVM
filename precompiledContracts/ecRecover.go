@@ -17,7 +17,7 @@
 package precompiledContracts
 
 import (
-	"github.com/SealSC/SealEVM/common"
+	"github.com/SealSC/SealEVM/utils"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
 	"math/big"
@@ -41,7 +41,7 @@ func allZero(src []byte) bool {
 func (e ecRecover) Execute(input []byte) ([]byte, error) {
 	const ecRecoverInputLength = 128
 
-	input = common.RightPaddingSlice(input, ecRecoverInputLength)
+	input = utils.RightPaddingSlice(input, ecRecoverInputLength)
 	// "input" is (hash, v, r, s), each 32 bytes
 	// but for ecrecover we want (r, s, v)
 
@@ -66,5 +66,5 @@ func (e ecRecover) Execute(input []byte) ([]byte, error) {
 	}
 
 	// the first byte of pubkey is bitcoin heritage
-	return common.LeftPaddingSlice(crypto.Keccak256(pubKey[1:])[12:], 32), nil
+	return utils.LeftPaddingSlice(crypto.Keccak256(pubKey[1:])[12:], 32), nil
 }

@@ -17,7 +17,7 @@
 package evmInt256
 
 import (
-	"github.com/SealSC/SealEVM/common"
+	"github.com/SealSC/SealEVM/utils"
 	"math/big"
 )
 
@@ -61,7 +61,7 @@ type Int struct {
 }
 
 func (i *Int) AsStringKey() string {
-	return string(common.LeftPaddingSlice(i.Bytes(), common.HashLength))
+	return string(utils.LeftPaddingSlice(i.Bytes(), utils.HashLength))
 }
 
 func (i Int) Clone() *Int {
