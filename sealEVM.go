@@ -247,17 +247,10 @@ func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte,
 }
 
 func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byte, error) {
-	var addr *evmInt256.Int
-	if opcodes.CREATE == param.OpCode {
-		addr = e.storage.CreateAddress(e.context.Message.Caller, e.context.Transaction)
-	} else {
-		addr = e.storage.CreateFixedAddress(e.context.Message.Caller, param.CreateSalt, param.ContractCode, e.context.Transaction)
-	}
-
 	newEVM := e.getClosureDefaultEVM(param)
 
 	newEVM.depth = depth
-	newEVM.context.Contract.Namespace = addr
+	newEVM.context.Contract.Namespace = param.ContractAddress
 	newEVM.context.Message.Value = param.CallValue
 	newEVM.context.Message.Caller = e.context.Contract.Namespace
 

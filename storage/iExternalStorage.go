@@ -23,17 +23,13 @@ import (
 
 type IExternalStorage interface {
 	GetBalance(address *evmInt256.Int) (*evmInt256.Int, error)
-	GetCode(address *evmInt256.Int) ([]byte, error)
-	GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error)
-	GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error)
+	GetContract(address *evmInt256.Int) (*Contract, error)
 	GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
 
+	HashOfCode(code []byte) *evmInt256.Int
 	CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int
 	CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, code []byte, tx environment.Transaction) *evmInt256.Int
 
 	CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool
-
 	Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error)
-
-	NewContract(n *evmInt256.Int, code []byte) error
 }

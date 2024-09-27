@@ -205,6 +205,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		addr = ctx.storage.CreateFixedAddress(ctx.environment.Message.Caller, salt, code, ctx.environment.Transaction)
 	}
 
+	cParam.ContractAddress = addr
 	ret, err := ctx.closureExec(cParam)
 	if err != nil {
 		ctx.stack.Push(evmInt256.New(0))
@@ -213,7 +214,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		}
 	} else {
 		ctx.stack.Push(addr)
-		_ = ctx.storage.NewContract(addr, ret)
+		ctx.storage.NewContract(addr, ret)
 	}
 
 	return ret, nil

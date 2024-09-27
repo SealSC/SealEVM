@@ -17,6 +17,7 @@
 package storage
 
 import (
+	"bytes"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
@@ -40,9 +41,7 @@ func New(extStorage IExternalStorage) *Storage {
 		ResultCache:     NewResultCache(),
 		externalStorage: extStorage,
 		readOnlyCache: readOnlyCache{
-			Code:      CodeCache{},
-			CodeSize:  Cache{},
-			CodeHash:  Cache{},
+			Contracts: ContractCache{},
 			BlockHash: Cache{},
 		},
 	}
@@ -181,46 +180,56 @@ func (s *Storage) Balance(address *evmInt256.Int) (*evmInt256.Int, error) {
 	return b.Balance.Clone(), nil
 }
 
+func (s *Storage) getContract(address *evmInt256.Int) (*Contract, error) {
+	contract := s.ResultCache.NewContracts.Get(address)
+	if contract != nil {
+		return contract, nil
+	}
+
+	contract = s.readOnlyCache.Contracts.Get(address)
+	if contract != nil {
+		return contract, nil
+	}
+
+	contract, err := s.externalStorage.GetContract(address)
+	if err != nil {
+		return nil, err
+	}
+
+	if contract == nil {
+		return nil, evmErrors.InvalidExternalStorageResult
+	}
+
+	s.readOnlyCache.Contracts.Set(contract)
+
+	return contract, nil
+}
+
 func (s *Storage) GetCode(address *evmInt256.Int) ([]byte, error) {
-	keyStr := address.AsStringKey()
-	if b, exists := s.readOnlyCache.Code[keyStr]; exists {
-		return b, nil
+	contract, err := s.getContract(address)
+	if err != nil {
+		return nil, err
 	}
 
-	b, err := s.externalStorage.GetCode(address)
-	if err == nil {
-		s.readOnlyCache.Code[keyStr] = b
-	}
-
-	return b, err
+	return contract.Code, err
 }
 
 func (s *Storage) GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error) {
-	keyStr := address.AsStringKey()
-	if size, exists := s.readOnlyCache.CodeSize[keyStr]; exists {
-		return size, nil
+	contract, err := s.getContract(address)
+	if err != nil {
+		return nil, err
 	}
 
-	size, err := s.externalStorage.GetCodeSize(address)
-	if err == nil {
-		s.readOnlyCache.CodeSize[keyStr] = size
-	}
-
-	return size, err
+	return evmInt256.New(int64(contract.CodeSize)), err
 }
 
 func (s *Storage) GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error) {
-	keyStr := address.AsStringKey()
-	if hash, exists := s.readOnlyCache.CodeHash[keyStr]; exists {
-		return hash, nil
+	contract, err := s.getContract(address)
+	if err != nil {
+		return nil, err
 	}
 
-	hash, err := s.externalStorage.GetCodeHash(address)
-	if err == nil {
-		s.readOnlyCache.CodeHash[keyStr] = hash
-	}
-
-	return hash, err
+	return contract.CodeHash, err
 }
 
 func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
@@ -237,13 +246,13 @@ func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
 	return hash, err
 }
 
-func (s *Storage) NewContract(address *evmInt256.Int, code []byte) error {
-	keyStr := address.AsStringKey()
-	if _, exists := s.readOnlyCache.Code[keyStr]; exists {
-		s.readOnlyCache.Code[keyStr] = code
-	}
-
-	return s.externalStorage.NewContract(address, code)
+func (s *Storage) NewContract(address *evmInt256.Int, code []byte) {
+	s.ResultCache.NewContracts.Set(&Contract{
+		Address:  address.Clone(),
+		Code:     bytes.Clone(code),
+		CodeHash: s.externalStorage.HashOfCode(code).Clone(),
+		CodeSize: uint64(len(code)),
+	})
 }
 
 func (s *Storage) CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int {

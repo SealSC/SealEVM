@@ -143,9 +143,10 @@ type ResultCache struct {
 	TOriginalData CacheUnderNamespace
 	TCachedData   CacheUnderNamespace
 
-	Balance   BalanceCache
-	Logs      *LogCache
-	Destructs Cache
+	Balance      BalanceCache
+	Logs         *LogCache
+	Destructs    Cache
+	NewContracts ContractCache
 }
 
 func NewResultCache() ResultCache {
@@ -157,6 +158,7 @@ func NewResultCache() ResultCache {
 		Balance:       BalanceCache{},
 		Logs:          &LogCache{},
 		Destructs:     Cache{},
+		NewContracts:  ContractCache{},
 	}
 }
 
@@ -170,6 +172,7 @@ func (r *ResultCache) Clone() ResultCache {
 		Balance:       r.Balance.Clone(),
 		Logs:          &logsClone,
 		Destructs:     r.Destructs.Clone(),
+		NewContracts:  r.NewContracts.Clone(),
 	}
 
 	return replica
@@ -210,10 +213,8 @@ func (r *ResultCache) XCachedStore(namespace string, key string, v *evmInt256.In
 type CodeCache map[string][]byte
 
 type readOnlyCache struct {
-	Code      CodeCache
-	CodeSize  Cache
-	CodeHash  Cache
 	BlockHash Cache
+	Contracts ContractCache
 }
 
 func MergeResultCache(src *ResultCache, to *ResultCache) {
@@ -223,6 +224,7 @@ func MergeResultCache(src *ResultCache, to *ResultCache) {
 	to.TCachedData.Merge(src.TCachedData)
 	to.Balance.Merge(src.Balance)
 	to.Destructs.Merge(src.Destructs)
+	to.NewContracts.Merge(src.NewContracts)
 
 	*to.Logs = *src.Logs
 }
