@@ -86,6 +86,16 @@ func FromBigInt(i *big.Int) *Int {
 	return ret
 }
 
+func (i *Int) Set(x *big.Int) *Int {
+	if x == nil {
+		i.Int = nil
+		return i
+	}
+
+	i.Int.Set(x)
+	return i
+}
+
 func (i *Int) SetBytes(b []byte) *Int {
 	i.Int.SetBytes(b)
 	i.toI256()
