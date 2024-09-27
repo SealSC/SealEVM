@@ -80,18 +80,14 @@ func FromBigInt(i *big.Int) *Int {
 	return ret
 }
 
-func FromDecimalString(s string) *Int {
-	bi := big.NewInt(0)
-	_, success := bi.SetString(s, 10)
-	if success {
-		i := &Int{bi}
-		i.toI256()
-		return i
-	} else {
-		i := &Int{big.NewInt(0)}
-		i.toI256()
-		return i
-	}
+func (i *Int) SetBytes(b []byte) *Int {
+	i.Int.SetBytes(b)
+	return i
+}
+
+func (i *Int) SetUint64(x uint64) *Int {
+	i.Int.SetUint64(x)
+	return i
 }
 
 func (i *Int) toI256() *Int {
