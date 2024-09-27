@@ -72,6 +72,12 @@ func New(i int64) *Int {
 	return &Int{big.NewInt(i)}
 }
 
+func FromBytes(b []byte) *Int {
+	ret := &Int{big.NewInt(0)}
+	ret.SetBytes(b)
+	return ret
+}
+
 func FromBigInt(i *big.Int) *Int {
 	ret := &Int{big.NewInt(0)}
 	if i != nil {
@@ -82,6 +88,7 @@ func FromBigInt(i *big.Int) *Int {
 
 func (i *Int) SetBytes(b []byte) *Int {
 	i.Int.SetBytes(b)
+	i.toI256()
 	return i
 }
 
