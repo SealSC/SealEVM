@@ -86,7 +86,7 @@ func main() {
 	//create memStorage
 	ms := &memStorage{}
 	ms.storage = make(map[string][]byte)
-	ms.contracts = make(map[string][]byte)
+	ms.contracts = storage.ContractCache{}
 
 	//deploy contract
 	evm := newEvm(deployCode, nil, caller, ms)

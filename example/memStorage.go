@@ -1,16 +1,18 @@
 package main
 
 import (
-	"errors"
+	"bytes"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/storage"
+	"github.com/ethereum/go-ethereum/crypto"
 	"time"
 )
 
 //external storage for example
 type memStorage struct {
 	storage   map[string][]byte
-	contracts map[string][]byte
+	contracts storage.ContractCache
 }
 
 func (r *memStorage) GetBalance(address *evmInt256.Int) (*evmInt256.Int, error) {
@@ -21,20 +23,14 @@ func (r *memStorage) CanTransfer(from, to, val *evmInt256.Int) bool {
 	return true
 }
 
-func (r *memStorage) GetCode(address *evmInt256.Int) ([]byte, error) {
+func (r *memStorage) GetContract(address *evmInt256.Int) (*storage.Contract, error) {
 	return r.contracts[address.AsStringKey()], nil
 }
 
-func (r *memStorage) GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error) {
-	code, exist := r.contracts[address.AsStringKey()]
-	if !exist {
-		return nil, errors.New("no code for: 0x" + address.Text(16))
-	}
-	return evmInt256.New(int64(len(code))), nil
-}
-
-func (r *memStorage) GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error) {
-	return nil, nil
+func (r *memStorage) HashOfCode(code []byte) *evmInt256.Int {
+	ret := evmInt256.New(0)
+	ret.SetBytes(crypto.Keccak256(code))
+	return ret
 }
 
 func (r *memStorage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
@@ -63,6 +59,11 @@ func (r *memStorage) Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, e
 }
 
 func (r *memStorage) NewContract(n *evmInt256.Int, code []byte) error {
-	r.contracts[n.AsStringKey()] = code
+	r.contracts[n.AsStringKey()] = &storage.Contract{
+		Address:  n.Clone(),
+		Code:     bytes.Clone(code),
+		CodeHash: r.HashOfCode(code),
+		CodeSize: uint64(len(code)),
+	}
 	return nil
 }
