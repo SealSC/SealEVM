@@ -12,6 +12,12 @@ const (
 
 type SlotKey [HashBytesLen]byte
 
+func Int256ToSlot(i *evmInt256.Int) SlotKey {
+	var s SlotKey
+	s.SetBytes(i.Bytes())
+	return s
+}
+
 func (s SlotKey) Int256() *evmInt256.Int {
 	return evmInt256.FromBytes(s[:])
 }

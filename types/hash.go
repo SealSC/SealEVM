@@ -12,6 +12,12 @@ const (
 
 type Hash [HashBytesLen]byte
 
+func Int256ToHash(i *evmInt256.Int) Hash {
+	var h Hash
+	h.SetBytes(i.Bytes())
+	return h
+}
+
 func (h Hash) Int256() *evmInt256.Int {
 	return evmInt256.FromBytes(h[:])
 }

@@ -2,26 +2,26 @@ package storage
 
 import (
 	"bytes"
-	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/types"
 )
 
 type Contract struct {
-	Address  *evmInt256.Int
+	Address  types.Address
 	Code     []byte
-	CodeHash *evmInt256.Int
+	CodeHash types.Hash
 	CodeSize uint64
 }
 
 func (c Contract) Clone() *Contract {
 	return &Contract{
-		Address:  c.Address.Clone(),
+		Address:  c.Address,
 		Code:     bytes.Clone(c.Code),
-		CodeHash: c.CodeHash.Clone(),
+		CodeHash: c.CodeHash,
 		CodeSize: c.CodeSize,
 	}
 }
 
-type ContractCache map[string]*Contract
+type ContractCache map[types.Address]*Contract
 
 func (c ContractCache) Clone() ContractCache {
 	replica := make(ContractCache)
@@ -41,13 +41,13 @@ func (c ContractCache) Merge(cache ContractCache) {
 }
 
 func (c ContractCache) Set(contract *Contract) {
-	c[contract.Address.AsStringKey()] = contract.Clone()
+	c[contract.Address] = contract.Clone()
 }
 
-func (c ContractCache) Get(address *evmInt256.Int) *Contract {
-	if c[address.AsStringKey()] == nil {
+func (c ContractCache) Get(address types.Address) *Contract {
+	if c[address] == nil {
 		return nil
 	}
 
-	return c[address.AsStringKey()].Clone()
+	return c[address].Clone()
 }

@@ -16,10 +16,13 @@
 
 package environment
 
-import "github.com/SealSC/SealEVM/evmInt256"
+import (
+	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/types"
+)
 
 type Message struct {
-	Caller *evmInt256.Int
+	Caller types.Address
 	Value  *evmInt256.Int
 	Data   []byte
 }

@@ -18,14 +18,14 @@ package environment
 
 import (
 	"github.com/SealSC/SealEVM/evmErrors"
-	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/types"
 )
 
 type Contract struct {
-	Namespace *evmInt256.Int
-	Code      []byte
-	Hash      *evmInt256.Int
+	Address types.Address
+	Code    []byte
+	Hash    types.Hash
 
 	codeDataFlag map[uint64]bool
 }

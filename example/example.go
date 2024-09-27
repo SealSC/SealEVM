@@ -8,6 +8,7 @@ import (
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/storage"
+	"github.com/SealSC/SealEVM/types"
 	"os"
 	"time"
 )
@@ -26,7 +27,7 @@ func logPrinter(logCache *storage.LogCache) {
 func storeResult(result *SealEVM.ExecuteResult, storage *memStorage) {
 	for addr, cache := range result.StorageCache.CachedData {
 		for key, v := range cache {
-			storage.storage[addr+key] = v.Bytes()
+			storage.storage[addr][key] = v.Clone()
 		}
 	}
 }
@@ -34,20 +35,21 @@ func storeResult(result *SealEVM.ExecuteResult, storage *memStorage) {
 //create a new evm
 func newEvm(code []byte, callData []byte, caller []byte, ms *memStorage) *SealEVM.EVM {
 	hash := hashes.Keccak256(code)
-	hashInt := evmInt256.New(0)
-	hashInt.SetBytes(hash)
 
+	var codeHash types.Hash
+	var addr types.Address
+
+	codeHash.SetBytes(hash)
+	addr.SetBytes(hash)
 	//same contract code has same address in this example
-	cNamespace := hashInt
 	contract := environment.Contract{
-		Namespace: cNamespace,
-		Code:      code,
-		Hash:      hashInt,
+		Address: addr,
+		Code:    code,
+		Hash:    codeHash,
 	}
 
-	var callHash [32]byte
-	copy(callHash[12:], caller)
-	callerInt, _ := evmInt256.HashBytesToEVMInt(callHash)
+	var callerAddr types.Address
+	callerAddr.SetBytes(caller)
 	evm := SealEVM.New(SealEVM.EVMParam{
 		MaxStackDepth:  0,
 		ExternalStore:  ms,
@@ -64,12 +66,12 @@ func newEvm(code []byte, callData []byte, caller []byte, ms *memStorage) *SealEV
 			},
 			Contract: contract,
 			Transaction: environment.Transaction{
-				Origin:   evmInt256.New(2),
+				Origin:   callerAddr,
 				GasPrice: evmInt256.New(1),
 				GasLimit: evmInt256.New(10000000),
 			},
 			Message: environment.Message{
-				Caller: callerInt,
+				Caller: callerAddr,
 				Value:  evmInt256.New(0),
 				Data:   callData,
 			},
@@ -85,7 +87,7 @@ func main() {
 
 	//create memStorage
 	ms := &memStorage{}
-	ms.storage = make(map[string][]byte)
+	ms.storage = storage.SlotCache{}
 	ms.contracts = storage.ContractCache{}
 
 	//deploy contract

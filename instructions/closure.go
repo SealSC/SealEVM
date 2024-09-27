@@ -20,6 +20,7 @@ import (
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/types"
 )
 
 type ClosureExecute func(ClosureParam) ([]byte, error)
@@ -29,13 +30,13 @@ type ClosureParam struct {
 	OpCode       opcodes.OpCode
 	GasRemaining *evmInt256.Int
 
-	ContractAddress *evmInt256.Int
-	ContractHash    *evmInt256.Int
+	ContractAddress types.Address
+	ContractHash    types.Hash
 	ContractCode    []byte
 
 	CallData   []byte
 	CallValue  *evmInt256.Int
-	CreateSalt *evmInt256.Int
+	CreateSalt types.Hash
 }
 
 func loadClosure() {
@@ -107,12 +108,12 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 		return nil, err
 	}
 
-	contractCode, err := ctx.storage.GetCode(addr)
+	contractCode, err := ctx.storage.GetCode(types.Int256ToAddress(addr))
 	if err != nil {
 		return nil, err
 	}
 
-	contractCodeHash, err := ctx.storage.GetCodeHash(addr)
+	contractCodeHash, err := ctx.storage.GetCodeHash(types.Int256ToAddress(addr))
 	if err != nil {
 		return nil, err
 	}
@@ -121,9 +122,9 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 		VM:              ctx.vm,
 		OpCode:          opCode,
 		GasRemaining:    ctx.gasRemaining,
-		ContractAddress: addr,
+		ContractAddress: types.Int256ToAddress(addr),
 		ContractCode:    contractCode,
-		ContractHash:    contractCodeHash,
+		ContractHash:    *contractCodeHash,
 		CallData:        data,
 		CallValue:       v,
 	}
@@ -172,7 +173,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 	v := ctx.stack.Pop()
 	mOffset := ctx.stack.Pop()
 	mSize := ctx.stack.Pop()
-	var salt *evmInt256.Int = nil
+	salt := evmInt256.New(0)
 	if opCode == opcodes.CREATE2 {
 		salt = ctx.stack.Pop()
 	}
@@ -195,17 +196,17 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		ContractCode: code,
 		CallData:     []byte{},
 		CallValue:    v,
-		CreateSalt:   salt,
+		CreateSalt:   types.Int256ToHash(salt),
 	}
 
-	var addr *evmInt256.Int
+	caller := ctx.environment.Message.Caller
+
 	if opcodes.CREATE == opCode {
-		addr = ctx.storage.CreateAddress(ctx.environment.Message.Caller, ctx.environment.Transaction)
+		cParam.ContractAddress = ctx.storage.CreateAddress(caller, ctx.environment.Transaction)
 	} else {
-		addr = ctx.storage.CreateFixedAddress(ctx.environment.Message.Caller, salt, code, ctx.environment.Transaction)
+		cParam.ContractAddress = ctx.storage.CreateFixedAddress(caller, types.Int256ToHash(salt), code, ctx.environment.Transaction)
 	}
 
-	cParam.ContractAddress = addr
 	ret, err := ctx.closureExec(cParam)
 	if err != nil {
 		ctx.stack.Push(evmInt256.New(0))
@@ -213,8 +214,8 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 			ret = nil
 		}
 	} else {
-		ctx.stack.Push(addr)
-		ctx.storage.NewContract(addr, ret)
+		ctx.stack.Push(cParam.ContractAddress.Int256())
+		ctx.storage.NewContract(cParam.ContractAddress, ret)
 	}
 
 	return ret, nil

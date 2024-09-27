@@ -16,7 +16,9 @@
 
 package precompiledContracts
 
-import "github.com/SealSC/SealEVM/evmInt256"
+import (
+	"github.com/SealSC/SealEVM/types"
+)
 
 type PrecompiledContract interface {
 	GasCost(input []byte) uint64
@@ -47,9 +49,10 @@ func RegisterContracts(c PrecompiledContract) {
 	contracts = append(contracts, c)
 }
 
-func IsPrecompiledContract(address *evmInt256.Int) bool {
-	if address.IsUint64() {
-		addr := address.Uint64()
+func IsPrecompiledContract(address types.Address) bool {
+	addrInt := address.Int256()
+	if addrInt.IsUint64() {
+		addr := addrInt.Uint64()
 		return addr < PrecompiledContractCount() && addr != 0
 	}
 

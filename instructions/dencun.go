@@ -4,6 +4,7 @@ import (
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
 	"github.com/SealSC/SealEVM/storage"
+	"github.com/SealSC/SealEVM/types"
 )
 
 func loadDencun() {
@@ -65,10 +66,14 @@ func blobBaseFeeAction(ctx *instructionsContext) ([]byte, error) {
 
 func tLoadAction(ctx *instructionsContext) ([]byte, error) {
 	key := ctx.stack.Peek()
-	val, err := ctx.storage.XLoad(ctx.environment.Contract.Namespace, key, storage.TStorage)
+
+	slot := types.Int256ToSlot(key)
+	val, err := ctx.storage.XLoad(ctx.environment.Contract.Address, slot, storage.TStorage)
+
 	if err != nil {
 		return nil, err
 	}
+
 	key.Set(val.Int)
 	return nil, nil
 }
@@ -76,7 +81,9 @@ func tLoadAction(ctx *instructionsContext) ([]byte, error) {
 func tStoreAction(ctx *instructionsContext) ([]byte, error) {
 	key := ctx.stack.Pop()
 	val := ctx.stack.Pop()
-	ctx.storage.XStore(ctx.environment.Contract.Namespace, key, val, storage.TStorage)
+
+	slot := types.Int256ToSlot(key)
+	ctx.storage.XStore(ctx.environment.Contract.Address, slot, val, storage.TStorage)
 	return nil, nil
 }
 

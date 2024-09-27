@@ -26,6 +26,7 @@ import (
 	"github.com/SealSC/SealEVM/precompiledContracts"
 	"github.com/SealSC/SealEVM/stack"
 	"github.com/SealSC/SealEVM/storage"
+	"github.com/SealSC/SealEVM/types"
 	"github.com/SealSC/SealEVM/utils"
 )
 
@@ -103,8 +104,9 @@ func (e *EVM) subResult(result ExecuteResult, err error) {
 	}
 }
 
-func (e *EVM) executePreCompiled(addr uint64, input []byte) (ExecuteResult, error) {
-	contract := precompiledContracts.GetContract(addr)
+func (e *EVM) executePreCompiled(address types.Address, input []byte) (ExecuteResult, error) {
+	addrInt := address.Int256().Uint64()
+	contract := precompiledContracts.GetContract(addrInt)
 	gasCost := contract.GasCost(input)
 	gasLeft := e.instructions.GetGasLeft()
 
@@ -126,7 +128,7 @@ func (e *EVM) executePreCompiled(addr uint64, input []byte) (ExecuteResult, erro
 }
 
 func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
-	contractAddr := e.context.Contract.Namespace
+	contractAddr := e.context.Contract.Address
 	gasLeft := e.instructions.GetGasLeft()
 
 	result := ExecuteResult{
@@ -154,14 +156,8 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 
 	}
 
-	if contractAddr != nil {
-		//check if is precompiled
-		if contractAddr.IsUint64() {
-			addr := contractAddr.Uint64()
-			if addr < precompiledContracts.PrecompiledContractCount() {
-				return e.executePreCompiled(addr, e.context.Message.Data)
-			}
-		}
+	if precompiledContracts.IsPrecompiledContract(contractAddr) {
+		return e.executePreCompiled(contractAddr, e.context.Message.Data)
 	}
 
 	execRet, gasLeft, err := e.instructions.ExecuteContract()
@@ -198,9 +194,9 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 	}, e.storage)
 
 	newEVM.context.Contract = environment.Contract{
-		Namespace: param.ContractAddress,
-		Code:      param.ContractCode,
-		Hash:      param.ContractHash,
+		Address: param.ContractAddress,
+		Code:    param.ContractCode,
+		Hash:    param.ContractHash,
 	}
 
 	newEVM.instructions.SetGasLimit(param.GasRemaining.Uint64())
@@ -212,23 +208,23 @@ func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte,
 	newEVM := e.getClosureDefaultEVM(param)
 	newEVM.depth = depth
 
-	//set storage namespace and call value
+	//set storage address and call value
 	switch param.OpCode {
 	case opcodes.CALL:
-		newEVM.context.Contract.Namespace = param.ContractAddress
+		newEVM.context.Contract.Address = param.ContractAddress
 		newEVM.context.Message.Value = param.CallValue
-		newEVM.context.Message.Caller = e.context.Contract.Namespace
+		newEVM.context.Message.Caller = e.context.Contract.Address
 	case opcodes.STATICCALL:
-		newEVM.context.Contract.Namespace = param.ContractAddress
+		newEVM.context.Contract.Address = param.ContractAddress
 		newEVM.context.Message.Value = param.CallValue
-		newEVM.context.Message.Caller = e.context.Contract.Namespace
+		newEVM.context.Message.Caller = e.context.Contract.Address
 	case opcodes.CALLCODE:
-		newEVM.context.Contract.Namespace = e.context.Contract.Namespace
+		newEVM.context.Contract.Address = e.context.Contract.Address
 		newEVM.context.Message.Value = param.CallValue
-		newEVM.context.Message.Caller = e.context.Contract.Namespace
+		newEVM.context.Message.Caller = e.context.Contract.Address
 
 	case opcodes.DELEGATECALL:
-		newEVM.context.Contract.Namespace = e.context.Contract.Namespace
+		newEVM.context.Contract.Address = e.context.Contract.Address
 		newEVM.context.Message.Value = e.context.Message.Value
 		newEVM.context.Message.Caller = e.context.Message.Caller
 	}
@@ -250,9 +246,9 @@ func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byt
 	newEVM := e.getClosureDefaultEVM(param)
 
 	newEVM.depth = depth
-	newEVM.context.Contract.Namespace = param.ContractAddress
+	newEVM.context.Contract.Address = param.ContractAddress
 	newEVM.context.Message.Value = param.CallValue
-	newEVM.context.Message.Caller = e.context.Contract.Namespace
+	newEVM.context.Message.Caller = e.context.Contract.Address
 
 	ret, err := newEVM.ExecuteContract(true)
 	if ret.ExitOpCode == opcodes.REVERT {

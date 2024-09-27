@@ -17,6 +17,7 @@
 package instructions
 
 import (
+	"github.com/SealSC/SealEVM/types"
 	"math/big"
 
 	"github.com/SealSC/SealEVM/evmErrors"
@@ -186,13 +187,13 @@ func loadEnvironment() {
 }
 
 func addressAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Contract.Namespace.Clone())
+	ctx.stack.Push(ctx.environment.Contract.Address.Int256())
 	return nil, nil
 }
 
 func balanceAction(ctx *instructionsContext) ([]byte, error) {
 	addr := ctx.stack.Peek()
-	balance, err := ctx.storage.Balance(addr)
+	balance, err := ctx.storage.Balance(types.Int256ToAddress(addr))
 	if err != nil {
 		return nil, err
 	}
@@ -202,8 +203,7 @@ func balanceAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func selfBalanceAction(ctx *instructionsContext) ([]byte, error) {
-	addr := ctx.environment.Contract.Namespace.Clone()
-	balance, err := ctx.storage.Balance(addr)
+	balance, err := ctx.storage.Balance(ctx.environment.Contract.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -213,12 +213,12 @@ func selfBalanceAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func originAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Transaction.Origin.Clone())
+	ctx.stack.Push(ctx.environment.Transaction.Origin.Int256())
 	return nil, nil
 }
 
 func callerAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Message.Caller.Clone())
+	ctx.stack.Push(ctx.environment.Message.Caller.Int256())
 	return nil, nil
 }
 
@@ -288,10 +288,11 @@ func gasPriceAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func extCodeSizeAction(ctx *instructionsContext) ([]byte, error) {
-	addr := ctx.stack.Peek()
+	addrInt := ctx.stack.Peek()
 
+	addr := types.Int256ToAddress(addrInt)
 	if precompiledContracts.IsPrecompiledContract(addr) {
-		addr.SetUint64(0)
+		addrInt.SetUint64(0)
 		return nil, nil
 	}
 
@@ -301,19 +302,20 @@ func extCodeSizeAction(ctx *instructionsContext) ([]byte, error) {
 	}
 
 	if s == nil {
-		addr.SetUint64(0)
+		addrInt.SetUint64(0)
 	} else {
-		addr.Set(s.Int)
+		addrInt.Set(s.Int)
 	}
 	return nil, nil
 }
 
 func extCodeCopyAction(ctx *instructionsContext) ([]byte, error) {
-	addr := ctx.stack.Pop()
+	addrInt := ctx.stack.Pop()
 	mOffset := ctx.stack.Pop()
 	dOffset := ctx.stack.Pop()
 	size := ctx.stack.Pop()
 
+	addr := types.Int256ToAddress(addrInt)
 	if precompiledContracts.IsPrecompiledContract(addr) {
 		return nil, nil
 	}
@@ -360,10 +362,11 @@ func returnDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func extCodeHashAction(ctx *instructionsContext) ([]byte, error) {
-	addr := ctx.stack.Peek()
+	addrInt := ctx.stack.Peek()
 
+	addr := types.Int256ToAddress(addrInt)
 	if precompiledContracts.IsPrecompiledContract(addr) {
-		addr.SetBytes(utils.ZeroHash)
+		addrInt.SetBytes(utils.ZeroHash)
 		return nil, nil
 	}
 
@@ -373,9 +376,9 @@ func extCodeHashAction(ctx *instructionsContext) ([]byte, error) {
 	}
 
 	if codeHash == nil {
-		addr.SetUint64(0)
+		addrInt.SetUint64(0)
 	} else {
-		addr.Set(codeHash.Int)
+		addrInt.SetBytes(codeHash[:])
 	}
 	return nil, nil
 }

@@ -12,6 +12,12 @@ const (
 
 type Address [AddressBytesLen]byte
 
+func Int256ToAddress(i *evmInt256.Int) Address {
+	var a Address
+	a.SetBytes(i.Bytes())
+	return a
+}
+
 func (a Address) Int256() *evmInt256.Int {
 	return evmInt256.FromBytes(a[:])
 }

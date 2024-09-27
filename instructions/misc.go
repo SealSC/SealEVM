@@ -21,6 +21,7 @@ import (
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/types"
 )
 
 func loadMisc() {
@@ -112,11 +113,14 @@ func revertAction(ctx *instructionsContext) ([]byte, error) {
 
 func selfDestructAction(ctx *instructionsContext) ([]byte, error) {
 	addr := ctx.stack.Pop()
-	contractAddr := ctx.environment.Contract.Namespace.Clone()
+	contractAddr := ctx.environment.Contract.Address
+	receiverAddr := types.Int256ToAddress(addr)
+
 	balance, _ := ctx.storage.Balance(contractAddr)
-	if !contractAddr.EQ(addr) {
+
+	if contractAddr != receiverAddr {
 		ctx.storage.BalanceModify(contractAddr, balance, true)
-		ctx.storage.BalanceModify(addr, balance, false)
+		ctx.storage.BalanceModify(receiverAddr, balance, false)
 	}
 
 	ctx.storage.Destruct(contractAddr)

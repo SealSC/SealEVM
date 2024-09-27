@@ -19,17 +19,18 @@ package storage
 import (
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/types"
 )
 
 type IExternalStorage interface {
-	GetBalance(address *evmInt256.Int) (*evmInt256.Int, error)
-	GetContract(address *evmInt256.Int) (*Contract, error)
+	GetBalance(address types.Address) (*evmInt256.Int, error)
+	GetContract(address types.Address) (*Contract, error)
 	GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
 
-	HashOfCode(code []byte) *evmInt256.Int
-	CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int
-	CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, code []byte, tx environment.Transaction) *evmInt256.Int
+	HashOfCode(code []byte) types.Hash
+	CreateAddress(caller types.Address, tx environment.Transaction) types.Address
+	CreateFixedAddress(caller types.Address, salt types.Hash, code []byte, tx environment.Transaction) types.Address
 
-	CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool
-	Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error)
+	CanTransfer(from types.Address, to types.Address, amount *evmInt256.Int) bool
+	Load(address types.Address, slot types.SlotKey) (*evmInt256.Int, error)
 }

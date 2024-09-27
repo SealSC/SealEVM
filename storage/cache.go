@@ -18,12 +18,13 @@ package storage
 
 import (
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/types"
 )
 
-type Cache map[string]*evmInt256.Int
+type Cache map[types.SlotKey]*evmInt256.Int
 
 func (c Cache) Clone() Cache {
-	replica := make(map[string]*evmInt256.Int)
+	replica := make(Cache)
 
 	for k, v := range c {
 		replica[k] = v.Clone()
@@ -38,55 +39,55 @@ func (c Cache) Merge(cache Cache) {
 	}
 }
 
-type CacheUnderNamespace map[string]Cache
+type SlotCache map[types.Address]Cache
 
-func (c CacheUnderNamespace) Clone() CacheUnderNamespace {
-	replica := CacheUnderNamespace{}
+func (c SlotCache) Clone() SlotCache {
+	replica := SlotCache{}
 
-	for namespace, keyMap := range c {
-		for key, val := range keyMap {
-			replica.Set(namespace, key, val.Clone())
+	for addr, slotCache := range c {
+		for slot, val := range slotCache {
+			replica.Set(addr, slot, val.Clone())
 		}
 	}
 
 	return replica
 }
 
-func (c CacheUnderNamespace) Get(namespace string, key string) *evmInt256.Int {
-	if c[namespace] == nil {
+func (c SlotCache) Get(address types.Address, slot types.SlotKey) *evmInt256.Int {
+	if c[address] == nil {
 		return nil
 	} else {
-		return c[namespace][key]
+		return c[address][slot]
 	}
 }
 
-func (c CacheUnderNamespace) Set(namespace string, key string, v *evmInt256.Int) {
-	if c[namespace] == nil {
-		c[namespace] = Cache{}
+func (c SlotCache) Set(address types.Address, slot types.SlotKey, v *evmInt256.Int) {
+	if c[address] == nil {
+		c[address] = Cache{}
 	}
 
-	c[namespace][key] = v
+	c[address][slot] = v
 }
 
-func (c CacheUnderNamespace) Merge(cache CacheUnderNamespace) {
+func (c SlotCache) Merge(cache SlotCache) {
 	for k, v := range cache {
 		c[k] = v
 	}
 }
 
 type balance struct {
-	Address *evmInt256.Int
+	Address types.Address
 	Balance *evmInt256.Int
 }
 
-type BalanceCache map[string]*balance
+type BalanceCache map[types.Address]*balance
 
 func (b BalanceCache) Clone() BalanceCache {
 	replica := BalanceCache{}
 
 	for k, v := range b {
 		replica[k] = &balance{
-			Address: v.Address.Clone(),
+			Address: v.Address,
 			Balance: v.Balance.Clone(),
 		}
 	}
@@ -101,7 +102,7 @@ func (b BalanceCache) Merge(cache BalanceCache) {
 }
 
 type Log struct {
-	Address *evmInt256.Int
+	Address types.Address
 	Topics  [][]byte
 	Data    []byte
 }
@@ -120,7 +121,7 @@ func (l Log) Clone() Log {
 	copy(d, l.Data)
 	replica.Data = d
 
-	replica.Address = l.Address.Clone()
+	replica.Address = l.Address
 	return replica
 }
 
@@ -136,28 +137,46 @@ func (l LogCache) Clone() LogCache {
 	return replica
 }
 
-type ResultCache struct {
-	OriginalData CacheUnderNamespace
-	CachedData   CacheUnderNamespace
+type DestructCache map[types.Address]types.Address
 
-	TOriginalData CacheUnderNamespace
-	TCachedData   CacheUnderNamespace
+func (d DestructCache) Clone() DestructCache {
+	replica := DestructCache{}
+
+	for k, v := range d {
+		replica[k] = v
+	}
+
+	return replica
+}
+
+func (d DestructCache) Merge(cache DestructCache) {
+	for k, v := range cache {
+		d[k] = v
+	}
+}
+
+type ResultCache struct {
+	OriginalData SlotCache
+	CachedData   SlotCache
+
+	TOriginalData SlotCache
+	TCachedData   SlotCache
 
 	Balance      BalanceCache
 	Logs         *LogCache
-	Destructs    Cache
+	Destructs    DestructCache
 	NewContracts ContractCache
 }
 
 func NewResultCache() ResultCache {
 	return ResultCache{
-		OriginalData:  CacheUnderNamespace{},
-		CachedData:    CacheUnderNamespace{},
-		TOriginalData: CacheUnderNamespace{},
-		TCachedData:   CacheUnderNamespace{},
+		OriginalData:  SlotCache{},
+		CachedData:    SlotCache{},
+		TOriginalData: SlotCache{},
+		TCachedData:   SlotCache{},
 		Balance:       BalanceCache{},
 		Logs:          &LogCache{},
-		Destructs:     Cache{},
+		Destructs:     DestructCache{},
 		NewContracts:  ContractCache{},
 	}
 }
@@ -178,35 +197,35 @@ func (r *ResultCache) Clone() ResultCache {
 	return replica
 }
 
-func (r *ResultCache) XOriginalLoad(namespace string, key string, t TypeOfStorage) *evmInt256.Int {
+func (r *ResultCache) XOriginalLoad(address types.Address, slot types.SlotKey, t TypeOfStorage) *evmInt256.Int {
 	if t == SStorage {
-		return r.OriginalData.Get(namespace, key)
+		return r.OriginalData.Get(address, slot)
 	} else {
-		return r.TOriginalData.Get(namespace, key)
+		return r.TOriginalData.Get(address, slot)
 	}
 }
 
-func (r *ResultCache) XCachedLoad(namespace string, key string, t TypeOfStorage) *evmInt256.Int {
+func (r *ResultCache) XCachedLoad(address types.Address, slot types.SlotKey, t TypeOfStorage) *evmInt256.Int {
 	if t == SStorage {
-		return r.CachedData.Get(namespace, key)
+		return r.CachedData.Get(address, slot)
 	} else {
-		return r.TCachedData.Get(namespace, key)
+		return r.TCachedData.Get(address, slot)
 	}
 }
 
-func (r *ResultCache) XOriginalStore(namespace string, key string, v *evmInt256.Int, t TypeOfStorage) {
+func (r *ResultCache) XOriginalStore(address types.Address, slot types.SlotKey, val *evmInt256.Int, t TypeOfStorage) {
 	if t == SStorage {
-		r.OriginalData.Set(namespace, key, v)
+		r.OriginalData.Set(address, slot, val)
 	} else {
-		r.TOriginalData.Set(namespace, key, v)
+		r.TOriginalData.Set(address, slot, val)
 	}
 }
 
-func (r *ResultCache) XCachedStore(namespace string, key string, v *evmInt256.Int, t TypeOfStorage) {
+func (r *ResultCache) XCachedStore(address types.Address, slot types.SlotKey, val *evmInt256.Int, t TypeOfStorage) {
 	if t == SStorage {
-		r.CachedData.Set(namespace, key, v)
+		r.CachedData.Set(address, slot, val)
 	} else {
-		r.TCachedData.Set(namespace, key, v)
+		r.TCachedData.Set(address, slot, val)
 	}
 }
 

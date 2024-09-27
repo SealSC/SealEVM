@@ -21,6 +21,7 @@ import (
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/types"
 )
 
 type TypeOfStorage int
@@ -59,23 +60,20 @@ func (s *Storage) Clone() *Storage {
 	return replica
 }
 
-func (s *Storage) XLoad(n *evmInt256.Int, k *evmInt256.Int, t TypeOfStorage) (*evmInt256.Int, error) {
+func (s *Storage) XLoad(address types.Address, slot types.SlotKey, t TypeOfStorage) (*evmInt256.Int, error) {
 	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.externalStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
 	}
-
-	nsStr := n.AsStringKey()
-	keyStr := k.AsStringKey()
 
 	if t != SStorage && t != TStorage {
 		return nil, evmErrors.InvalidTypeOfStorage()
 	}
 
 	var err error = nil
-	i := s.ResultCache.XCachedLoad(nsStr, keyStr, t)
+	i := s.ResultCache.XCachedLoad(address, slot, t)
 	if i == nil {
 		if t == SStorage {
-			i, err = s.externalStorage.Load(n, k)
+			i, err = s.externalStorage.Load(address, slot)
 		} else {
 			i = evmInt256.New(0)
 		}
@@ -84,18 +82,18 @@ func (s *Storage) XLoad(n *evmInt256.Int, k *evmInt256.Int, t TypeOfStorage) (*e
 			return nil, evmErrors.NoSuchDataInTheStorage(err)
 		}
 
-		s.ResultCache.XCachedStore(nsStr, keyStr, i, t)
-		s.ResultCache.XOriginalStore(nsStr, keyStr, i, t)
+		s.ResultCache.XCachedStore(address, slot, i, t)
+		s.ResultCache.XOriginalStore(address, slot, i, t)
 	}
 
 	return i, nil
 }
 
-func (s *Storage) XStore(n *evmInt256.Int, k *evmInt256.Int, v *evmInt256.Int, t TypeOfStorage) {
-	s.ResultCache.XCachedStore(n.AsStringKey(), k.AsStringKey(), v, t)
+func (s *Storage) XStore(address types.Address, slot types.SlotKey, val *evmInt256.Int, t TypeOfStorage) {
+	s.ResultCache.XCachedStore(address, slot, val, t)
 }
 
-func (s *Storage) CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool {
+func (s *Storage) CanTransfer(from types.Address, to types.Address, amount *evmInt256.Int) bool {
 	balance, err := s.Balance(from)
 	if err != nil {
 		return false
@@ -104,17 +102,16 @@ func (s *Storage) CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *ev
 	return balance.Cmp(amount.Int) >= 0
 }
 
-func (s *Storage) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, neg bool) {
-	kString := address.AsStringKey()
+func (s *Storage) BalanceModify(address types.Address, value *evmInt256.Int, neg bool) {
 	s.Balance(address)
 
-	b, exists := s.ResultCache.Balance[kString]
+	b, exists := s.ResultCache.Balance[address]
 	if !exists {
 		b = &balance{
-			Address: evmInt256.FromBigInt(address.Int),
+			Address: address,
 			Balance: evmInt256.New(0),
 		}
-		s.ResultCache.Balance[address.AsStringKey()] = b
+		s.ResultCache.Balance[address] = b
 	}
 
 	if neg {
@@ -124,7 +121,7 @@ func (s *Storage) BalanceModify(address *evmInt256.Int, value *evmInt256.Int, ne
 	}
 }
 
-func (s *Storage) Log(address *evmInt256.Int, topics [][]byte, data []byte, context environment.Context) {
+func (s *Storage) Log(address types.Address, topics [][]byte, data []byte, context environment.Context) {
 	var theLog = Log{
 		Address: address,
 		Topics:  topics,
@@ -136,28 +133,27 @@ func (s *Storage) Log(address *evmInt256.Int, topics [][]byte, data []byte, cont
 	return
 }
 
-func (s *Storage) Destruct(address *evmInt256.Int) {
-	s.ResultCache.Destructs[address.AsStringKey()] = address
+func (s *Storage) Destruct(address types.Address) {
+	s.ResultCache.Destructs[address] = address
 }
 
-type commonGetterFunc func(*evmInt256.Int) (*evmInt256.Int, error)
+type commonGetterFunc func(types.SlotKey) (*evmInt256.Int, error)
 
-func (s *Storage) commonGetter(key *evmInt256.Int, cache Cache, getterFunc commonGetterFunc) (*evmInt256.Int, error) {
-	keyStr := key.AsStringKey()
-	if b, exists := cache[keyStr]; exists {
+func (s *Storage) commonGetter(slot types.SlotKey, cache Cache, getterFunc commonGetterFunc) (*evmInt256.Int, error) {
+	if b, exists := cache[slot]; exists {
 		return evmInt256.FromBigInt(b.Int), nil
 	}
 
-	b, err := getterFunc(key)
+	b, err := getterFunc(slot)
 	if err == nil {
-		cache[keyStr] = b
+		cache[slot] = b
 	}
 
 	return b, err
 }
 
-func (s *Storage) Balance(address *evmInt256.Int) (*evmInt256.Int, error) {
-	b, exist := s.ResultCache.Balance[address.AsStringKey()]
+func (s *Storage) Balance(address types.Address) (*evmInt256.Int, error) {
+	b, exist := s.ResultCache.Balance[address]
 	if exist {
 		return b.Balance.Clone(), nil
 	}
@@ -165,7 +161,7 @@ func (s *Storage) Balance(address *evmInt256.Int) (*evmInt256.Int, error) {
 	ba, err := s.externalStorage.GetBalance(address)
 	if err != nil {
 		b = &balance{
-			Address: evmInt256.FromBigInt(address.Int),
+			Address: address,
 			Balance: evmInt256.New(0),
 		}
 	} else {
@@ -175,12 +171,12 @@ func (s *Storage) Balance(address *evmInt256.Int) (*evmInt256.Int, error) {
 		}
 	}
 
-	s.ResultCache.Balance[address.AsStringKey()] = b
+	s.ResultCache.Balance[address] = b
 
 	return b.Balance.Clone(), nil
 }
 
-func (s *Storage) getContract(address *evmInt256.Int) (*Contract, error) {
+func (s *Storage) getContract(address types.Address) (*Contract, error) {
 	contract := s.ResultCache.NewContracts.Get(address)
 	if contract != nil {
 		return contract, nil
@@ -205,7 +201,7 @@ func (s *Storage) getContract(address *evmInt256.Int) (*Contract, error) {
 	return contract, nil
 }
 
-func (s *Storage) GetCode(address *evmInt256.Int) ([]byte, error) {
+func (s *Storage) GetCode(address types.Address) ([]byte, error) {
 	contract, err := s.getContract(address)
 	if err != nil {
 		return nil, err
@@ -214,7 +210,7 @@ func (s *Storage) GetCode(address *evmInt256.Int) ([]byte, error) {
 	return contract.Code, err
 }
 
-func (s *Storage) GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error) {
+func (s *Storage) GetCodeSize(address types.Address) (*evmInt256.Int, error) {
 	contract, err := s.getContract(address)
 	if err != nil {
 		return nil, err
@@ -223,43 +219,44 @@ func (s *Storage) GetCodeSize(address *evmInt256.Int) (*evmInt256.Int, error) {
 	return evmInt256.New(int64(contract.CodeSize)), err
 }
 
-func (s *Storage) GetCodeHash(address *evmInt256.Int) (*evmInt256.Int, error) {
+func (s *Storage) GetCodeHash(address types.Address) (*types.Hash, error) {
 	contract, err := s.getContract(address)
 	if err != nil {
 		return nil, err
 	}
 
-	return contract.CodeHash, err
+	return &contract.CodeHash, err
 }
 
 func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
-	keyStr := block.AsStringKey()
-	if hash, exists := s.readOnlyCache.BlockHash[keyStr]; exists {
+	var slot types.SlotKey
+	slot.SetBytes(block.Bytes())
+	if hash, exists := s.readOnlyCache.BlockHash[slot]; exists {
 		return hash, nil
 	}
 
 	hash, err := s.externalStorage.GetBlockHash(block)
 	if err == nil {
-		s.readOnlyCache.BlockHash[keyStr] = hash
+		s.readOnlyCache.BlockHash[slot] = hash
 	}
 
 	return hash, err
 }
 
-func (s *Storage) NewContract(address *evmInt256.Int, code []byte) {
+func (s *Storage) NewContract(address types.Address, code []byte) {
 	s.ResultCache.NewContracts.Set(&Contract{
-		Address:  address.Clone(),
+		Address:  address,
 		Code:     bytes.Clone(code),
-		CodeHash: s.externalStorage.HashOfCode(code).Clone(),
+		CodeHash: s.externalStorage.HashOfCode(code),
 		CodeSize: uint64(len(code)),
 	})
 }
 
-func (s *Storage) CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int {
+func (s *Storage) CreateAddress(caller types.Address, tx environment.Transaction) types.Address {
 	return s.externalStorage.CreateAddress(caller, tx)
 }
 
-func (s *Storage) CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, code []byte, tx environment.Transaction) *evmInt256.Int {
+func (s *Storage) CreateFixedAddress(caller types.Address, salt types.Hash, code []byte, tx environment.Transaction) types.Address {
 	return s.externalStorage.CreateFixedAddress(caller, salt, code, tx)
 }
 
