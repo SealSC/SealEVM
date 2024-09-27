@@ -194,9 +194,9 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 	}, e.storage)
 
 	newEVM.context.Contract = environment.Contract{
-		Address: param.ContractAddress,
-		Code:    param.ContractCode,
-		Hash:    param.ContractHash,
+		Address:  param.ContractAddress,
+		Code:     param.ContractCode,
+		CodeHash: param.ContractHash,
 	}
 
 	newEVM.instructions.SetGasLimit(param.GasRemaining.Uint64())

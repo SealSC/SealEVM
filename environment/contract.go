@@ -17,17 +17,28 @@
 package environment
 
 import (
+	"bytes"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/opcodes"
 	"github.com/SealSC/SealEVM/types"
 )
 
 type Contract struct {
-	Address types.Address
-	Code    []byte
-	Hash    types.Hash
+	Address  types.Address
+	Code     []byte
+	CodeHash types.Hash
+	CodeSize uint64
 
 	codeDataFlag map[uint64]bool
+}
+
+func (c Contract) Clone() *Contract {
+	return &Contract{
+		Address:  c.Address,
+		Code:     bytes.Clone(c.Code),
+		CodeHash: c.CodeHash,
+		CodeSize: c.CodeSize,
+	}
 }
 
 func (c *Contract) IsValidJump(dest uint64) (bool, error) {

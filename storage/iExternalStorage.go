@@ -24,7 +24,7 @@ import (
 
 type IExternalStorage interface {
 	GetBalance(address types.Address) (*evmInt256.Int, error)
-	GetContract(address types.Address) (*Contract, error)
+	GetContract(address types.Address) (*environment.Contract, error)
 	GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
 
 	HashOfCode(code []byte) types.Hash

@@ -1,27 +1,11 @@
 package storage
 
 import (
-	"bytes"
+	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/types"
 )
 
-type Contract struct {
-	Address  types.Address
-	Code     []byte
-	CodeHash types.Hash
-	CodeSize uint64
-}
-
-func (c Contract) Clone() *Contract {
-	return &Contract{
-		Address:  c.Address,
-		Code:     bytes.Clone(c.Code),
-		CodeHash: c.CodeHash,
-		CodeSize: c.CodeSize,
-	}
-}
-
-type ContractCache map[types.Address]*Contract
+type ContractCache map[types.Address]*environment.Contract
 
 func (c ContractCache) Clone() ContractCache {
 	replica := make(ContractCache)
@@ -40,11 +24,11 @@ func (c ContractCache) Merge(cache ContractCache) {
 	}
 }
 
-func (c ContractCache) Set(contract *Contract) {
+func (c ContractCache) Set(contract *environment.Contract) {
 	c[contract.Address] = contract.Clone()
 }
 
-func (c ContractCache) Get(address types.Address) *Contract {
+func (c ContractCache) Get(address types.Address) *environment.Contract {
 	if c[address] == nil {
 		return nil
 	}

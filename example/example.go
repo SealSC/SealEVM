@@ -43,9 +43,9 @@ func newEvm(code []byte, callData []byte, caller []byte, ms *memStorage) *SealEV
 	addr.SetBytes(hash)
 	//same contract code has same address in this example
 	contract := environment.Contract{
-		Address: addr,
-		Code:    code,
-		Hash:    codeHash,
+		Address:  addr,
+		Code:     code,
+		CodeHash: codeHash,
 	}
 
 	var callerAddr types.Address

@@ -176,7 +176,7 @@ func (s *Storage) Balance(address types.Address) (*evmInt256.Int, error) {
 	return b.Balance.Clone(), nil
 }
 
-func (s *Storage) getContract(address types.Address) (*Contract, error) {
+func (s *Storage) getContract(address types.Address) (*environment.Contract, error) {
 	contract := s.ResultCache.NewContracts.Get(address)
 	if contract != nil {
 		return contract, nil
@@ -244,7 +244,7 @@ func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
 }
 
 func (s *Storage) NewContract(address types.Address, code []byte) {
-	s.ResultCache.NewContracts.Set(&Contract{
+	s.ResultCache.NewContracts.Set(&environment.Contract{
 		Address:  address,
 		Code:     bytes.Clone(code),
 		CodeHash: s.externalStorage.HashOfCode(code),
