@@ -127,7 +127,24 @@ func (e *EVM) executePreCompiled(address types.Address, input []byte) (ExecuteRe
 	return result, err
 }
 
+func (e *EVM) createContract(env *environment.Context) *environment.Contract {
+	return &environment.Contract{
+		Address:  e.storage.CreateAddress(env.Message.Caller, env.Transaction),
+		Code:     env.Message.Data,
+		CodeHash: e.storage.HashOfCode(env.Message.Data),
+		CodeSize: uint64(len(env.Message.Data)),
+	}
+}
+
 func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
+	if e.context.Contract == nil {
+		e.context.Contract = e.createContract(e.context)
+	}
+
+	if e.context.Message.Value == nil {
+		e.context.Message.Value = evmInt256.New(0)
+	}
+
 	contractAddr := e.context.Contract.Address
 	gasLeft := e.instructions.GetGasLeft()
 
@@ -193,7 +210,7 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 		GasSetting: e.instructions.GetGasSetting(),
 	}, e.storage)
 
-	newEVM.context.Contract = environment.Contract{
+	newEVM.context.Contract = &environment.Contract{
 		Address:  param.ContractAddress,
 		Code:     param.ContractCode,
 		CodeHash: param.ContractHash,

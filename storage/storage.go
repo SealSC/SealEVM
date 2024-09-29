@@ -213,6 +213,10 @@ func (s *Storage) GetCodeSize(address types.Address) (*evmInt256.Int, error) {
 	return evmInt256.New(int64(contract.CodeSize)), err
 }
 
+func (s *Storage) HashOfCode(code []byte) types.Hash {
+	return s.externalStorage.HashOfCode(code)
+}
+
 func (s *Storage) GetCodeHash(address types.Address) (*types.Hash, error) {
 	contract, err := s.getContract(address)
 	if err != nil {
