@@ -88,7 +88,7 @@ func FromBigInt(i *big.Int) *Int {
 
 func (i *Int) Set(x *big.Int) *Int {
 	if x == nil {
-		i.Int = nil
+		i.Int = big.NewInt(0)
 		return i
 	}
 
