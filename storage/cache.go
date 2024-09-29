@@ -101,31 +101,7 @@ func (b BalanceCache) Merge(cache BalanceCache) {
 	}
 }
 
-type Log struct {
-	Address types.Address
-	Topics  [][]byte
-	Data    []byte
-}
-
-func (l Log) Clone() Log {
-	replica := Log{}
-
-	replica.Topics = make([][]byte, len(l.Topics))
-	for i := 0; i < len(l.Topics); i++ {
-		t := make([]byte, len(l.Topics[i]))
-		copy(t, l.Topics[i])
-		replica.Topics[i] = t
-	}
-
-	d := make([]byte, len(l.Data))
-	copy(d, l.Data)
-	replica.Data = d
-
-	replica.Address = l.Address
-	return replica
-}
-
-type LogCache []Log
+type LogCache []*types.Log
 
 func (l LogCache) Clone() LogCache {
 	replica := make(LogCache, len(l))

@@ -18,8 +18,8 @@ package instructions
 
 import (
 	"github.com/SealSC/SealEVM/evmErrors"
-	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
+	"github.com/SealSC/SealEVM/types"
 )
 
 func loadLog() {
@@ -29,7 +29,12 @@ func loadLog() {
 			action: func(ctx *instructionsContext) (bytes []byte, err error) {
 				mOffset := ctx.stack.Pop()
 				lSize := ctx.stack.Pop()
-				var topics [][]byte
+
+				log := &types.Log{
+					Address: ctx.environment.Contract.Address,
+					Topics:  []types.Topic{},
+					Data:    []byte{},
+				}
 
 				//gas check
 				offset, size, gasLeft, err := ctx.memoryGasCostAndMalloc(mOffset, lSize)
@@ -46,17 +51,15 @@ func loadLog() {
 				ctx.gasRemaining.SetUint64(gasLeft)
 
 				for t := 0; t < topicCount; t++ {
-					topic := ctx.stack.Pop()
-					topicBytes := evmInt256.EVMIntToHashBytes(topic)
-					topics = append(topics, topicBytes[:])
+					log.Topics = append(log.Topics, types.Int256ToTopic(ctx.stack.Pop()))
 				}
 
-				log, err := ctx.memory.Copy(offset, size)
+				log.Data, err = ctx.memory.Copy(offset, size)
 				if err != nil {
 					return
 				}
 
-				ctx.storage.Log(ctx.environment.Contract.Address, topics, log, *ctx.environment)
+				ctx.storage.Log(log)
 				return nil, nil
 			},
 

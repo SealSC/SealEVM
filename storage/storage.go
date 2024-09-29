@@ -121,14 +121,8 @@ func (s *Storage) BalanceModify(address types.Address, value *evmInt256.Int, neg
 	}
 }
 
-func (s *Storage) Log(address types.Address, topics [][]byte, data []byte, context environment.Context) {
-	var theLog = Log{
-		Address: address,
-		Topics:  topics,
-		Data:    data,
-	}
-
-	*s.ResultCache.Logs = append(*s.ResultCache.Logs, theLog)
+func (s *Storage) Log(log *types.Log) {
+	*s.ResultCache.Logs = append(*s.ResultCache.Logs, log)
 
 	return
 }
