@@ -21,7 +21,7 @@ import (
 	"github.com/SealSC/SealEVM/types"
 )
 
-type Cache map[types.SlotKey]*evmInt256.Int
+type Cache map[types.Slot]*evmInt256.Int
 
 func (c Cache) Clone() Cache {
 	replica := make(Cache)
@@ -53,7 +53,7 @@ func (c SlotCache) Clone() SlotCache {
 	return replica
 }
 
-func (c SlotCache) Get(address types.Address, slot types.SlotKey) *evmInt256.Int {
+func (c SlotCache) Get(address types.Address, slot types.Slot) *evmInt256.Int {
 	if c[address] == nil {
 		return nil
 	} else {
@@ -61,7 +61,7 @@ func (c SlotCache) Get(address types.Address, slot types.SlotKey) *evmInt256.Int
 	}
 }
 
-func (c SlotCache) Set(address types.Address, slot types.SlotKey, v *evmInt256.Int) {
+func (c SlotCache) Set(address types.Address, slot types.Slot, v *evmInt256.Int) {
 	if c[address] == nil {
 		c[address] = Cache{}
 	}
@@ -197,7 +197,7 @@ func (r *ResultCache) Clone() ResultCache {
 	return replica
 }
 
-func (r *ResultCache) XOriginalLoad(address types.Address, slot types.SlotKey, t TypeOfStorage) *evmInt256.Int {
+func (r *ResultCache) XOriginalLoad(address types.Address, slot types.Slot, t TypeOfStorage) *evmInt256.Int {
 	if t == SStorage {
 		return r.OriginalData.Get(address, slot)
 	} else {
@@ -205,7 +205,7 @@ func (r *ResultCache) XOriginalLoad(address types.Address, slot types.SlotKey, t
 	}
 }
 
-func (r *ResultCache) XCachedLoad(address types.Address, slot types.SlotKey, t TypeOfStorage) *evmInt256.Int {
+func (r *ResultCache) XCachedLoad(address types.Address, slot types.Slot, t TypeOfStorage) *evmInt256.Int {
 	if t == SStorage {
 		return r.CachedData.Get(address, slot)
 	} else {
@@ -213,7 +213,7 @@ func (r *ResultCache) XCachedLoad(address types.Address, slot types.SlotKey, t T
 	}
 }
 
-func (r *ResultCache) XOriginalStore(address types.Address, slot types.SlotKey, val *evmInt256.Int, t TypeOfStorage) {
+func (r *ResultCache) XOriginalStore(address types.Address, slot types.Slot, val *evmInt256.Int, t TypeOfStorage) {
 	if t == SStorage {
 		r.OriginalData.Set(address, slot, val)
 	} else {
@@ -221,7 +221,7 @@ func (r *ResultCache) XOriginalStore(address types.Address, slot types.SlotKey, 
 	}
 }
 
-func (r *ResultCache) XCachedStore(address types.Address, slot types.SlotKey, val *evmInt256.Int, t TypeOfStorage) {
+func (r *ResultCache) XCachedStore(address types.Address, slot types.Slot, val *evmInt256.Int, t TypeOfStorage) {
 	if t == SStorage {
 		r.CachedData.Set(address, slot, val)
 	} else {

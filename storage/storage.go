@@ -60,7 +60,7 @@ func (s *Storage) Clone() *Storage {
 	return replica
 }
 
-func (s *Storage) XLoad(address types.Address, slot types.SlotKey, t TypeOfStorage) (*evmInt256.Int, error) {
+func (s *Storage) XLoad(address types.Address, slot types.Slot, t TypeOfStorage) (*evmInt256.Int, error) {
 	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.externalStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
 	}
@@ -89,7 +89,7 @@ func (s *Storage) XLoad(address types.Address, slot types.SlotKey, t TypeOfStora
 	return i, nil
 }
 
-func (s *Storage) XStore(address types.Address, slot types.SlotKey, val *evmInt256.Int, t TypeOfStorage) {
+func (s *Storage) XStore(address types.Address, slot types.Slot, val *evmInt256.Int, t TypeOfStorage) {
 	s.ResultCache.XCachedStore(address, slot, val, t)
 }
 
@@ -137,9 +137,9 @@ func (s *Storage) Destruct(address types.Address) {
 	s.ResultCache.Destructs[address] = address
 }
 
-type commonGetterFunc func(types.SlotKey) (*evmInt256.Int, error)
+type commonGetterFunc func(types.Slot) (*evmInt256.Int, error)
 
-func (s *Storage) commonGetter(slot types.SlotKey, cache Cache, getterFunc commonGetterFunc) (*evmInt256.Int, error) {
+func (s *Storage) commonGetter(slot types.Slot, cache Cache, getterFunc commonGetterFunc) (*evmInt256.Int, error) {
 	if b, exists := cache[slot]; exists {
 		return evmInt256.FromBigInt(b.Int), nil
 	}
@@ -229,7 +229,7 @@ func (s *Storage) GetCodeHash(address types.Address) (*types.Hash, error) {
 }
 
 func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
-	var slot types.SlotKey
+	var slot types.Slot
 	slot.SetBytes(block.Bytes())
 	if hash, exists := s.readOnlyCache.BlockHash[slot]; exists {
 		return hash, nil

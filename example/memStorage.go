@@ -54,7 +54,7 @@ func (r *memStorage) CreateFixedAddress(caller types.Address, salt types.Hash, c
 	return addr
 }
 
-func (r *memStorage) Load(address types.Address, slot types.SlotKey) (*evmInt256.Int, error) {
+func (r *memStorage) Load(address types.Address, slot types.Slot) (*evmInt256.Int, error) {
 	ret := evmInt256.New(0)
 	if val, exists := r.storage[address][slot]; exists {
 		ret.Set(val.Int)

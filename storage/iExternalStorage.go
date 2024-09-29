@@ -32,5 +32,5 @@ type IExternalStorage interface {
 	CreateFixedAddress(caller types.Address, salt types.Hash, code []byte, tx environment.Transaction) types.Address
 
 	CanTransfer(from types.Address, to types.Address, amount *evmInt256.Int) bool
-	Load(address types.Address, slot types.SlotKey) (*evmInt256.Int, error)
+	Load(address types.Address, slot types.Slot) (*evmInt256.Int, error)
 }
