@@ -24,7 +24,7 @@ func (r *memStorage) CanTransfer(from, to types.Address, val *evmInt256.Int) boo
 	return true
 }
 
-func (r *memStorage) GetContract(address types.Address) (*storage.Contract, error) {
+func (r *memStorage) GetContract(address types.Address) (*environment.Contract, error) {
 	return r.contracts[address], nil
 }
 
@@ -64,7 +64,7 @@ func (r *memStorage) Load(address types.Address, slot types.SlotKey) (*evmInt256
 }
 
 func (r *memStorage) NewContract(address types.Address, code []byte) error {
-	r.contracts[address] = &storage.Contract{
+	r.contracts[address] = &environment.Contract{
 		Address:  address,
 		Code:     bytes.Clone(code),
 		CodeHash: r.HashOfCode(code),

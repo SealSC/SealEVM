@@ -27,7 +27,7 @@ func logPrinter(logCache *storage.LogCache) {
 func storeResult(result *SealEVM.ExecuteResult, storage *memStorage) {
 	for addr, cache := range result.StorageCache.CachedData {
 		for key, v := range cache {
-			storage.storage[addr][key] = v.Clone()
+			storage.storage.Set(addr, key, v)
 		}
 	}
 }
