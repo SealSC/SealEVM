@@ -26,6 +26,8 @@ type IExternalStorage interface {
 	GetBalance(address types.Address) (*evmInt256.Int, error)
 	GetContract(address types.Address) (*environment.Contract, error)
 	GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
+	ContractExist(address types.Address) bool
+	ContractEmpty(address types.Address) bool
 
 	HashOfCode(code []byte) types.Hash
 	CreateAddress(caller types.Address, tx environment.Transaction) types.Address

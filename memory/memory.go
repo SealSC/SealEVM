@@ -19,6 +19,7 @@ package memory
 import (
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/utils"
 )
 
 const (
@@ -26,11 +27,47 @@ const (
 )
 
 type Memory struct {
-	cell []byte
+	cell        []byte
+	lastGasCost uint64
 }
 
 func New() *Memory {
 	return &Memory{}
+}
+
+func (m *Memory) gasCost(size uint64) uint64 {
+	wordSize := utils.ToWordSize(size)
+	size = wordSize * 32
+
+	square := wordSize * wordSize
+	linCoef := wordSize * 3
+	quadCoef := square / 512
+
+	return linCoef + quadCoef
+}
+
+func (m *Memory) CalculateMallocSizeAndGas(offset *evmInt256.Int, size *evmInt256.Int) (uint64, uint64, error) {
+	mLen := uint64(len(m.cell))
+	bound := offset.Clone()
+	bound.Add(size).ExtendedAlign(expandUnit)
+
+	if !bound.IsUint64() {
+		return 0, 0, evmErrors.OutOfMemory
+	}
+
+	boundUint := bound.Uint64()
+
+	var expandSize uint64 = 0
+	var gasCost uint64 = 0
+
+	if mLen < boundUint {
+		newCost := m.gasCost(boundUint)
+
+		gasCost = newCost - m.lastGasCost
+		expandSize = boundUint - mLen
+	}
+
+	return expandSize, gasCost, nil
 }
 
 func (m *Memory) WillIncrease(offset evmInt256.Int, size evmInt256.Int) (o uint64, s uint64, i uint64, err error) {
