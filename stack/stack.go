@@ -104,6 +104,19 @@ func (s *Stack) PeekN(n int) []*evmInt256.Int {
 	return el
 }
 
+func (s *Stack) PeekPos(pos uint) *evmInt256.Int {
+	sLen := uint(len(s.data))
+	if sLen == 0 {
+		return nil
+	}
+
+	if pos > sLen-1 {
+		return nil
+	}
+
+	return s.data[sLen-1-pos]
+}
+
 func (s *Stack) Swap(n int) {
 	n += 1
 	sLen := len(s.data)

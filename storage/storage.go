@@ -265,3 +265,25 @@ func (s *Storage) GetExternalStorage() IExternalStorage {
 func (s *Storage) ClearCache() {
 	s.ResultCache = NewResultCache()
 }
+
+func (s *Storage) CachedBalance(addr types.Address) bool {
+	return s.ResultCache.Balance[addr] != nil
+}
+
+func (s *Storage) CachedContract(addr types.Address) bool {
+	return s.readOnlyCache.Contracts[addr] != nil
+}
+
+func (s *Storage) CachedData(addr types.Address, slot types.Slot) (org *evmInt256.Int, current *evmInt256.Int) {
+	org = s.ResultCache.OriginalData.Get(addr, slot)
+	current = s.ResultCache.CachedData.Get(addr, slot)
+	return org, current
+}
+
+func (s *Storage) ContractExist(addr types.Address) bool {
+	return s.externalStorage.ContractExist(addr)
+}
+
+func (s *Storage) ContractEmpty(addr types.Address) bool {
+	return s.externalStorage.ContractEmpty(addr)
+}
