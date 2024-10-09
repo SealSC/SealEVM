@@ -19,6 +19,7 @@ package environment
 import (
 	"bytes"
 	"github.com/SealSC/SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
 	"github.com/SealSC/SealEVM/types"
 )
@@ -28,17 +29,26 @@ type Contract struct {
 	Code     []byte
 	CodeHash types.Hash
 	CodeSize uint64
+	Balance  *evmInt256.Int
 
 	codeDataFlag map[uint64]bool
 }
 
 func (c Contract) Clone() *Contract {
-	return &Contract{
+	replica := &Contract{
 		Address:  c.Address,
 		Code:     bytes.Clone(c.Code),
 		CodeHash: c.CodeHash,
 		CodeSize: c.CodeSize,
 	}
+
+	if c.Balance == nil {
+		replica.Balance = evmInt256.New(0)
+	} else {
+		replica.Balance = c.Balance.Clone()
+	}
+
+	return replica
 }
 
 func (c *Contract) IsValidJump(dest uint64) (bool, error) {

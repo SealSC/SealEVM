@@ -193,8 +193,10 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 			}
 
 			if e.storage.CanTransfer(msg.Caller, contractAddr, msg.Value) {
-				e.storage.BalanceModify(msg.Caller, msg.Value, true)
-				e.storage.BalanceModify(contractAddr, msg.Value, false)
+				transErr := e.storage.Transfer(msg.Caller, contractAddr, msg.Value)
+				if transErr != nil {
+					return result, err
+				}
 			} else {
 				return result, evmErrors.InsufficientBalance
 			}

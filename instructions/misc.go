@@ -93,8 +93,10 @@ func selfDestructAction(ctx *instructionsContext) ([]byte, error) {
 	balance, _ := ctx.storage.Balance(contractAddr)
 
 	if contractAddr != receiverAddr {
-		ctx.storage.BalanceModify(contractAddr, balance, true)
-		ctx.storage.BalanceModify(receiverAddr, balance, false)
+		err := ctx.storage.Transfer(contractAddr, receiverAddr, balance)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	ctx.storage.Destruct(contractAddr)
