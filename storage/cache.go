@@ -80,27 +80,6 @@ type balance struct {
 	Balance *evmInt256.Int
 }
 
-type BalanceCache map[types.Address]*balance
-
-func (b BalanceCache) Clone() BalanceCache {
-	replica := BalanceCache{}
-
-	for k, v := range b {
-		replica[k] = &balance{
-			Address: v.Address,
-			Balance: v.Balance.Clone(),
-		}
-	}
-
-	return replica
-}
-
-func (b BalanceCache) Merge(cache BalanceCache) {
-	for k, v := range cache {
-		b[k] = v
-	}
-}
-
 type LogCache []*types.Log
 
 func (l LogCache) Clone() LogCache {
@@ -138,7 +117,6 @@ type ResultCache struct {
 	TOriginalData SlotCache
 	TCachedData   SlotCache
 
-	Balance      BalanceCache
 	Logs         *LogCache
 	Destructs    DestructCache
 	NewContracts ContractCache
@@ -150,7 +128,6 @@ func NewResultCache() ResultCache {
 		CachedData:    SlotCache{},
 		TOriginalData: SlotCache{},
 		TCachedData:   SlotCache{},
-		Balance:       BalanceCache{},
 		Logs:          &LogCache{},
 		Destructs:     DestructCache{},
 		NewContracts:  ContractCache{},
@@ -164,7 +141,6 @@ func (r *ResultCache) Clone() ResultCache {
 		CachedData:    r.CachedData.Clone(),
 		TOriginalData: r.TOriginalData.Clone(),
 		TCachedData:   r.TCachedData.Clone(),
-		Balance:       r.Balance.Clone(),
 		Logs:          &logsClone,
 		Destructs:     r.Destructs.Clone(),
 		NewContracts:  r.NewContracts.Clone(),
@@ -217,7 +193,6 @@ func MergeResultCache(src *ResultCache, to *ResultCache) {
 	to.CachedData.Merge(src.CachedData)
 	to.TOriginalData.Merge(src.TOriginalData)
 	to.TCachedData.Merge(src.TCachedData)
-	to.Balance.Merge(src.Balance)
 	to.Destructs.Merge(src.Destructs)
 	to.NewContracts.Merge(src.NewContracts)
 

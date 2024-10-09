@@ -102,23 +102,25 @@ func (s *Storage) CanTransfer(from types.Address, to types.Address, amount *evmI
 	return balance.Cmp(amount.Int) >= 0
 }
 
-func (s *Storage) BalanceModify(address types.Address, value *evmInt256.Int, neg bool) {
-	s.Balance(address)
-
-	b, exists := s.ResultCache.Balance[address]
-	if !exists {
-		b = &balance{
-			Address: address,
-			Balance: evmInt256.New(0),
-		}
-		s.ResultCache.Balance[address] = b
+func (s *Storage) Transfer(fromAddr types.Address, toAddr types.Address, val *evmInt256.Int) error {
+	from, err := s.getContract(fromAddr)
+	if err != nil {
+		return err
 	}
 
-	if neg {
-		b.Balance.Int.Sub(b.Balance.Int, value.Int)
-	} else {
-		b.Balance.Int.Add(b.Balance.Int, value.Int)
+	to, err := s.getContract(toAddr)
+	if err != nil {
+		return err
 	}
+
+	if from.Balance.LT(val) {
+		return evmErrors.InsufficientBalance
+	}
+
+	from.Balance = from.Balance.Sub(val)
+	to.Balance = to.Balance.Add(val)
+
+	return nil
 }
 
 func (s *Storage) Log(log *types.Log) {
@@ -146,30 +148,6 @@ func (s *Storage) commonGetter(slot types.Slot, cache Cache, getterFunc commonGe
 	return b, err
 }
 
-func (s *Storage) Balance(address types.Address) (*evmInt256.Int, error) {
-	b, exist := s.ResultCache.Balance[address]
-	if exist {
-		return b.Balance.Clone(), nil
-	}
-
-	ba, err := s.externalStorage.GetBalance(address)
-	if err != nil {
-		b = &balance{
-			Address: address,
-			Balance: evmInt256.New(0),
-		}
-	} else {
-		b = &balance{
-			Address: address,
-			Balance: ba,
-		}
-	}
-
-	s.ResultCache.Balance[address] = b
-
-	return b.Balance.Clone(), nil
-}
-
 func (s *Storage) getContract(address types.Address) (*environment.Contract, error) {
 	contract := s.ResultCache.NewContracts.Get(address)
 	if contract != nil {
@@ -193,6 +171,15 @@ func (s *Storage) getContract(address types.Address) (*environment.Contract, err
 	s.readOnlyCache.Contracts.Set(contract)
 
 	return contract, nil
+}
+
+func (s *Storage) Balance(address types.Address) (*evmInt256.Int, error) {
+	contract, err := s.getContract(address)
+	if err != nil {
+		return nil, err
+	}
+
+	return contract.Balance.Clone(), nil
 }
 
 func (s *Storage) GetCode(address types.Address) ([]byte, error) {
@@ -264,10 +251,6 @@ func (s *Storage) GetExternalStorage() IExternalStorage {
 
 func (s *Storage) ClearCache() {
 	s.ResultCache = NewResultCache()
-}
-
-func (s *Storage) CachedBalance(addr types.Address) bool {
-	return s.ResultCache.Balance[addr] != nil
 }
 
 func (s *Storage) CachedContract(addr types.Address) bool {
