@@ -1,75 +1,74 @@
 # SealEVM
 
-SealEVM is an independent EVM implementation that decouples from the storage system through interfaces and caching, and can be easily ported to any blockchain system implemented in golang, adding EVM support for it.
+SealEVM is a standalone EVM executor, aiming to create a completely decoupled EVM execution environment from the storage system, to add EVM support for any blockchain system.
 
----
+The current version has achieved decoupling from the storage system through interfaces and caching, supporting the addition of EVM support to any blockchain system implemented in Golang.
+
+##
+
+⚠️ **Note**: **Because SealEVM pursues decoupled and independent operation, it only ensures that the calculation and execution process behavior of opcodes are consistent with EVM, but other characteristics of Ethereum, such as GAS consumption and precompiled contracts, are not completely consistent with Ethereum.**
+
+##
 
 - [中文](https://github.com/SealSC/SealEVM/blob/master/README_zh.md)
 
-##
+---
 
-### Example
+## Example Code
+The [example](https://github.com/SealSC/SealEVM/tree/master/example) directory provides a simple reference example of SealEVM usage. This example uses memory as external storage, demonstrating simple functions like contract deployment, invocation, and variable reading.
 
-In the [example](https://github.com/SealSC/SealEVM/tree/master/example) directory, a simple usage reference example of SealEVM is provided. This example uses memory as external storage and shows simple functions such as contract deployment, invocation, variable reading, etc.
+⚠️ **Note: The example in the example directory is only a simple demonstration of code usage and should not be used in any actual commercial or production environment.**
 
-**⚠️Note: The codes under [example](https://github.com/SealSC/SealEVM/tree/master/example) directory is only for a simple demonstration of code usage, please do not use it in any actual commercial and production environment**
+## Main Structures and Interfaces
 
-##
-
-### Main structures and interfaces
-
-**⚠️Note, the namespace in the source code is an alias for address, which has the same meaning as address in Ethereum.**
-
-##
-
->#### Parameters for creating EVM instances
+### EVM Instance Configuration Parameters
 ```go
 type EVMParam struct {
-    MaxStackDepth  int //Maximum stack depth
-    ExternalStore  storage.IExternalStorage //External storage interface, which will be explained in detail in later chapters
-    ResultCallback EVMResultCallback //Callback function after EVM execution
-    Context        *environment.Context //Environment context for EVM execution, please read the source code for the meaning of internal fields
-    GasSetting     *instructions.GasSetting //Custom gas cost setting for OpCode
+    MaxStackDepth  int // Maximum stack depth
+    ExternalStore  storage.IExternalStorage // External storage interface, see the following sections for details
+    ResultCallback EVMResultCallback // Callback function after EVM execution is completed
+    Context        *environment.Context // Context for EVM execution, read the source code for internal field meaning
+    GasSetting     *gasSetting.Setting // Gas fee settings, use default settings if nil
 }
 ```
 
 ##
 
->#### External storage interface
-SealEVM will interact with external storage through this interface to implement necessary functions such as state reading, address creation, new contract storage, etc.
+>#### External Storage Interface
+SealEVM interacts with external storage through this interface to achieve necessary contract reading, state reading, address creation, and other functions.
+
 ```go
 type IExternalStorage interface {
-    //Get the account balance of the specified address from external storage
-    GetBalance(address *evmInt256.Int) (*evmInt256.Int, error)
-
-    //Get the contract of the specified address from external storage
-    GetContract(address *evmInt256.Int) (*Contract, error)
-
-    //Get the hash of the specified block from external storage
+    // Retrieve stored contracts
+    GetContract(address types.Address) (*environment.Contract, error)
+    
+    // Get block hash at a specified height
     GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
-
-    //Calculates and returns the hash value of the given Code, which will be used as CodeHash
-	HashOfCode(code []byte) *evmInt256.Int
     
-	//When executing opcode CREAT(0xF0), this method will be called to get the address of the created contract
-    CreateAddress(caller *evmInt256.Int, tx environment.Transaction) *evmInt256.Int
+    // Check if a contract exists
+    ContractExist(address types.Address) bool
     
-    //When executing opcode CREAT2(0xF5), this method will be called to get the address of the created contract
-    CreateFixedAddress(caller *evmInt256.Int, salt *evmInt256.Int, tx environment.Transaction) *evmInt256.Int
+    // Check if an address is empty (see EIP161 for the definition of empty)
+    ContractEmpty(address types.Address) bool
     
-    //Get from external storage whether account balance transfer can be performed
-    CanTransfer(from *evmInt256.Int, to *evmInt256.Int, amount *evmInt256.Int) bool
+    // Return the hash value of the given contract code
+    HashOfCode(code []byte) types.Hash
     
-    //When executing opcode SLOAD(0x54), get 256-bit data from external storage at the specified location
-    //Note: The parameter n is the address of the current executing contract, and the parameter k is the key of the storage location given when executing opcode SLOAD(0x54)
-    Load(n *evmInt256.Int, k *evmInt256.Int) (*evmInt256.Int, error)
+    // Return the created contract address based on parameters, used by opcode CREATE (0xF0)
+    CreateAddress(caller types.Address, tx environment.Transaction) types.Address
+    
+    // Return the created contract address based on parameters, used by opcode CREATE2 (0xF5)
+    CreateFixedAddress(caller types.Address, salt types.Hash, code []byte, tx environment.Transaction) types.Address
+    
+    // Retrieve 256-bit data from external storage at a specified slot during the execution of opcode SLOAD (0x54)
+    Load(address types.Address, slot types.Slot) (*evmInt256.Int, error)
 }
 ```
 
 ##
 
->#### Execution result
-SealEVM will put all data that has changed during contract execution, except for new contract deployment, into cache and will not notify external storage.
+>#### Execution Results
+When executing contracts, SealEVM places all data changes, except for new contract deployments, into a cache and does not notify external storage.
 ```go
 type ExecuteResult struct {
     ResultData   []byte //Data returned by contract execution
@@ -81,19 +80,21 @@ type ExecuteResult struct {
 
 ##
 
->#### Cache of execution results
-The following is a description of the functions of these cache variables. Please refer to the source code for detailed structures.
+>#### Execution Results Cache
+Below is a description of the function of these cache variables, refer to the source code for detailed structure.
 ```go
 type ResultCache struct {
-    OriginalData CacheUnderNamespace //Cache information read from external storage during execution
-    CachedData   CacheUnderNamespace //Cache all state updates at the end of execution
-
-    TOriginalData CacheUnderNamespace //Cache information read from external transient storage during execution
-    TCachedData   CacheUnderNamespace //Cache all transient state updates at the end of execution
-
-    Balance   BalanceCache //Cache all account balance changes during execution
-    Logs      LogCache //Cache all logs generated by contracts during execution
-    Destructs Cache //Cache addresses of contracts that executed opcode SELFDESTRUCT(0xff)
+    OriginalData SlotCache // Original data loaded from external storage through SLOAD
+    CachedData   SlotCache // Data stored after contract execution through SSTORE
+    
+    // TOriginalData and TCachedData are caches for transient storage, 
+    // introduced by EIP-1153 as a temporary storage space during contract execution
+    TOriginalData SlotCache
+    TCachedData   SlotCache
+    
+    Logs         *LogCache // Log cache generated by opcodes LOG0 (0xA0) ~ LOG4 (0xA4)
+    Destructs    DestructCache // Cache for contracts that executed SELFDESTRUCT (0xFF)
+    NewContracts ContractCache // Cache for contracts created by internal transactions during execution
 }
 ```
 
