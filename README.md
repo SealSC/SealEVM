@@ -6,22 +6,22 @@ The current version has achieved decoupling from the storage system through inte
 
 ##
 
-⚠️ **Note**: **Because SealEVM pursues decoupled and independent operation, it only ensures that the calculation and execution process behavior of opcodes are consistent with EVM, but other characteristics of Ethereum, such as GAS consumption and precompiled contracts, are not completely consistent with Ethereum.**
+⚠️ **Note**: **SealEVM focuses on decoupled and independent operation, ensuring opcode behavior matches EVM, but GAS consumption and precompiled contracts may differ from Ethereum.**
 
 ##
 
-- [中文](https://github.com/SealSC/SealEVM/blob/master/README_zh.md)
+**[中文](https://github.com/SealSC/SealEVM/blob/master/README_zh.md) | English**
 
 ---
 
-## Example Code
+## Example
 The [example](https://github.com/SealSC/SealEVM/tree/master/example) directory provides a simple reference example of SealEVM usage. This example uses memory as external storage, demonstrating simple functions like contract deployment, invocation, and variable reading.
 
 ⚠️ **Note: The example in the example directory is only a simple demonstration of code usage and should not be used in any actual commercial or production environment.**
 
 ## Main Structures and Interfaces
 
-### EVM Instance Configuration Parameters
+>#### EVM Instance Configuration Parameters
 ```go
 type EVMParam struct {
     MaxStackDepth  int // Maximum stack depth
@@ -97,6 +97,16 @@ type ResultCache struct {
     NewContracts ContractCache // Cache for contracts created by internal transactions during execution
 }
 ```
+
+## Some Usage Scenarios
+SealEVM is an independent, flexible, configurable, and well-structured EVM execution environment. If you have the following needs, developing based on SealEVM would be a good choice:
+- EVM environment in modular blockchain systems
+- EVM environment in Layer 2 and Layer 3
+- EVM environment with customizable GAS fees and precompiled contracts
+
+**User Case**
+
+[ChainMaker](https://git.chainmaker.org.cn/chainmaker/vm-evm)
 
 ---
 
