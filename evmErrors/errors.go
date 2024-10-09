@@ -19,6 +19,7 @@ package evmErrors
 import (
 	"errors"
 	"fmt"
+	"github.com/SealSC/SealEVM/types"
 )
 
 var StackUnderFlow = errors.New("stack under flow")
@@ -51,6 +52,10 @@ func NoSuchDataInTheStorage(err error) error {
 
 func InvalidTypeOfStorage() error {
 	return errors.New("invalid type of storage for reading or writing")
+}
+
+func InvalidPrecompiledAddress(addr types.Address) error {
+	return errors.New("invalid precompiled contract address " + addr.String())
 }
 
 var OutOfMemory = errors.New("out of memory")

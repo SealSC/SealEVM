@@ -17,7 +17,14 @@
 package precompiledContracts
 
 import (
+	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/types"
+)
+
+const (
+	//Keep 1 to 65535 for Ethereum precompiled
+	CustomPrecompiledStart uint64 = 0x10000
+	CustomPrecompiledEnd   uint64 = 0x1FFFF
 )
 
 type PrecompiledContract interface {
@@ -25,7 +32,7 @@ type PrecompiledContract interface {
 	Execute(input []byte) ([]byte, error)
 }
 
-var contracts = []PrecompiledContract{
+var contracts = map[uint64]PrecompiledContract{
 	1: &ecRecover{},
 	2: &sha256hash{},
 	3: &ripemd160hash{},
@@ -45,16 +52,27 @@ func PrecompiledContractCount() uint64 {
 	return uint64(len(contracts))
 }
 
-func RegisterContracts(c PrecompiledContract) {
-	contracts = append(contracts, c)
+func RegisterContracts(addr types.Address, c PrecompiledContract) error {
+	addrInt := addr.Int256()
+	if !addrInt.IsInt64() {
+		return evmErrors.InvalidPrecompiledAddress(addr)
+	}
+
+	addrIdx := addrInt.Uint64()
+	if addrIdx < CustomPrecompiledStart || addrIdx > CustomPrecompiledEnd {
+		return evmErrors.InvalidPrecompiledAddress(addr)
+	}
+
+	contracts[addrIdx] = c
+
+	return nil
 }
 
 func IsPrecompiledContract(address types.Address) bool {
 	addrInt := address.Int256()
-	if addrInt.IsUint64() {
-		addr := addrInt.Uint64()
-		return addr < PrecompiledContractCount() && addr != 0
+	if !addrInt.IsUint64() {
+		return false
 	}
 
-	return false
+	return contracts[addrInt.Uint64()] != nil
 }
