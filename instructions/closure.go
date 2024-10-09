@@ -115,7 +115,7 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 	cParam := ClosureParam{
 		VM:              ctx.vm,
 		OpCode:          opCode,
-		GasLimit:        evmInt256.New(int64(ctx.callGasLimit)),
+		GasLimit:        evmInt256.New(ctx.callGasLimit),
 		ContractAddress: types.Int256ToAddress(addr),
 		ContractCode:    contractCode,
 		ContractHash:    *contractCodeHash,

@@ -42,7 +42,7 @@ func loadDencun() {
 
 func blobHashAction(ctx *instructionsContext) ([]byte, error) {
 	index := ctx.stack.Peek()
-	hashLen := evmInt256.New(int64(len(ctx.environment.Transaction.BlobHashes)))
+	hashLen := evmInt256.New(uint64(len(ctx.environment.Transaction.BlobHashes)))
 	if index.LT(hashLen) {
 		blobHash := ctx.environment.Transaction.BlobHashes[index.Uint64()]
 		index.SetBytes(blobHash[:])

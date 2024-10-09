@@ -68,8 +68,10 @@ func (i Int) Clone() *Int {
 	return FromBigInt(i.Int)
 }
 
-func New(i int64) *Int {
-	return &Int{big.NewInt(i)}
+func New(i uint64) *Int {
+	ret := &Int{big.NewInt(0)}
+	ret.SetUint64(i)
+	return ret
 }
 
 func FromBytes(b []byte) *Int {
@@ -133,7 +135,7 @@ func (i *Int) ExtendedAlign(unit uint64) *Int {
 	}
 
 	org := i.Clone()
-	base := New(int64(unit))
+	base := New(unit)
 	ext := org.Mod(base)
 
 	if ext.IsZero() {

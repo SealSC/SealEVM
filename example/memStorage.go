@@ -44,13 +44,13 @@ func (r *memStorage) GetChainID() (*evmInt256.Int, error) {
 
 func (r *memStorage) CreateAddress(caller types.Address, tx environment.Transaction) types.Address {
 	var addr types.Address
-	addr.SetBytes(evmInt256.New(time.Now().UnixNano()).Bytes())
+	addr.SetBytes(evmInt256.New(uint64(time.Now().UnixNano())).Bytes())
 	return addr
 }
 
 func (r *memStorage) CreateFixedAddress(caller types.Address, salt types.Hash, code []byte, tx environment.Transaction) types.Address {
 	var addr types.Address
-	addr.SetBytes(evmInt256.New(time.Now().UnixNano()).Bytes())
+	addr.SetBytes(evmInt256.New(uint64(time.Now().UnixNano())).Bytes())
 	return addr
 }
 

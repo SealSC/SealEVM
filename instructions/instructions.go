@@ -77,7 +77,7 @@ func (i *instructionsContext) SetGasLimit(gasLimit uint64) {
 }
 
 func (i *instructionsContext) RefundGasFormCall(gasLeft uint64) {
-	i.gasRemaining.Add(evmInt256.New(int64(gasLeft)))
+	i.gasRemaining.Add(evmInt256.New(gasLeft))
 }
 
 func (i *instructionsContext) SetReadOnly() {
