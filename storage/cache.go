@@ -75,11 +75,6 @@ func (c SlotCache) Merge(cache SlotCache) {
 	}
 }
 
-type balance struct {
-	Address types.Address
-	Balance *evmInt256.Int
-}
-
 type LogCache []*types.Log
 
 func (l LogCache) Clone() LogCache {
