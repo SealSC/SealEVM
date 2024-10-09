@@ -2,6 +2,8 @@ package gasSetting
 
 import (
 	"github.com/SealSC/SealEVM/environment"
+	"github.com/SealSC/SealEVM/gasSetting/dynamicGasSetting"
+	"github.com/SealSC/SealEVM/gasSetting/intrinsicGasSetting"
 	"github.com/SealSC/SealEVM/memory"
 	"github.com/SealSC/SealEVM/opcodes"
 	"github.com/SealSC/SealEVM/stack"
@@ -15,12 +17,13 @@ type DynamicGasCalculator func(
 	store *storage.Storage,
 ) (memExpSize uint64, gasCost uint64, err error)
 
-type ResultGasCalculator func(stack *stack.Stack, mem *memory.Memory, store *storage.Storage) (uint64, error)
-
 type Setting struct {
-	ConstCost   [opcodes.MaxOpCodesCount]uint64
-	DynamicCost [opcodes.MaxOpCodesCount]DynamicGasCalculator
-	ResultCost  [opcodes.MaxOpCodesCount]ResultGasCalculator
+	IntrinsicCost     intrinsicGasSetting.IntrinsicGas
+	ConstCost         [opcodes.MaxOpCodesCount]uint64
+	CommonDynamicCost [opcodes.MaxOpCodesCount]dynamicGasSetting.CommonCalculator
+	CallCost          [opcodes.MaxOpCodesCount]dynamicGasSetting.CallGas
+	SStoreCost        [opcodes.MaxOpCodesCount]dynamicGasSetting.SStoreGas
+	ContractStoreCost dynamicGasSetting.ContractStoreGas
 }
 
 var setting = defSetting()
@@ -29,6 +32,6 @@ func Set(s *Setting) {
 	setting = *s
 }
 
-func Get() Setting {
-	return setting
+func Get() *Setting {
+	return &setting
 }

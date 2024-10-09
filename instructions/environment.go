@@ -249,14 +249,8 @@ func callDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 	dOffset := ctx.stack.Pop()
 	size := ctx.stack.Pop()
 
-	//gas check
-	offset, _, _, err := ctx.memoryGasCostAndMalloc(mOffset, size)
-	if err != nil {
-		return nil, err
-	}
-
 	data := utils.GetDataFrom(ctx.environment.Message.Data, dOffset.Uint64(), size.Uint64())
-	err = ctx.memory.Store(offset, data)
+	err := ctx.memory.Store(mOffset.Uint64(), data)
 	return nil, err
 }
 
@@ -271,14 +265,8 @@ func codeCopyAction(ctx *instructionsContext) ([]byte, error) {
 	dOffset := ctx.stack.Pop()
 	size := ctx.stack.Pop()
 
-	//gas check
-	offset, _, _, err := ctx.memoryGasCostAndMalloc(mOffset, size)
-	if err != nil {
-		return nil, err
-	}
-
 	data := utils.GetDataFrom(ctx.environment.Contract.Code, dOffset.Uint64(), size.Uint64())
-	err = ctx.memory.Store(offset, data)
+	err := ctx.memory.Store(mOffset.Uint64(), data)
 	return nil, err
 }
 
@@ -325,14 +313,8 @@ func extCodeCopyAction(ctx *instructionsContext) ([]byte, error) {
 		return nil, err
 	}
 
-	//gas check
-	offset, _, _, err := ctx.memoryGasCostAndMalloc(mOffset, size)
-	if err != nil {
-		return nil, err
-	}
-
 	data := utils.GetDataFrom(code, dOffset.Uint64(), size.Uint64())
-	err = ctx.memory.Store(offset, data)
+	err = ctx.memory.Store(mOffset.Uint64(), data)
 	return nil, err
 }
 
@@ -351,13 +333,7 @@ func returnDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 		return nil, evmErrors.ReturnDataCopyOutOfBounds
 	}
 
-	//gas check
-	offset, size, _, err := ctx.memoryGasCostAndMalloc(mOffset, dLen)
-	if err != nil {
-		return nil, err
-	}
-
-	err = ctx.memory.Store(offset, ctx.lastReturn[dOffset.Uint64():size])
+	err := ctx.memory.Store(mOffset.Uint64(), ctx.lastReturn[dOffset.Uint64():dLen.Uint64()])
 	return nil, err
 }
 

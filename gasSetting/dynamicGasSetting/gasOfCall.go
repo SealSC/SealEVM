@@ -1,4 +1,4 @@
-package gasSetting
+package dynamicGasSetting
 
 import (
 	"github.com/SealSC/SealEVM/evmInt256"
@@ -8,6 +8,14 @@ import (
 	"github.com/SealSC/SealEVM/storage"
 	"github.com/SealSC/SealEVM/types"
 )
+
+type CallGas func(
+	code opcodes.OpCode,
+	availableGas uint64,
+	stx *stack.Stack,
+	mem *memory.Memory,
+	store *storage.Storage,
+) (uint64, uint64, uint64, error)
 
 func gasSendWithCall(availableGas, baseGas, requestedGas uint64) uint64 {
 	remainingGas := availableGas - baseGas
@@ -25,7 +33,7 @@ func gasOfCall(
 	stx *stack.Stack,
 	mem *memory.Memory,
 	store *storage.Storage,
-) (uint64, uint64, error) {
+) (uint64, uint64, uint64, error) {
 	var baseGas uint64
 	var mOffset, size *evmInt256.Int
 
@@ -53,7 +61,7 @@ func gasOfCall(
 
 	expSize, memCost, err := mem.CalculateMallocSizeAndGas(mOffset, size)
 	if err != nil {
-		return 0, baseGas, nil
+		return 0, baseGas, 0, err
 	}
 
 	baseGas += memCost
@@ -61,5 +69,5 @@ func gasOfCall(
 	reqGas := stx.PeekPos(0).Uint64()
 	sendGas := gasSendWithCall(availableGas, baseGas, reqGas)
 
-	return expSize, baseGas + sendGas, nil
+	return expSize, baseGas + sendGas, sendGas, nil
 }

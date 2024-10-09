@@ -1,4 +1,4 @@
-package gasSetting
+package dynamicGasSetting
 
 import (
 	"github.com/SealSC/SealEVM/environment"

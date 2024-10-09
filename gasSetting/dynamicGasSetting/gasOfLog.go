@@ -1,4 +1,4 @@
-package gasSetting
+package dynamicGasSetting
 
 import (
 	"github.com/SealSC/SealEVM/environment"
@@ -7,7 +7,7 @@ import (
 	"github.com/SealSC/SealEVM/storage"
 )
 
-func gasOfLog(topicCnt uint64) DynamicGasCalculator {
+func gasOfLog(topicCnt uint64) CommonCalculator {
 	return func(
 		contract *environment.Contract,
 		stx *stack.Stack,

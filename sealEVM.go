@@ -20,6 +20,7 @@ import (
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/gasSetting"
 	"github.com/SealSC/SealEVM/instructions"
 	"github.com/SealSC/SealEVM/memory"
 	"github.com/SealSC/SealEVM/opcodes"
@@ -36,7 +37,7 @@ type EVMParam struct {
 	ExternalStore  storage.IExternalStorage
 	ResultCallback EVMResultCallback
 	Context        *environment.Context
-	GasSetting     *instructions.GasSetting
+	GasSetting     *gasSetting.Setting
 }
 
 type EVM struct {
@@ -136,8 +137,43 @@ func (e *EVM) createContract(env *environment.Context) *environment.Contract {
 	}
 }
 
+func (e *EVM) useIntrinsicGas() (uint64, error) {
+	gasLeft := e.instructions.GetGasLeft()
+	gasCost := e.instructions.GetGasSetting().IntrinsicCost(e.context.Message.Data, e.context.Contract)
+	if gasLeft < gasCost {
+		e.instructions.SetGasLimit(0)
+		return 0, evmErrors.OutOfGas
+	}
+
+	gasLeft -= gasCost
+	e.instructions.SetGasLimit(gasLeft)
+
+	return gasLeft, nil
+}
+
 func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
+	var isCreation = false
+	var err error
+	var gasLeft uint64
+
+	if e.depth == 0 {
+		gasLeft, err = e.useIntrinsicGas()
+	} else {
+		gasLeft = e.instructions.GetGasLeft()
+	}
+
+	result := ExecuteResult{
+		ResultData:   nil,
+		GasLeft:      gasLeft,
+		StorageCache: e.storage.ResultCache,
+	}
+
+	if err != nil {
+		return result, err
+	}
+
 	if e.context.Contract == nil {
+		isCreation = true
 		e.context.Contract = e.createContract(e.context)
 	}
 
@@ -146,13 +182,6 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 	}
 
 	contractAddr := e.context.Contract.Address
-	gasLeft := e.instructions.GetGasLeft()
-
-	result := ExecuteResult{
-		ResultData:   nil,
-		GasLeft:      gasLeft,
-		StorageCache: e.storage.ResultCache,
-	}
 
 	if doTransfer {
 		msg := e.context.Message
@@ -178,6 +207,19 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 	}
 
 	execRet, gasLeft, err := e.instructions.ExecuteContract()
+
+	if err == nil {
+		if isCreation {
+			storeCost, storeErr := e.instructions.GetGasSetting().ContractStoreCost(execRet, gasLeft)
+			if storeErr != nil {
+				err = storeErr
+				gasLeft = 0
+			} else {
+				gasLeft -= storeCost
+			}
+		}
+
+	}
 
 	result.GasLeft = gasLeft
 	result.ResultData = execRet
@@ -216,7 +258,7 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 		CodeHash: param.ContractHash,
 	}
 
-	newEVM.instructions.SetGasLimit(param.GasRemaining.Uint64())
+	newEVM.instructions.SetGasLimit(param.GasLimit.Uint64())
 
 	return newEVM
 }
@@ -255,7 +297,7 @@ func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte,
 		err = evmErrors.RevertErr
 	}
 
-	e.instructions.SetGasLimit(ret.GasLeft)
+	e.instructions.RefundGasFormCall(ret.GasLeft)
 	return ret.ResultData, err
 }
 

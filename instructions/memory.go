@@ -50,13 +50,7 @@ func loadMemory() {
 func mLoadAction(ctx *instructionsContext) ([]byte, error) {
 	mOffset := ctx.stack.Peek()
 
-	//gas check
-	offset, _, _, err := ctx.memoryGasCostAndMalloc(mOffset, evmInt256.New(32))
-	if err != nil {
-		return nil, err
-	}
-
-	bytes, err := ctx.memory.Map(offset, 32)
+	bytes, err := ctx.memory.Map(mOffset.Uint64(), 32)
 	if err != nil {
 		return nil, err
 	}
@@ -69,14 +63,8 @@ func mStoreAction(ctx *instructionsContext) ([]byte, error) {
 	mOffset := ctx.stack.Pop()
 	v := ctx.stack.Pop()
 
-	//gas check
-	offset, _, _, err := ctx.memoryGasCostAndMalloc(mOffset, evmInt256.New(32))
-	if err != nil {
-		return nil, err
-	}
-
 	valBytes := evmInt256.EVMIntToHashBytes(v)
-	err = ctx.memory.Store(offset, valBytes[:])
+	err := ctx.memory.Store(mOffset.Uint64(), valBytes[:])
 	return nil, err
 }
 
@@ -85,13 +73,7 @@ func mStore8Action(ctx *instructionsContext) ([]byte, error) {
 	v := ctx.stack.Pop()
 	valBytes := v.Uint64()
 
-	//gas check
-	offset, _, _, err := ctx.memoryGasCostAndMalloc(mOffset, evmInt256.New(1))
-	if err != nil {
-		return nil, err
-	}
-
-	err = ctx.memory.Set(offset, byte(valBytes&0xff))
+	err := ctx.memory.Set(mOffset.Uint64(), byte(valBytes&0xff))
 	return nil, err
 }
 

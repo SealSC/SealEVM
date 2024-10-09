@@ -26,9 +26,9 @@ import (
 type ClosureExecute func(ClosureParam) ([]byte, error)
 
 type ClosureParam struct {
-	VM           interface{}
-	OpCode       opcodes.OpCode
-	GasRemaining *evmInt256.Int
+	VM       interface{}
+	OpCode   opcodes.OpCode
+	GasLimit *evmInt256.Int
 
 	ContractAddress types.Address
 	ContractHash    types.Hash
@@ -86,7 +86,7 @@ func loadClosure() {
 }
 
 func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error) {
-	_ = ctx.stack.Pop()
+	_ = ctx.stack.Pop() //gas was calculated before execute.
 	addr := ctx.stack.Pop()
 	v := evmInt256.New(0)
 	if opCode != opcodes.DELEGATECALL && opCode != opcodes.STATICCALL {
@@ -97,13 +97,7 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 	rOffset := ctx.stack.Pop()
 	rLen := ctx.stack.Pop()
 
-	//gas check
-	offset, size, _, err := ctx.memoryGasCostAndMalloc(dOffset, dLen)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := ctx.memory.Copy(offset, size)
+	data, err := ctx.memory.Copy(dOffset.Uint64(), dLen.Uint64())
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +115,7 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 	cParam := ClosureParam{
 		VM:              ctx.vm,
 		OpCode:          opCode,
-		GasRemaining:    ctx.gasRemaining,
+		GasLimit:        evmInt256.New(int64(ctx.callGasLimit)),
 		ContractAddress: types.Int256ToAddress(addr),
 		ContractCode:    contractCode,
 		ContractHash:    *contractCodeHash,
@@ -139,13 +133,7 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 		ctx.stack.Push(evmInt256.New(1))
 	}
 
-	//gas check
-	offset, size, _, err = ctx.memoryGasCostAndMalloc(rOffset, rLen)
-	if err != nil {
-		return nil, err
-	}
-
-	err = ctx.memory.StoreNBytes(offset, size, callRet)
+	err = ctx.memory.StoreNBytes(rOffset.Uint64(), rLen.Uint64(), callRet)
 	if err != nil {
 		return nil, err
 	}
@@ -178,13 +166,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		salt = ctx.stack.Pop()
 	}
 
-	//gas check
-	offset, size, _, err := ctx.memoryGasCostAndMalloc(mOffset, mSize)
-	if err != nil {
-		return nil, err
-	}
-
-	code, err := ctx.memory.Copy(offset, size)
+	code, err := ctx.memory.Copy(mOffset.Uint64(), mSize.Uint64())
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +174,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 	cParam := ClosureParam{
 		VM:           ctx.vm,
 		OpCode:       opCode,
-		GasRemaining: ctx.gasRemaining,
+		GasLimit:     ctx.gasRemaining.Clone(),
 		ContractCode: code,
 		CallData:     []byte{},
 		CallValue:    v,
