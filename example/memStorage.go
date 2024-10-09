@@ -54,6 +54,14 @@ func (r *memStorage) CreateFixedAddress(caller types.Address, salt types.Hash, c
 	return addr
 }
 
+func (r *memStorage) ContractExist(address types.Address) bool {
+	return r.contracts[address] != nil
+}
+
+func (r *memStorage) ContractEmpty(address types.Address) bool {
+	return r.contracts[address] == nil
+}
+
 func (r *memStorage) Load(address types.Address, slot types.Slot) (*evmInt256.Int, error) {
 	ret := evmInt256.New(0)
 	if val, exists := r.storage[address][slot]; exists {
