@@ -17,7 +17,6 @@
 package instructions
 
 import (
-	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/opcodes"
 	"github.com/SealSC/SealEVM/types"
 )
@@ -36,25 +35,11 @@ func loadLog() {
 					Data:    []byte{},
 				}
 
-				//gas check
-				offset, size, gasLeft, err := ctx.memoryGasCostAndMalloc(mOffset, lSize)
-				if err != nil {
-					return nil, err
-				}
-
-				logByteCost := ctx.gasSetting.DynamicCost.LogByteCost * lSize.Uint64()
-				if gasLeft < logByteCost {
-					return nil, evmErrors.OutOfGas
-				} else {
-					gasLeft -= logByteCost
-				}
-				ctx.gasRemaining.SetUint64(gasLeft)
-
 				for t := 0; t < topicCount; t++ {
 					log.Topics = append(log.Topics, types.Int256ToTopic(ctx.stack.Pop()))
 				}
 
-				log.Data, err = ctx.memory.Copy(offset, size)
+				log.Data, err = ctx.memory.Copy(mOffset.Uint64(), lSize.Uint64())
 				if err != nil {
 					return
 				}

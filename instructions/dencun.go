@@ -92,11 +92,6 @@ func memCopyAction(ctx *instructionsContext) ([]byte, error) {
 	src := ctx.stack.Pop()
 	length := ctx.stack.Pop()
 
-	_, _, _, err := ctx.memoryGasCostAndMalloc(dst, length)
-	if err != nil {
-		return nil, err
-	}
-
-	err = ctx.memory.MCopy(dst.Uint64(), src.Uint64(), length.Uint64())
+	err := ctx.memory.MCopy(dst.Uint64(), src.Uint64(), length.Uint64())
 	return nil, err
 }

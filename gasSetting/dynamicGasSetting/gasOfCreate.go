@@ -1,19 +1,39 @@
-package gasSetting
+package dynamicGasSetting
 
 import (
 	"github.com/SealSC/SealEVM/environment"
+	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/memory"
 	"github.com/SealSC/SealEVM/stack"
 	"github.com/SealSC/SealEVM/storage"
 	"github.com/SealSC/SealEVM/utils"
 )
 
-func gasOfCreate(isCreate2 bool) DynamicGasCalculator {
+type ContractStoreGas func(code []byte, gasRemaining uint64) (uint64, error)
+
+func gasOfContractStore(code []byte, gasRemaining uint64) (uint64, error) {
+	if len(code) == 0 {
+		return 0, nil
+	}
+
+	if code[0] == 0xEF {
+		return gasRemaining, evmErrors.OutOfGas
+	}
+
+	cost := 200 * uint64(len(code))
+	if gasRemaining < cost {
+		return gasRemaining, evmErrors.OutOfGas
+	}
+
+	return cost, nil
+}
+
+func gasOfCreate(isCreate2 bool) CommonCalculator {
 	return func(
-		contract *environment.Contract,
+		_ *environment.Contract,
 		stx *stack.Stack,
 		mem *memory.Memory,
-		store *storage.Storage,
+		_ *storage.Storage,
 	) (uint64, uint64, error) {
 		var gasCost uint64 = 32000
 		var addrGenCost uint64 = 0
