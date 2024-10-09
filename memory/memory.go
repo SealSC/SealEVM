@@ -35,7 +35,11 @@ func New() *Memory {
 	return &Memory{}
 }
 
-func (m *Memory) gasCost(size uint64) uint64 {
+func (m *Memory) gasCost(size uint64) (uint64, error) {
+	if size > 0x1FFFFFFFE0 {
+		return 0, evmErrors.OutOfGas
+	}
+
 	wordSize := utils.ToWordSize(size)
 	size = wordSize * 32
 
@@ -43,7 +47,7 @@ func (m *Memory) gasCost(size uint64) uint64 {
 	linCoef := wordSize * 3
 	quadCoef := square / 512
 
-	return linCoef + quadCoef
+	return linCoef + quadCoef, nil
 }
 
 func (m *Memory) CalculateMallocSizeAndGas(offset *evmInt256.Int, size *evmInt256.Int) (uint64, uint64, error) {
@@ -61,7 +65,10 @@ func (m *Memory) CalculateMallocSizeAndGas(offset *evmInt256.Int, size *evmInt25
 	var gasCost uint64 = 0
 
 	if mLen < boundUint {
-		newCost := m.gasCost(boundUint)
+		newCost, err := m.gasCost(boundUint)
+		if err != nil {
+			return 0, 0, err
+		}
 
 		gasCost = newCost - m.lastGasCost
 		expandSize = boundUint - mLen
