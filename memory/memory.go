@@ -164,8 +164,8 @@ func (m *Memory) MCopy(dst uint64, src uint64, length uint64) error {
 	return nil
 }
 
-func (m *Memory) Size() int64 {
-	return int64(len(m.cell))
+func (m *Memory) Size() uint64 {
+	return uint64(len(m.cell))
 }
 
 func (m *Memory) All() []byte {

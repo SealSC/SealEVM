@@ -255,7 +255,7 @@ func callDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func codeSizeAction(ctx *instructionsContext) ([]byte, error) {
-	s := evmInt256.New(int64(len(ctx.environment.Contract.Code)))
+	s := evmInt256.New(uint64(len(ctx.environment.Contract.Code)))
 	ctx.stack.Push(s)
 	return nil, nil
 }
@@ -319,7 +319,7 @@ func extCodeCopyAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func returnDataSizeAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(evmInt256.New(int64(len(ctx.lastReturn))))
+	ctx.stack.Push(evmInt256.New(uint64(len(ctx.lastReturn))))
 	return nil, nil
 }
 
