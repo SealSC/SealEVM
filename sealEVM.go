@@ -290,7 +290,7 @@ func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte,
 		newEVM.instructions.SetReadOnly()
 	}
 
-	ret, err := newEVM.ExecuteContract(opcodes.CALL == param.OpCode)
+	ret, err := newEVM.ExecuteContract()
 	if ret.ExitOpCode == opcodes.REVERT {
 		err = evmErrors.RevertErr
 	}
@@ -307,7 +307,7 @@ func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byt
 	newEVM.context.Message.Value = param.CallValue
 	newEVM.context.Message.Caller = e.context.Contract.Address
 
-	ret, err := newEVM.ExecuteContract(true)
+	ret, err := newEVM.ExecuteContract()
 	if ret.ExitOpCode == opcodes.REVERT {
 		err = evmErrors.RevertErr
 	}
