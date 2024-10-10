@@ -101,6 +101,29 @@ func (i *instructionsContext) ExitOpCode() opcodes.OpCode {
 }
 
 func (i *instructionsContext) calcGas(code opcodes.OpCode, gasRemaining uint64) (uint64, error) {
+	if code == opcodes.CALL || code == opcodes.CALLCODE || code == opcodes.STATICCALL || code == opcodes.DELEGATECALL {
+		if callCost := i.gasSetting.CallCost[code]; callCost != nil {
+			if gasRemaining < 100 {
+				return 0, evmErrors.OutOfGas
+			}
+
+			memExp, gasCost, sendGas, err := callCost(code, gasRemaining, i.stack, i.memory, i.storage)
+			if err != nil {
+				return gasRemaining, err
+			}
+
+			if gasRemaining < gasCost {
+				return 0, evmErrors.OutOfGas
+			}
+
+			i.callGasLimit = sendGas
+			gasRemaining -= gasCost
+			i.memory.Malloc(memExp)
+		}
+
+		return gasRemaining, nil
+	}
+
 	if dynamicCost := i.gasSetting.CommonDynamicCost[code]; dynamicCost != nil {
 		memExp, gasCost, err := dynamicCost(i.environment.Contract, i.stack, i.memory, i.storage)
 		if err != nil {
@@ -113,47 +136,16 @@ func (i *instructionsContext) calcGas(code opcodes.OpCode, gasRemaining uint64) 
 		}
 
 		gasRemaining -= gasCost
-	} else if callCost := i.gasSetting.CallCost[code]; callCost != nil {
-		if gasRemaining < 100 {
-			return 0, evmErrors.OutOfGas
-		}
 
-		memExp, gasCost, sendGas, err := callCost(code, gasRemaining, i.stack, i.memory, i.storage)
-		if err != nil {
-			return gasRemaining, err
-		}
-
-		if gasRemaining < gasCost {
-			return 0, evmErrors.OutOfGas
-		}
-
-		i.callGasLimit = sendGas
-		gasRemaining -= gasCost
-		i.memory.Malloc(memExp)
-	} else if sstoreCost := i.gasSetting.SStoreCost[code]; sstoreCost != nil {
-		gasCost, err := sstoreCost(
-			i.environment.Contract,
-			i.stack,
-			i.storage,
-		)
-
-		if err != nil {
-			return gasRemaining, err
-		}
-
-		if gasRemaining < gasCost {
-			return 0, evmErrors.OutOfGas
-		}
-
-		gasRemaining -= gasCost
-	} else {
-		constCost := i.gasSetting.ConstCost[code]
-		if gasRemaining < constCost {
-			return 0, evmErrors.OutOfGas
-		}
-
-		gasRemaining -= constCost
+		return gasRemaining, nil
 	}
+
+	constCost := i.gasSetting.ConstCost[code]
+	if gasRemaining < constCost {
+		return 0, evmErrors.OutOfGas
+	}
+
+	gasRemaining -= constCost
 
 	return gasRemaining, nil
 }

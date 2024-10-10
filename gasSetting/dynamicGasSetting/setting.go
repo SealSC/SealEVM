@@ -39,6 +39,7 @@ func Common() [opcodes.MaxOpCodesCount]CommonCalculator {
 	commDynamicCost[opcodes.MCOPY] = gasOfCopy
 
 	commDynamicCost[opcodes.SLOAD] = gasOfSLoad
+	commDynamicCost[opcodes.SSTORE] = gasOfSStore
 
 	commDynamicCost[opcodes.LOG0] = gasOfLog(0)
 	commDynamicCost[opcodes.LOG1] = gasOfLog(1)
@@ -65,12 +66,6 @@ func Call() [opcodes.MaxOpCodesCount]CallGas {
 	callCost[opcodes.DELEGATECALL] = gasOfCall
 
 	return callCost
-}
-
-func SStore() [opcodes.MaxOpCodesCount]SStoreGas {
-	var storeCost [opcodes.MaxOpCodesCount]SStoreGas
-	storeCost[opcodes.SSTORE] = gasOfSStore
-	return storeCost
 }
 
 func ContractStore() ContractStoreGas {

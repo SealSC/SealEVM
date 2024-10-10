@@ -15,7 +15,7 @@ type CallGas func(
 	stx *stack.Stack,
 	mem *memory.Memory,
 	store *storage.Storage,
-) (uint64, uint64, uint64, error)
+) (memExpSize uint64, gasCost uint64, sendGas uint64, err error)
 
 func gasSendWithCall(availableGas, baseGas, requestedGas uint64) uint64 {
 	remainingGas := availableGas - baseGas

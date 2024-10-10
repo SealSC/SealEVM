@@ -9,7 +9,7 @@ import (
 	"github.com/SealSC/SealEVM/utils"
 )
 
-type ContractStoreGas func(code []byte, gasRemaining uint64) (uint64, error)
+type ContractStoreGas func(code []byte, gasRemaining uint64) (gasCost uint64, err error)
 
 func gasOfContractStore(code []byte, gasRemaining uint64) (uint64, error) {
 	if len(code) == 0 {
