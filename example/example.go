@@ -92,7 +92,7 @@ func main() {
 
 	//deploy contract
 	evm := newEvm(deployCode, nil, caller, ms)
-	ret, err := evm.ExecuteContract(false)
+	ret, err := evm.ExecuteContract()
 
 	//check error
 	if err != nil {
@@ -105,14 +105,14 @@ func main() {
 
 	//call Counter() to get current counter's value
 	evm = newEvm(contractCode, callCounter, caller, ms)
-	ret, _ = evm.ExecuteContract(false)
+	ret, _ = evm.ExecuteContract()
 
 	//result of Counter()
 	fmt.Println("counter: ", hex.EncodeToString(ret.ResultData))
 
 	//call increaseFor("example")
 	evm = newEvm(contractCode, callIncreaseFor, caller, ms)
-	ret, _ = evm.ExecuteContract(false)
+	ret, _ = evm.ExecuteContract()
 
 	//store the result to ms
 	storeResult(&ret, ms)
@@ -122,7 +122,7 @@ func main() {
 
 	//call Counter to get counter's value after increase
 	evm = newEvm(contractCode, callCounter, caller, ms)
-	ret, err = evm.ExecuteContract(false)
+	ret, err = evm.ExecuteContract()
 
 	//result of Counter()
 	fmt.Println("counter: ", hex.EncodeToString(ret.ResultData))
