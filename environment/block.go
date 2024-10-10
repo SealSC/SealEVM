@@ -16,16 +16,19 @@
 
 package environment
 
-import "github.com/SealSC/SealEVM/evmInt256"
+import (
+	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/types"
+)
 
 type Block struct {
 	ChainID     *evmInt256.Int
-	Coinbase    *evmInt256.Int
-	Timestamp   *evmInt256.Int
-	Number      *evmInt256.Int
+	Coinbase    types.Address
+	Timestamp   uint64
+	Number      uint64
 	Difficulty  *evmInt256.Int
 	GasLimit    *evmInt256.Int
-	Hash        *evmInt256.Int
+	Hash        types.Hash
 	BaseFee     *evmInt256.Int
 	BlobBaseFee *evmInt256.Int
 }

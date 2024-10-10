@@ -381,17 +381,17 @@ func blockHashAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func coinbaseAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Block.Coinbase.Clone())
+	ctx.stack.Push(ctx.environment.Block.Coinbase.Int256())
 	return nil, nil
 }
 
 func timestampAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Block.Timestamp.Clone())
+	ctx.stack.Push(evmInt256.New(ctx.environment.Block.Timestamp))
 	return nil, nil
 }
 
 func numberAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Block.Number.Clone())
+	ctx.stack.Push(evmInt256.New(ctx.environment.Block.Number))
 	return nil, nil
 }
 

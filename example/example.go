@@ -57,12 +57,12 @@ func newEvm(code []byte, callData []byte, caller []byte, ms *memStorage) *SealEV
 		Context: &environment.Context{
 			Block: environment.Block{
 				ChainID:    evmInt256.New(0),
-				Coinbase:   evmInt256.New(0),
-				Timestamp:  evmInt256.New(uint64(time.Now().Second())),
-				Number:     evmInt256.New(0),
+				Coinbase:   types.Address{},
+				Timestamp:  uint64(time.Now().Second()),
+				Number:     0,
 				Difficulty: evmInt256.New(0),
 				GasLimit:   evmInt256.New(10000000),
-				Hash:       evmInt256.New(0),
+				Hash:       types.Hash{},
 			},
 			Contract: contract,
 			Transaction: environment.Transaction{
