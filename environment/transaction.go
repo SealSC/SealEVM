@@ -22,11 +22,10 @@ import (
 )
 
 type Transaction struct {
-	TxHash   []byte
+	TxHash   types.Hash
 	Origin   types.Address
 	GasPrice *evmInt256.Int
 	GasLimit *evmInt256.Int
 
-	BlobFeeCap *evmInt256.Int
 	BlobHashes []types.Hash
 }
