@@ -151,7 +151,7 @@ func (e *EVM) useIntrinsicGas() (uint64, error) {
 	return gasLeft, nil
 }
 
-func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
+func (e *EVM) ExecuteContract() (ExecuteResult, error) {
 	var isCreation = false
 	var err error
 	var gasLeft uint64
@@ -183,25 +183,21 @@ func (e *EVM) ExecuteContract(doTransfer bool) (ExecuteResult, error) {
 
 	contractAddr := e.context.Contract.Address
 
-	if doTransfer {
+	//doing transfer when value > 0
+	if e.context.Message.Value.Sign() > 0 {
 		msg := e.context.Message
-
-		//doing transfer for non-zero value
-		if msg.Value.Sign() != 0 {
-			if e.instructions.IsReadOnly() {
-				return result, evmErrors.WriteProtection
-			}
-
-			if e.storage.CanTransfer(msg.Caller, contractAddr, msg.Value) {
-				transErr := e.storage.Transfer(msg.Caller, contractAddr, msg.Value)
-				if transErr != nil {
-					return result, err
-				}
-			} else {
-				return result, evmErrors.InsufficientBalance
-			}
+		if e.instructions.IsReadOnly() {
+			return result, evmErrors.WriteProtection
 		}
 
+		if e.storage.CanTransfer(msg.Caller, contractAddr, msg.Value) {
+			transErr := e.storage.Transfer(msg.Caller, contractAddr, msg.Value)
+			if transErr != nil {
+				return result, err
+			}
+		} else {
+			return result, evmErrors.InsufficientBalance
+		}
 	}
 
 	if precompiledContracts.IsPrecompiledContract(contractAddr) {
