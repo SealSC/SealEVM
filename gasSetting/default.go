@@ -12,7 +12,6 @@ func defSetting() Setting {
 		ConstCost:         constGasSetting.Cost(),
 		CommonDynamicCost: dynamicGasSetting.Common(),
 		CallCost:          dynamicGasSetting.Call(),
-		SStoreCost:        dynamicGasSetting.SStore(),
 		ContractStoreCost: dynamicGasSetting.ContractStore(),
 	}
 
