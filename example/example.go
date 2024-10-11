@@ -7,13 +7,13 @@ import (
 	"github.com/SealSC/SealEVM/crypto/hashes"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmInt256"
-	"github.com/SealSC/SealEVM/storage"
+	"github.com/SealSC/SealEVM/storage/cache"
 	"github.com/SealSC/SealEVM/types"
 	"os"
 	"time"
 )
 
-func logPrinter(logCache *storage.LogCache) {
+func logPrinter(logCache *cache.LogCache) {
 	for _, l := range *logCache {
 		for _, t := range l.Topics {
 			fmt.Println("topic:", t)
@@ -25,10 +25,8 @@ func logPrinter(logCache *storage.LogCache) {
 
 //store result to memStorage
 func storeResult(result *SealEVM.ExecuteResult, storage *memStorage) {
-	for addr, cache := range result.StorageCache.CachedData {
-		for key, v := range cache {
-			storage.storage.Set(addr, key, v)
-		}
+	for addr, cachedAcc := range result.StorageCache.CachedAccounts {
+		storage.accounts[addr] = cachedAcc
 	}
 }
 
@@ -87,8 +85,7 @@ func main() {
 
 	//create memStorage
 	ms := &memStorage{}
-	ms.storage = storage.SlotCache{}
-	ms.contracts = storage.ContractCache{}
+	ms.accounts = cache.AccountCache{}
 
 	//deploy contract
 	evm := newEvm(deployCode, nil, caller, ms)

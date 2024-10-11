@@ -5,6 +5,7 @@ import (
 	"github.com/SealSC/SealEVM/memory"
 	"github.com/SealSC/SealEVM/stack"
 	"github.com/SealSC/SealEVM/storage"
+	"github.com/SealSC/SealEVM/storage/cache"
 	"github.com/SealSC/SealEVM/types"
 )
 
@@ -42,7 +43,7 @@ func gasOfSStore(
 
 	if org == nil {
 		gasCost += 2100
-		val, err := store.XLoad(contract.Address, types.Int256ToSlot(slot), storage.SStorage)
+		val, err := store.XLoad(contract.Address, types.Int256ToSlot(slot), cache.SStorage)
 		if err != nil {
 			return 0, gasCost, err
 		}

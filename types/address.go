@@ -23,6 +23,7 @@ func (a Address) Int256() *evmInt256.Int {
 }
 
 func (a *Address) SetBytes(b []byte) *Address {
+	*a = Address{}
 	utils.BytesCopy(a[:], b)
 	return a
 }

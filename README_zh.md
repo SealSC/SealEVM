@@ -119,7 +119,7 @@ type Block struct {
     BlobBaseFee *evmInt256.Int //EIP-7516中定义的blob base-fee
 }
 
-//合约环境结构体，
+//合约环境结构体
 type Contract struct {
     Address  types.Address  //要执行的合约的地址
     Code     []byte         //合约代码
@@ -167,11 +167,17 @@ SealEVM会将执行过程中以及执行完毕后，从外部获取的原始数�
 这种设计让外部存储不需要关心执行中的状态变更，只需要提供初始数据，就能够得到执行后的结果。
 
 ```go
-//数据缓存类型，是Slot缓存的最下层map
-type Cache map[types.Slot]*evmInt256.Int
+//槽缓存类型，存放账户下的指定槽的数据，SSTORE、SLOAD操作码对应的存储空间
+type SlotCache map[types.Slot]*evmInt256.Int
 
-//Slot缓存类型，通过[address][slot]来寻址访问数据
-type SlotCache map[types.Address]Cache
+//账户缓存单元结构体
+type AccountCacheUnit struct {
+    Contract *environment.Contract //账户下的合约信息，字段说明见[执行环境结构体]章节中的合约环境结构体
+    Slots    SlotCache             //账户下的槽缓存，SSTORE、SLOAD操作码对应的存储空间
+}
+
+//账户缓存类型，从外部存储载入的合约、Slot值，通过账户缓存来进行汇总和管理
+type AccountCache map[types.Address]*AccountCacheUnit
 
 //日志缓存类型，会顺序的存放合约执行过程中，依次产生的Log数据
 type LogCache []*types.Log
@@ -179,20 +185,12 @@ type LogCache []*types.Log
 //销毁合约地址缓存类型，存放执行了SELFDESTRUCT(0xFF)的合约地址
 type DestructCache map[types.Address]types.Address
 
-//合约缓存类型，存放内部交易创建的合约实例
-type ContractCache map[types.Address]*environment.Contract
-
 //缓存汇总结构体
 type ResultCache struct {
-    OriginalData SlotCache //从外部存储通过SLOAD载入的原始数据
-    CachedData   SlotCache //合约执行后，SSTORE存入的数据
-    
-    //TOriginalData和TCachedData是Transient storage的缓存，
-    //该类型缓存是EIP-1153引入的，是合约执行过程中的临时存储空间
-    TOriginalData SlotCache
-    TCachedData   SlotCache
-    
-    Logs         *LogCache //操作码LOG0(0xA0)~LOG4(0xA4)产生的日志缓存
+    OriginalAccounts AccountCache //执行过程中，从外部存储载入的账户状态缓存
+    CachedAccounts   AccountCache //执行完毕后，账户最终状态的缓存
+
+    Logs         *LogCache     //操作码LOG0(0xA0)~LOG4(0xA4)产生的日志缓存
     Destructs    DestructCache //执行了SELFDESTRUCT(0xFF)的合约的缓存
     NewContracts ContractCache //执行过程中，内部交易创建的合约的缓存
 }

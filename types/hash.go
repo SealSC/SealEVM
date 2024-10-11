@@ -23,6 +23,7 @@ func (h Hash) Int256() *evmInt256.Int {
 }
 
 func (h *Hash) SetBytes(b []byte) *Hash {
+	*h = Hash{}
 	utils.BytesCopy(h[:], b)
 	return h
 }

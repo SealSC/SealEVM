@@ -21,29 +21,22 @@ import (
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/storage/cache"
 	"github.com/SealSC/SealEVM/types"
 )
 
-type TypeOfStorage int
-
-const (
-	SStorage TypeOfStorage = 1
-	TStorage TypeOfStorage = 2
-)
-
 type Storage struct {
-	ResultCache     ResultCache
-	readOnlyCache   readOnlyCache
+	ResultCache     cache.ResultCache
+	readOnlyCache   cache.ReadOnlyCache
 	externalStorage IExternalStorage
 }
 
 func New(extStorage IExternalStorage) *Storage {
 	s := &Storage{
-		ResultCache:     NewResultCache(),
+		ResultCache:     cache.NewResultCache(),
 		externalStorage: extStorage,
-		readOnlyCache: readOnlyCache{
-			Contracts: ContractCache{},
-			BlockHash: Cache{},
+		readOnlyCache: cache.ReadOnlyCache{
+			BlockHash: cache.SlotCache{},
 		},
 	}
 
@@ -60,19 +53,19 @@ func (s *Storage) Clone() *Storage {
 	return replica
 }
 
-func (s *Storage) XLoad(address types.Address, slot types.Slot, t TypeOfStorage) (*evmInt256.Int, error) {
-	if s.ResultCache.OriginalData == nil || s.ResultCache.CachedData == nil || s.externalStorage == nil {
+func (s *Storage) XLoad(address types.Address, slot types.Slot, t cache.TypeOfStorage) (*evmInt256.Int, error) {
+	if s.ResultCache.OriginalAccounts == nil || s.ResultCache.CachedAccounts == nil || s.externalStorage == nil {
 		return nil, evmErrors.StorageNotInitialized
 	}
 
-	if t != SStorage && t != TStorage {
+	if t != cache.SStorage && t != cache.TStorage {
 		return nil, evmErrors.InvalidTypeOfStorage()
 	}
 
 	var err error = nil
 	i := s.ResultCache.XCachedLoad(address, slot, t)
 	if i == nil {
-		if t == SStorage {
+		if t == cache.SStorage {
 			i, err = s.externalStorage.Load(address, slot)
 		} else {
 			i = evmInt256.New(0)
@@ -89,7 +82,7 @@ func (s *Storage) XLoad(address types.Address, slot types.Slot, t TypeOfStorage)
 	return i, nil
 }
 
-func (s *Storage) XStore(address types.Address, slot types.Slot, val *evmInt256.Int, t TypeOfStorage) {
+func (s *Storage) XStore(address types.Address, slot types.Slot, val *evmInt256.Int, t cache.TypeOfStorage) {
 	s.ResultCache.XCachedStore(address, slot, val, t)
 }
 
@@ -133,44 +126,30 @@ func (s *Storage) Destruct(address types.Address) {
 	s.ResultCache.Destructs[address] = address
 }
 
-type commonGetterFunc func(types.Slot) (*evmInt256.Int, error)
-
-func (s *Storage) commonGetter(slot types.Slot, cache Cache, getterFunc commonGetterFunc) (*evmInt256.Int, error) {
-	if b, exists := cache[slot]; exists {
-		return evmInt256.FromBigInt(b.Int), nil
-	}
-
-	b, err := getterFunc(slot)
-	if err == nil {
-		cache[slot] = b
-	}
-
-	return b, err
-}
-
 func (s *Storage) getContract(address types.Address) (*environment.Contract, error) {
-	contract := s.ResultCache.NewContracts.Get(address)
-	if contract != nil {
-		return contract, nil
+	newAcc := s.ResultCache.NewContracts.Get(address)
+	if newAcc != nil {
+		return newAcc.Contract, nil
 	}
 
-	contract = s.readOnlyCache.Contracts.Get(address)
-	if contract != nil {
-		return contract, nil
+	cachedAcc := s.ResultCache.CachedAccounts.Get(address)
+	if cachedAcc != nil {
+		return cachedAcc.Contract, nil
 	}
 
-	contract, err := s.externalStorage.GetContract(address)
+	extContract, err := s.externalStorage.GetContract(address)
 	if err != nil {
 		return nil, err
 	}
 
-	if contract == nil {
+	if extContract == nil {
 		return nil, evmErrors.InvalidExternalStorageResult
 	}
 
-	s.readOnlyCache.Contracts.Set(contract)
+	cachedAcc = cache.NewAccountCacheUnit(extContract)
+	s.ResultCache.CacheContract(extContract)
 
-	return contract, nil
+	return extContract, nil
 }
 
 func (s *Storage) Balance(address types.Address) (*evmInt256.Int, error) {
@@ -229,11 +208,14 @@ func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
 }
 
 func (s *Storage) NewContract(address types.Address, code []byte) {
-	s.ResultCache.NewContracts.Set(&environment.Contract{
-		Address:  address,
-		Code:     bytes.Clone(code),
-		CodeHash: s.externalStorage.HashOfCode(code),
-		CodeSize: uint64(len(code)),
+	s.ResultCache.NewContracts.Set(&cache.AccountCacheUnit{
+		Contract: &environment.Contract{
+			Address:  address,
+			Code:     bytes.Clone(code),
+			CodeHash: s.externalStorage.HashOfCode(code),
+			CodeSize: uint64(len(code)),
+		},
+		Slots: cache.SlotCache{},
 	})
 }
 
@@ -250,16 +232,16 @@ func (s *Storage) GetExternalStorage() IExternalStorage {
 }
 
 func (s *Storage) ClearCache() {
-	s.ResultCache = NewResultCache()
+	s.ResultCache = cache.NewResultCache()
 }
 
 func (s *Storage) CachedContract(addr types.Address) bool {
-	return s.readOnlyCache.Contracts[addr] != nil
+	return s.ResultCache.CachedAccounts.Get(addr) != nil
 }
 
 func (s *Storage) CachedData(addr types.Address, slot types.Slot) (org *evmInt256.Int, current *evmInt256.Int) {
-	org = s.ResultCache.OriginalData.Get(addr, slot)
-	current = s.ResultCache.CachedData.Get(addr, slot)
+	org = s.ResultCache.CachedAccounts.GetSlot(addr, slot)
+	current = s.ResultCache.CachedAccounts.GetSlot(addr, slot)
 	return org, current
 }
 

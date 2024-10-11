@@ -27,6 +27,7 @@ import (
 	"github.com/SealSC/SealEVM/precompiledContracts"
 	"github.com/SealSC/SealEVM/stack"
 	"github.com/SealSC/SealEVM/storage"
+	"github.com/SealSC/SealEVM/storage/cache"
 	"github.com/SealSC/SealEVM/types"
 	"github.com/SealSC/SealEVM/utils"
 )
@@ -53,7 +54,7 @@ type EVM struct {
 type ExecuteResult struct {
 	ResultData   []byte
 	GasLeft      uint64
-	StorageCache storage.ResultCache
+	StorageCache cache.ResultCache
 	ExitOpCode   opcodes.OpCode
 }
 
@@ -101,7 +102,7 @@ func NewWithCache(param EVMParam, s *storage.Storage) *EVM {
 
 func (e *EVM) subResult(result ExecuteResult, err error) {
 	if err == nil && result.ExitOpCode != opcodes.REVERT {
-		storage.MergeResultCache(&result.StorageCache, &e.storage.ResultCache)
+		cache.MergeResultCache(&result.StorageCache, &e.storage.ResultCache)
 	}
 }
 
@@ -158,6 +159,13 @@ func (e *EVM) ExecuteContract() (ExecuteResult, error) {
 
 	if e.depth == 0 {
 		gasLeft, err = e.useIntrinsicGas()
+		if err != nil {
+			return ExecuteResult{
+				ResultData:   nil,
+				GasLeft:      gasLeft,
+				StorageCache: e.storage.ResultCache,
+			}, err
+		}
 	} else {
 		gasLeft = e.instructions.GetGasLeft()
 	}
@@ -176,6 +184,8 @@ func (e *EVM) ExecuteContract() (ExecuteResult, error) {
 		isCreation = true
 		e.context.Contract = e.createContract(e.context)
 	}
+
+	e.storage.ResultCache.CacheContract(e.context.Contract)
 
 	if e.context.Message.Value == nil {
 		e.context.Message.Value = evmInt256.New(0)
@@ -224,7 +234,7 @@ func (e *EVM) ExecuteContract() (ExecuteResult, error) {
 	result.ExitOpCode = e.instructions.ExitOpCode()
 
 	if err != nil {
-		result.StorageCache = storage.NewResultCache()
+		result.StorageCache = cache.NewResultCache()
 		e.storage.ClearCache()
 	}
 

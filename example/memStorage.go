@@ -4,28 +4,27 @@ import (
 	"bytes"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmInt256"
-	"github.com/SealSC/SealEVM/storage"
+	"github.com/SealSC/SealEVM/storage/cache"
 	"github.com/SealSC/SealEVM/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"time"
 )
 
-//external storage for example
 type memStorage struct {
-	storage   storage.SlotCache
-	contracts storage.ContractCache
-}
-
-func (r *memStorage) GetBalance(address types.Address) (*evmInt256.Int, error) {
-	return evmInt256.New(1000000000000000000), nil
-}
-
-func (r *memStorage) CanTransfer(from, to types.Address, val *evmInt256.Int) bool {
-	return true
+	accounts cache.AccountCache
 }
 
 func (r *memStorage) GetContract(address types.Address) (*environment.Contract, error) {
-	return r.contracts[address], nil
+	if r.accounts[address] == nil {
+		r.accounts[address] = cache.NewAccountCacheUnit(&environment.Contract{
+			Address:  address,
+			Code:     []byte{},
+			CodeHash: types.Hash{},
+			CodeSize: 0,
+			Balance:  evmInt256.New(0),
+		})
+	}
+	return r.accounts[address].Contract, nil
 }
 
 func (r *memStorage) HashOfCode(code []byte) types.Hash {
@@ -55,28 +54,30 @@ func (r *memStorage) CreateFixedAddress(caller types.Address, salt types.Hash, c
 }
 
 func (r *memStorage) ContractExist(address types.Address) bool {
-	return r.contracts[address] != nil
+	return r.accounts[address] != nil
 }
 
 func (r *memStorage) ContractEmpty(address types.Address) bool {
-	return r.contracts[address] == nil
+	return r.accounts[address] == nil
 }
 
 func (r *memStorage) Load(address types.Address, slot types.Slot) (*evmInt256.Int, error) {
 	ret := evmInt256.New(0)
-	if val, exists := r.storage[address][slot]; exists {
-		ret.Set(val.Int)
+	if r.accounts[address] != nil {
+		if r.accounts[address].Slots[slot] != nil {
+			ret.Set(r.accounts[address].Slots[slot].Int)
+		}
 	}
 
 	return ret, nil
 }
 
 func (r *memStorage) NewContract(address types.Address, code []byte) error {
-	r.contracts[address] = &environment.Contract{
+	r.accounts[address] = cache.NewAccountCacheUnit(&environment.Contract{
 		Address:  address,
 		Code:     bytes.Clone(code),
 		CodeHash: r.HashOfCode(code),
 		CodeSize: uint64(len(code)),
-	}
+	})
 	return nil
 }
