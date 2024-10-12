@@ -6,44 +6,7 @@ import (
 	"github.com/SealSC/SealEVM/types"
 )
 
-type SlotCache map[types.Slot]*evmInt256.Int
-
-func (c SlotCache) Clone() SlotCache {
-	replica := make(SlotCache)
-
-	for k, v := range c {
-		replica[k] = v.Clone()
-	}
-
-	return replica
-}
-
-func (c SlotCache) Merge(cache SlotCache) {
-	for k, v := range cache {
-		c[k] = v
-	}
-}
-
-type AccountCacheUnit struct {
-	Contract *environment.Contract
-	Slots    SlotCache
-}
-
-func NewAccountCacheUnit(extContract *environment.Contract) *AccountCacheUnit {
-	return &AccountCacheUnit{
-		Contract: extContract,
-		Slots:    SlotCache{},
-	}
-}
-
-func (c AccountCacheUnit) Clone() *AccountCacheUnit {
-	return &AccountCacheUnit{
-		Contract: c.Contract.Clone(),
-		Slots:    c.Slots.Clone(),
-	}
-}
-
-type AccountCache map[types.Address]*AccountCacheUnit
+type AccountCache map[types.Address]*environment.Account
 
 func (c AccountCache) Clone() AccountCache {
 	replica := make(AccountCache)
@@ -56,15 +19,23 @@ func (c AccountCache) Clone() AccountCache {
 
 func (c AccountCache) Merge(cache AccountCache) {
 	for k, v := range cache {
-		c[k] = v
+		if v == nil {
+			continue
+		}
+
+		if c[k] == nil {
+			c[k] = v
+		} else {
+			c[k].Set(v)
+		}
 	}
 }
 
-func (c AccountCache) Set(contract *AccountCacheUnit) {
-	c[contract.Contract.Address] = contract
+func (c AccountCache) Set(acc *environment.Account) {
+	c[acc.Address] = acc
 }
 
-func (c AccountCache) Get(address types.Address) *AccountCacheUnit {
+func (c AccountCache) Get(address types.Address) *environment.Account {
 	if c[address] == nil {
 		return nil
 	}

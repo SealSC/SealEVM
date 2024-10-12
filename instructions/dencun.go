@@ -68,7 +68,7 @@ func tLoadAction(ctx *instructionsContext) ([]byte, error) {
 	key := ctx.stack.Peek()
 
 	slot := types.Int256ToSlot(key)
-	val, err := ctx.storage.XLoad(ctx.environment.Contract.Address, slot, cache.TStorage)
+	val, err := ctx.storage.XLoad(ctx.environment.Address(), slot, cache.TStorage)
 
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func tStoreAction(ctx *instructionsContext) ([]byte, error) {
 	val := ctx.stack.Pop()
 
 	slot := types.Int256ToSlot(key)
-	ctx.storage.XStore(ctx.environment.Contract.Address, slot, val, cache.TStorage)
+	ctx.storage.XStore(ctx.environment.Address(), slot, val, cache.TStorage)
 	return nil, nil
 }
 

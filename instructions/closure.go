@@ -17,6 +17,7 @@
 package instructions
 
 import (
+	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/opcodes"
@@ -30,13 +31,8 @@ type ClosureParam struct {
 	OpCode   opcodes.OpCode
 	GasLimit *evmInt256.Int
 
-	ContractAddress types.Address
-	ContractHash    types.Hash
-	ContractCode    []byte
-
-	CallData   []byte
-	CallValue  *evmInt256.Int
-	CreateSalt types.Hash
+	Called  types.Address
+	Message *environment.Message
 }
 
 func loadClosure() {
@@ -87,11 +83,17 @@ func loadClosure() {
 
 func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error) {
 	_ = ctx.stack.Pop() //gas was calculated before execute.
-	addr := ctx.stack.Pop()
+	addr := types.Int256ToAddress(ctx.stack.Pop())
 	v := evmInt256.New(0)
-	if opCode != opcodes.DELEGATECALL && opCode != opcodes.STATICCALL {
+
+	caller := ctx.environment.Address()
+	if opCode == opcodes.CALL || opCode == opcodes.CALLCODE {
 		v = ctx.stack.Pop()
+	} else if opCode == opcodes.DELEGATECALL {
+		v = ctx.environment.Message.Value
+		caller = ctx.environment.Message.Caller
 	}
+
 	dOffset := ctx.stack.Pop()
 	dLen := ctx.stack.Pop()
 	rOffset := ctx.stack.Pop()
@@ -102,25 +104,16 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 		return nil, err
 	}
 
-	contractCode, err := ctx.storage.GetCode(types.Int256ToAddress(addr))
-	if err != nil {
-		return nil, err
-	}
-
-	contractCodeHash, err := ctx.storage.GetCodeHash(types.Int256ToAddress(addr))
-	if err != nil {
-		return nil, err
-	}
-
 	cParam := ClosureParam{
-		VM:              ctx.vm,
-		OpCode:          opCode,
-		GasLimit:        evmInt256.New(ctx.callGasLimit),
-		ContractAddress: types.Int256ToAddress(addr),
-		ContractCode:    contractCode,
-		ContractHash:    *contractCodeHash,
-		CallData:        data,
-		CallValue:       v,
+		VM:       ctx.vm,
+		OpCode:   opCode,
+		GasLimit: evmInt256.New(ctx.callGasLimit),
+		Called:   addr,
+		Message: &environment.Message{
+			Caller: caller,
+			Value:  v,
+			Data:   data,
+		},
 	}
 
 	callRet, err := ctx.closureExec(cParam)
@@ -171,23 +164,34 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		return nil, err
 	}
 
-	cParam := ClosureParam{
-		VM:           ctx.vm,
-		OpCode:       opCode,
-		GasLimit:     ctx.gasRemaining.Clone(),
-		ContractCode: code,
-		CallData:     []byte{},
-		CallValue:    v,
-		CreateSalt:   types.Int256ToHash(salt),
-	}
-
-	caller := ctx.environment.Message.Caller
+	var addr types.Address
+	var caller = ctx.environment.Address()
 
 	if opcodes.CREATE == opCode {
-		cParam.ContractAddress = ctx.storage.CreateAddress(caller, ctx.environment.Transaction)
+		addr = ctx.storage.CreateAddress(caller, ctx.environment.Transaction)
 	} else {
-		cParam.ContractAddress = ctx.storage.CreateFixedAddress(caller, types.Int256ToHash(salt), code, ctx.environment.Transaction)
+		addr = ctx.storage.CreateFixedAddress(caller, types.Int256ToHash(salt), code, ctx.environment.Transaction)
 	}
+
+	newAcc := environment.NewAccount(addr, evmInt256.New(0), &environment.Contract{
+		Code:     code,
+		CodeHash: types.Hash{},
+		CodeSize: uint64(len(code)),
+	})
+
+	cParam := ClosureParam{
+		VM:       ctx.vm,
+		OpCode:   opCode,
+		GasLimit: ctx.gasRemaining.Clone(),
+		Called:   addr,
+		Message: &environment.Message{
+			Caller: caller,
+			Value:  v,
+			Data:   nil,
+		},
+	}
+
+	ctx.storage.CacheAccount(newAcc, true)
 
 	ret, err := ctx.closureExec(cParam)
 	if err != nil {
@@ -195,9 +199,11 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		if err != evmErrors.RevertErr {
 			ret = nil
 		}
+
+		ctx.storage.RemoveCachedAccount(newAcc.Address)
 	} else {
-		ctx.stack.Push(cParam.ContractAddress.Int256())
-		ctx.storage.NewContract(cParam.ContractAddress, ret)
+		ctx.stack.Push(addr.Int256())
+		ctx.storage.UpdateAccountContract(addr, ret)
 	}
 
 	return ret, nil

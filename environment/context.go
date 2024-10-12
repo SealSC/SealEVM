@@ -16,9 +16,28 @@
 
 package environment
 
+import "github.com/SealSC/SealEVM/types"
+
 type Context struct {
 	Block       Block
-	Contract    *Contract
 	Transaction Transaction
 	Message     Message
+
+	runtimeAccount *Account
+}
+
+func (c Context) Account() *Account {
+	return c.runtimeAccount
+}
+
+func (c Context) Contract() *Contract {
+	return c.runtimeAccount.Contract
+}
+
+func (c Context) Address() types.Address {
+	return c.runtimeAccount.Address
+}
+
+func (c *Context) SetRuntimeAccount(account *Account) {
+	c.runtimeAccount = account
 }

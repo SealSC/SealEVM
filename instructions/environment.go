@@ -187,7 +187,7 @@ func loadEnvironment() {
 }
 
 func addressAction(ctx *instructionsContext) ([]byte, error) {
-	ctx.stack.Push(ctx.environment.Contract.Address.Int256())
+	ctx.stack.Push(ctx.environment.Address().Int256())
 	return nil, nil
 }
 
@@ -203,7 +203,7 @@ func balanceAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func selfBalanceAction(ctx *instructionsContext) ([]byte, error) {
-	balance, err := ctx.storage.Balance(ctx.environment.Contract.Address)
+	balance, err := ctx.storage.Balance(ctx.environment.Address())
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +255,7 @@ func callDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func codeSizeAction(ctx *instructionsContext) ([]byte, error) {
-	s := evmInt256.New(uint64(len(ctx.environment.Contract.Code)))
+	s := evmInt256.New(ctx.environment.Contract().CodeSize)
 	ctx.stack.Push(s)
 	return nil, nil
 }
@@ -265,7 +265,7 @@ func codeCopyAction(ctx *instructionsContext) ([]byte, error) {
 	dOffset := ctx.stack.Pop()
 	size := ctx.stack.Pop()
 
-	data := utils.GetDataFrom(ctx.environment.Contract.Code, dOffset.Uint64(), size.Uint64())
+	data := utils.GetDataFrom(ctx.environment.Contract().Code, dOffset.Uint64(), size.Uint64())
 	err := ctx.memory.Store(mOffset.Uint64(), data)
 	return nil, err
 }

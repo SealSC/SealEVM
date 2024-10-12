@@ -52,7 +52,7 @@ func jumpAction(ctx *instructionsContext) ([]byte, error) {
 	target := ctx.stack.Pop()
 	nextPC := target.Uint64()
 
-	validJump, err := ctx.environment.Contract.IsValidJump(nextPC)
+	validJump, err := ctx.environment.Contract().IsValidJump(nextPC)
 	if validJump {
 		ctx.pc = nextPC
 	}
@@ -66,7 +66,7 @@ func jumpIAction(ctx *instructionsContext) ([]byte, error) {
 	nextPC := target.Uint64()
 
 	if condition.Sign() != 0 {
-		validJump, err := ctx.environment.Contract.IsValidJump(nextPC)
+		validJump, err := ctx.environment.Contract().IsValidJump(nextPC)
 		if validJump {
 			ctx.pc = nextPC
 		}

@@ -17,7 +17,6 @@
 package storage
 
 import (
-	"bytes"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
@@ -36,7 +35,7 @@ func New(extStorage IExternalStorage) *Storage {
 		ResultCache:     cache.NewResultCache(),
 		externalStorage: extStorage,
 		readOnlyCache: cache.ReadOnlyCache{
-			BlockHash: cache.SlotCache{},
+			BlockHash: map[types.Slot]*evmInt256.Int{},
 		},
 	}
 
@@ -96,12 +95,16 @@ func (s *Storage) CanTransfer(from types.Address, to types.Address, amount *evmI
 }
 
 func (s *Storage) Transfer(fromAddr types.Address, toAddr types.Address, val *evmInt256.Int) error {
-	from, err := s.getContract(fromAddr)
+	if val.IsZero() {
+		return nil
+	}
+
+	from, err := s.GetAccount(fromAddr)
 	if err != nil {
 		return err
 	}
 
-	to, err := s.getContract(toAddr)
+	to, err := s.GetAccount(toAddr)
 	if err != nil {
 		return err
 	}
@@ -126,57 +129,59 @@ func (s *Storage) Destruct(address types.Address) {
 	s.ResultCache.Destructs[address] = address
 }
 
-func (s *Storage) getContract(address types.Address) (*environment.Contract, error) {
-	newAcc := s.ResultCache.NewContracts.Get(address)
-	if newAcc != nil {
-		return newAcc.Contract, nil
-	}
-
+func (s *Storage) GetAccount(address types.Address) (*environment.Account, error) {
 	cachedAcc := s.ResultCache.CachedAccounts.Get(address)
 	if cachedAcc != nil {
-		return cachedAcc.Contract, nil
+		return cachedAcc, nil
 	}
 
-	extContract, err := s.externalStorage.GetContract(address)
+	extAcc, err := s.externalStorage.GetAccount(address)
 	if err != nil {
 		return nil, err
 	}
 
-	if extContract == nil {
-		return nil, evmErrors.InvalidExternalStorageResult
-	}
+	s.ResultCache.CacheAccount(extAcc)
 
-	cachedAcc = cache.NewAccountCacheUnit(extContract)
-	s.ResultCache.CacheContract(extContract)
-
-	return extContract, nil
+	return extAcc, nil
 }
 
 func (s *Storage) Balance(address types.Address) (*evmInt256.Int, error) {
-	contract, err := s.getContract(address)
+	acc, err := s.GetAccount(address)
 	if err != nil {
 		return nil, err
 	}
 
-	return contract.Balance.Clone(), nil
+	if acc.Balance == nil {
+		return evmInt256.New(0), nil
+	}
+
+	return acc.Balance.Clone(), nil
 }
 
 func (s *Storage) GetCode(address types.Address) ([]byte, error) {
-	contract, err := s.getContract(address)
+	acc, err := s.GetAccount(address)
 	if err != nil {
 		return nil, err
 	}
 
-	return contract.Code, err
+	if acc.Contract == nil {
+		return nil, err
+	}
+
+	return acc.Contract.Code, err
 }
 
 func (s *Storage) GetCodeSize(address types.Address) (*evmInt256.Int, error) {
-	contract, err := s.getContract(address)
+	acc, err := s.GetAccount(address)
 	if err != nil {
 		return nil, err
 	}
 
-	return evmInt256.New(contract.CodeSize), err
+	if acc.Contract == nil {
+		return evmInt256.New(0), err
+	}
+
+	return evmInt256.New(acc.Contract.CodeSize), err
 }
 
 func (s *Storage) HashOfCode(code []byte) types.Hash {
@@ -184,12 +189,16 @@ func (s *Storage) HashOfCode(code []byte) types.Hash {
 }
 
 func (s *Storage) GetCodeHash(address types.Address) (*types.Hash, error) {
-	contract, err := s.getContract(address)
+	acc, err := s.GetAccount(address)
 	if err != nil {
 		return nil, err
 	}
 
-	return &contract.CodeHash, err
+	if acc.Contract == nil {
+		return &types.Hash{}, nil
+	}
+
+	return &acc.Contract.CodeHash, nil
 }
 
 func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
@@ -205,18 +214,6 @@ func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
 	}
 
 	return hash, err
-}
-
-func (s *Storage) NewContract(address types.Address, code []byte) {
-	s.ResultCache.NewContracts.Set(&cache.AccountCacheUnit{
-		Contract: &environment.Contract{
-			Address:  address,
-			Code:     bytes.Clone(code),
-			CodeHash: s.externalStorage.HashOfCode(code),
-			CodeSize: uint64(len(code)),
-		},
-		Slots: cache.SlotCache{},
-	})
 }
 
 func (s *Storage) CreateAddress(caller types.Address, tx environment.Transaction) types.Address {
@@ -251,4 +248,33 @@ func (s *Storage) ContractExist(addr types.Address) bool {
 
 func (s *Storage) ContractEmpty(addr types.Address) bool {
 	return s.externalStorage.ContractEmpty(addr)
+}
+
+func (s *Storage) RemoveCachedAccount(addr types.Address) {
+	s.ResultCache.RemoveAccount(addr)
+}
+
+func (s *Storage) CacheAccount(acc *environment.Account, newContract bool) {
+	if s.ResultCache.CachedAccounts.Get(acc.Address) != nil {
+		return
+	}
+
+	cached := s.ResultCache.CacheAccount(acc)
+
+	if newContract {
+		s.ResultCache.NewAccount.Set(cached)
+	}
+}
+
+func (s *Storage) UpdateAccountContract(address types.Address, code []byte) {
+	acc := s.ResultCache.CachedAccounts.Get(address)
+	if acc == nil {
+		return
+	}
+
+	acc.Contract = &environment.Contract{
+		Code:     code,
+		CodeHash: s.HashOfCode(code),
+		CodeSize: uint64(len(code)),
+	}
 }

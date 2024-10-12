@@ -20,27 +20,27 @@ func gasWithTouchedCheck(stx *stack.Stack, addrPos uint, check touchedCheck) uin
 }
 
 func gasOfBalance(
-	contract *environment.Contract,
+	_ *environment.Account,
 	stx *stack.Stack,
-	mem *memory.Memory,
+	_ *memory.Memory,
 	store *storage.Storage,
 ) (uint64, uint64, error) {
 	return 0, gasWithTouchedCheck(stx, 0, store.CachedContract), nil
 }
 
 func gasOfExtCodeSize(
-	contract *environment.Contract,
+	_ *environment.Account,
 	stx *stack.Stack,
-	mem *memory.Memory,
+	_ *memory.Memory,
 	store *storage.Storage,
 ) (uint64, uint64, error) {
 	return 0, gasWithTouchedCheck(stx, 0, store.CachedContract), nil
 }
 
 func gasOfExtCodeHash(
-	contract *environment.Contract,
+	_ *environment.Account,
 	stx *stack.Stack,
-	mem *memory.Memory,
+	_ *memory.Memory,
 	store *storage.Storage,
 ) (uint64, uint64, error) {
 	return 0, gasWithTouchedCheck(stx, 0, store.CachedContract), nil

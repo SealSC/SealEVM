@@ -10,10 +10,10 @@ import (
 
 func gasOfMemory(size *evmInt256.Int) CommonCalculator {
 	return func(
-		contract *environment.Contract,
+		_ *environment.Account,
 		stx *stack.Stack,
 		mem *memory.Memory,
-		store *storage.Storage,
+		_ *storage.Storage,
 	) (uint64, uint64, error) {
 		mOffset := stx.PeekPos(0)
 		if size == nil {

@@ -24,8 +24,22 @@ import (
 type Transaction struct {
 	TxHash   types.Hash
 	Origin   types.Address
+	To       *types.Address
 	GasPrice *evmInt256.Int
 	GasLimit *evmInt256.Int
 
 	BlobHashes []types.Hash
+}
+
+func (t Transaction) GenInternal(to *types.Address) *Transaction {
+	tx := &Transaction{
+		TxHash:     t.TxHash,
+		Origin:     t.Origin,
+		To:         to,
+		GasPrice:   t.GasPrice,
+		GasLimit:   t.GasLimit,
+		BlobHashes: t.BlobHashes,
+	}
+
+	return tx
 }

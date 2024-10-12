@@ -8,10 +8,10 @@ import (
 )
 
 func gasOfKeccak(
-	contract *environment.Contract,
+	_ *environment.Account,
 	stx *stack.Stack,
 	mem *memory.Memory,
-	store *storage.Storage,
+	_ *storage.Storage,
 ) (uint64, uint64, error) {
 	var gasCost uint64 = 30
 

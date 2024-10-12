@@ -30,7 +30,7 @@ func gasOfContractStore(code []byte, gasRemaining uint64) (uint64, error) {
 
 func gasOfCreate(isCreate2 bool) CommonCalculator {
 	return func(
-		_ *environment.Contract,
+		_ *environment.Account,
 		stx *stack.Stack,
 		mem *memory.Memory,
 		_ *storage.Storage,

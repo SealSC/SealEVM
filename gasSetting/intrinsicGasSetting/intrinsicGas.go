@@ -1,10 +1,12 @@
 package intrinsicGasSetting
 
-import "github.com/SealSC/SealEVM/environment"
+import (
+	"github.com/SealSC/SealEVM/types"
+)
 
-type IntrinsicGas func(data []byte, to *environment.Contract) uint64
+type IntrinsicGas func(data []byte, to *types.Address) uint64
 
-func intrinsicGas(data []byte, to *environment.Contract) uint64 {
+func intrinsicGas(data []byte, to *types.Address) uint64 {
 	var gasCost uint64 = 21000
 	if to == nil {
 		gasCost += 32000

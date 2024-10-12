@@ -60,7 +60,7 @@ func setPushActions() {
 			action: func(ctx *instructionsContext) ([]byte, error) {
 				start := ctx.pc + 1
 
-				codeBytes := utils.GetDataFrom(ctx.environment.Contract.Code, start, bytesSize)
+				codeBytes := utils.GetDataFrom(ctx.environment.Contract().Code, start, bytesSize)
 
 				i := evmInt256.New(0)
 				i.SetBytes(codeBytes)

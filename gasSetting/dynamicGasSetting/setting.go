@@ -10,7 +10,7 @@ import (
 )
 
 type CommonCalculator func(
-	contract *environment.Contract,
+	acc *environment.Account,
 	stx *stack.Stack,
 	mem *memory.Memory,
 	store *storage.Storage,

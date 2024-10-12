@@ -41,7 +41,7 @@ func sLoadAction(ctx *instructionsContext) ([]byte, error) {
 	k := ctx.stack.Peek()
 
 	slot := types.Int256ToSlot(k)
-	v, err := ctx.storage.XLoad(ctx.environment.Contract.Address, slot, cache.SStorage)
+	v, err := ctx.storage.XLoad(ctx.environment.Address(), slot, cache.SStorage)
 	if err != nil {
 		return nil, err
 	}
@@ -56,6 +56,6 @@ func sStoreAction(ctx *instructionsContext) ([]byte, error) {
 
 	slot := types.Int256ToSlot(k)
 
-	ctx.storage.XStore(ctx.environment.Contract.Address, slot, v, cache.SStorage)
+	ctx.storage.XStore(ctx.environment.Address(), slot, v, cache.SStorage)
 	return nil, nil
 }

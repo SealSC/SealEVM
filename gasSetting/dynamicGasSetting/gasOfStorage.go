@@ -10,13 +10,13 @@ import (
 )
 
 type SStoreGas func(
-	contract *environment.Contract,
+	acc *environment.Account,
 	stx *stack.Stack,
 	store *storage.Storage,
 ) (gasCost uint64, err error)
 
 func gasOfSLoad(
-	contract *environment.Contract,
+	contract *environment.Account,
 	stx *stack.Stack,
 	mem *memory.Memory,
 	store *storage.Storage,
@@ -31,7 +31,7 @@ func gasOfSLoad(
 }
 
 func gasOfSStore(
-	contract *environment.Contract,
+	acc *environment.Account,
 	stx *stack.Stack,
 	mem *memory.Memory,
 	store *storage.Storage,
@@ -39,11 +39,11 @@ func gasOfSStore(
 	var gasCost uint64 = 0
 	slot := stx.PeekPos(0)
 	newVal := stx.PeekPos(1)
-	org, current := store.CachedData(contract.Address, types.Int256ToSlot(slot))
+	org, current := store.CachedData(acc.Address, types.Int256ToSlot(slot))
 
 	if org == nil {
 		gasCost += 2100
-		val, err := store.XLoad(contract.Address, types.Int256ToSlot(slot), cache.SStorage)
+		val, err := store.XLoad(acc.Address, types.Int256ToSlot(slot), cache.SStorage)
 		if err != nil {
 			return 0, gasCost, err
 		}

@@ -125,7 +125,7 @@ func (i *instructionsContext) calcGas(code opcodes.OpCode, gasRemaining uint64) 
 	}
 
 	if dynamicCost := i.gasSetting.CommonDynamicCost[code]; dynamicCost != nil {
-		memExp, gasCost, err := dynamicCost(i.environment.Contract, i.stack, i.memory, i.storage)
+		memExp, gasCost, err := dynamicCost(i.environment.Account(), i.stack, i.memory, i.storage)
 		if err != nil {
 			return gasRemaining, err
 		}
@@ -159,7 +159,7 @@ func (i *instructionsContext) ExecuteContract() (ret []byte, gasRemaining uint64
 	}()
 
 	i.pc = 0
-	contract := i.environment.Contract
+	contract := i.environment.Contract()
 
 	if len(contract.Code) == 0 {
 		return nil, i.gasRemaining.Uint64(), nil

@@ -86,19 +86,20 @@ func revertAction(ctx *instructionsContext) ([]byte, error) {
 }
 
 func selfDestructAction(ctx *instructionsContext) ([]byte, error) {
-	addr := ctx.stack.Pop()
-	contractAddr := ctx.environment.Contract.Address
-	receiverAddr := types.Int256ToAddress(addr)
+	receiver := types.Int256ToAddress(ctx.stack.Pop())
+	acc := ctx.environment.Account()
 
-	balance, _ := ctx.storage.Balance(contractAddr)
+	balance, _ := ctx.storage.Balance(acc.Address)
 
-	if contractAddr != receiverAddr {
-		err := ctx.storage.Transfer(contractAddr, receiverAddr, balance)
-		if err != nil {
-			return nil, err
+	if !balance.IsZero() {
+		if acc.Address != receiver {
+			err := ctx.storage.Transfer(acc.Address, receiver, balance)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	ctx.storage.Destruct(contractAddr)
+	ctx.storage.Destruct(acc.Address)
 	return nil, nil
 }

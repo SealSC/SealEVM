@@ -5,7 +5,24 @@ import (
 	"github.com/SealSC/SealEVM/types"
 )
 
-type TransientCache map[types.Address]SlotCache
+type transientSlot map[types.Slot]*evmInt256.Int
+
+func (t transientSlot) Clone() transientSlot {
+	replica := transientSlot{}
+	for slot, v := range t {
+		replica[slot] = v.Clone()
+	}
+
+	return replica
+}
+
+func (t transientSlot) Merge(cache transientSlot) {
+	for slot, v := range cache {
+		t[slot] = v
+	}
+}
+
+type TransientCache map[types.Address]transientSlot
 
 func (c TransientCache) Clone() TransientCache {
 	replica := TransientCache{}
@@ -29,7 +46,7 @@ func (c TransientCache) Get(address types.Address, slot types.Slot) *evmInt256.I
 
 func (c TransientCache) Set(address types.Address, slot types.Slot, v *evmInt256.Int) {
 	if c[address] == nil {
-		c[address] = SlotCache{}
+		c[address] = transientSlot{}
 	}
 
 	c[address][slot] = v

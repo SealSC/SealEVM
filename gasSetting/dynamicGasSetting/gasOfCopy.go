@@ -23,10 +23,10 @@ func gasOfCopyMem(mem *memory.Memory, offset *evmInt256.Int, size *evmInt256.Int
 }
 
 func gasOfCopy(
-	contract *environment.Contract,
+	_ *environment.Account,
 	stx *stack.Stack,
 	mem *memory.Memory,
-	store *storage.Storage,
+	_ *storage.Storage,
 ) (uint64, uint64, error) {
 	var gasCost uint64 = 3
 
@@ -42,7 +42,7 @@ func gasOfCopy(
 }
 
 func gasOfExtCodeCopy(
-	contract *environment.Contract,
+	_ *environment.Account,
 	stx *stack.Stack,
 	mem *memory.Memory,
 	store *storage.Storage,

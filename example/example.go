@@ -33,18 +33,10 @@ func storeResult(result *SealEVM.ExecuteResult, storage *memStorage) {
 //create a new evm
 func newEvm(code []byte, callData []byte, caller []byte, ms *memStorage) *SealEVM.EVM {
 	hash := hashes.Keccak256(code)
-
-	var codeHash types.Hash
 	var addr types.Address
-
-	codeHash.SetBytes(hash)
 	addr.SetBytes(hash)
-	//same contract code has same address in this example
-	contract := &environment.Contract{
-		Address:  addr,
-		Code:     code,
-		CodeHash: codeHash,
-	}
+
+	_ = ms.NewAccount(addr, code)
 
 	var callerAddr types.Address
 	callerAddr.SetBytes(caller)
@@ -62,9 +54,9 @@ func newEvm(code []byte, callData []byte, caller []byte, ms *memStorage) *SealEV
 				GasLimit:   evmInt256.New(10000000),
 				Hash:       types.Hash{},
 			},
-			Contract: contract,
 			Transaction: environment.Transaction{
 				Origin:   callerAddr,
+				To:       &addr,
 				GasPrice: evmInt256.New(1),
 				GasLimit: evmInt256.New(10000000),
 			},
@@ -80,6 +72,9 @@ func newEvm(code []byte, callData []byte, caller []byte, ms *memStorage) *SealEV
 }
 
 func main() {
+	fmt.Println("The example code is not yet adapted！")
+	os.Exit(0)
+
 	//load SealEVM module
 	SealEVM.Load()
 
@@ -96,6 +91,8 @@ func main() {
 		fmt.Println(err.Error())
 		os.Exit(0)
 	}
+
+	storeResult(&ret, ms)
 
 	//result data of ret is the deployed code of example contract
 	contractCode := ret.ResultData

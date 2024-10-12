@@ -30,7 +30,7 @@ func loadLog() {
 				lSize := ctx.stack.Pop()
 
 				log := &types.Log{
-					Address: ctx.environment.Contract.Address,
+					Address: ctx.environment.Address(),
 					Topics:  []types.Topic{},
 					Data:    []byte{},
 				}

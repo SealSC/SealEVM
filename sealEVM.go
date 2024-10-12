@@ -52,10 +52,11 @@ type EVM struct {
 }
 
 type ExecuteResult struct {
-	ResultData   []byte
-	GasLeft      uint64
-	StorageCache cache.ResultCache
-	ExitOpCode   opcodes.OpCode
+	ContractAddress *types.Address
+	ResultData      []byte
+	GasLeft         uint64
+	StorageCache    cache.ResultCache
+	ExitOpCode      opcodes.OpCode
 }
 
 func Load() {
@@ -131,7 +132,6 @@ func (e *EVM) executePreCompiled(address types.Address, input []byte) (ExecuteRe
 
 func (e *EVM) createContract(env *environment.Context) *environment.Contract {
 	return &environment.Contract{
-		Address:  e.storage.CreateAddress(env.Message.Caller, env.Transaction),
 		Code:     env.Message.Data,
 		CodeHash: e.storage.HashOfCode(env.Message.Data),
 		CodeSize: uint64(len(env.Message.Data)),
@@ -140,7 +140,7 @@ func (e *EVM) createContract(env *environment.Context) *environment.Contract {
 
 func (e *EVM) useIntrinsicGas() (uint64, error) {
 	gasLeft := e.instructions.GetGasLeft()
-	gasCost := e.instructions.GetGasSetting().IntrinsicCost(e.context.Message.Data, e.context.Contract)
+	gasCost := e.instructions.GetGasSetting().IntrinsicCost(e.context.Message.Data, e.context.Transaction.To)
 	if gasLeft < gasCost {
 		e.instructions.SetGasLimit(0)
 		return 0, evmErrors.OutOfGas
@@ -152,46 +152,66 @@ func (e *EVM) useIntrinsicGas() (uint64, error) {
 	return gasLeft, nil
 }
 
-func (e *EVM) ExecuteContract() (ExecuteResult, error) {
-	var isCreation = false
+func (e *EVM) getGasLeft() (uint64, error) {
 	var err error
 	var gasLeft uint64
 
 	if e.depth == 0 {
 		gasLeft, err = e.useIntrinsicGas()
 		if err != nil {
-			return ExecuteResult{
-				ResultData:   nil,
-				GasLeft:      gasLeft,
-				StorageCache: e.storage.ResultCache,
-			}, err
+			return gasLeft, err
 		}
 	} else {
 		gasLeft = e.instructions.GetGasLeft()
 	}
 
+	return gasLeft, err
+}
+
+func (e *EVM) ExecuteContract() (ExecuteResult, error) {
+	var toAcc *environment.Account
+	var isCreation = false
 	result := ExecuteResult{
 		ResultData:   nil,
-		GasLeft:      gasLeft,
+		GasLeft:      0,
 		StorageCache: e.storage.ResultCache,
 	}
+
+	gasLeft, err := e.getGasLeft()
+	result.GasLeft = gasLeft
 
 	if err != nil {
 		return result, err
 	}
 
-	if e.context.Contract == nil {
+	toAddr := e.context.Transaction.To
+	if toAddr == nil {
+		newAddr := e.storage.CreateAddress(e.context.Message.Caller, e.context.Transaction)
+		toAddr = &newAddr
+
 		isCreation = true
-		e.context.Contract = e.createContract(e.context)
+		contract := e.createContract(e.context)
+		toAcc = environment.NewAccount(newAddr, evmInt256.New(0), contract)
+
+		e.context.SetRuntimeAccount(toAcc)
+	} else {
+		if e.depth == 0 {
+			toAcc, err = e.storage.GetAccount(*toAddr)
+			if err != nil {
+				return result, err
+			}
+
+			e.context.SetRuntimeAccount(toAcc)
+		} else {
+			toAcc = e.context.Account()
+		}
 	}
 
-	e.storage.ResultCache.CacheContract(e.context.Contract)
+	e.storage.CacheAccount(toAcc, isCreation)
 
 	if e.context.Message.Value == nil {
 		e.context.Message.Value = evmInt256.New(0)
 	}
-
-	contractAddr := e.context.Contract.Address
 
 	//doing transfer when value > 0
 	if e.context.Message.Value.Sign() > 0 {
@@ -200,8 +220,8 @@ func (e *EVM) ExecuteContract() (ExecuteResult, error) {
 			return result, evmErrors.WriteProtection
 		}
 
-		if e.storage.CanTransfer(msg.Caller, contractAddr, msg.Value) {
-			transErr := e.storage.Transfer(msg.Caller, contractAddr, msg.Value)
+		if e.storage.CanTransfer(msg.Caller, toAcc.Address, msg.Value) {
+			transErr := e.storage.Transfer(msg.Caller, toAcc.Address, msg.Value)
 			if transErr != nil {
 				return result, err
 			}
@@ -210,8 +230,8 @@ func (e *EVM) ExecuteContract() (ExecuteResult, error) {
 		}
 	}
 
-	if precompiledContracts.IsPrecompiledContract(contractAddr) {
-		return e.executePreCompiled(contractAddr, e.context.Message.Data)
+	if precompiledContracts.IsPrecompiledContract(toAcc.Address) {
+		return e.executePreCompiled(toAcc.Address, e.context.Message.Data)
 	}
 
 	execRet, gasLeft, err := e.instructions.ExecuteContract()
@@ -224,9 +244,10 @@ func (e *EVM) ExecuteContract() (ExecuteResult, error) {
 				gasLeft = 0
 			} else {
 				gasLeft -= storeCost
+				e.storage.UpdateAccountContract(toAcc.Address, execRet)
+				result.ContractAddress = &toAcc.Address
 			}
 		}
-
 	}
 
 	result.GasLeft = gasLeft
@@ -252,19 +273,11 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 		ResultCallback: e.subResult,
 		Context: &environment.Context{
 			Block:       e.context.Block,
-			Transaction: e.context.Transaction,
-			Message: environment.Message{
-				Data: param.CallData,
-			},
+			Transaction: *e.context.Transaction.GenInternal(&param.Called),
+			Message:     *param.Message,
 		},
 		GasSetting: e.instructions.GetGasSetting(),
 	}, e.storage)
-
-	newEVM.context.Contract = &environment.Contract{
-		Address:  param.ContractAddress,
-		Code:     param.ContractCode,
-		CodeHash: param.ContractHash,
-	}
 
 	newEVM.instructions.SetGasLimit(param.GasLimit.Uint64())
 
@@ -275,26 +288,15 @@ func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte,
 	newEVM := e.getClosureDefaultEVM(param)
 	newEVM.depth = depth
 
-	//set storage address and call value
-	switch param.OpCode {
-	case opcodes.CALL:
-		newEVM.context.Contract.Address = param.ContractAddress
-		newEVM.context.Message.Value = param.CallValue
-		newEVM.context.Message.Caller = e.context.Contract.Address
-	case opcodes.STATICCALL:
-		newEVM.context.Contract.Address = param.ContractAddress
-		newEVM.context.Message.Value = param.CallValue
-		newEVM.context.Message.Caller = e.context.Contract.Address
-	case opcodes.CALLCODE:
-		newEVM.context.Contract.Address = e.context.Contract.Address
-		newEVM.context.Message.Value = param.CallValue
-		newEVM.context.Message.Caller = e.context.Contract.Address
+	calledAcc, _ := newEVM.storage.GetAccount(param.Called)
+	runtimeAcc := calledAcc.Clone()
 
-	case opcodes.DELEGATECALL:
-		newEVM.context.Contract.Address = e.context.Contract.Address
-		newEVM.context.Message.Value = e.context.Message.Value
-		newEVM.context.Message.Caller = e.context.Message.Caller
+	if param.OpCode == opcodes.DELEGATECALL {
+		runtimeAcc = e.context.Account().Clone()
+		runtimeAcc.Contract = calledAcc.Contract
 	}
+
+	newEVM.context.SetRuntimeAccount(runtimeAcc)
 
 	if param.OpCode == opcodes.STATICCALL || e.instructions.IsReadOnly() {
 		newEVM.instructions.SetReadOnly()
@@ -312,10 +314,10 @@ func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte,
 func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byte, error) {
 	newEVM := e.getClosureDefaultEVM(param)
 
+	runtimeAcc, _ := e.storage.GetAccount(param.Called)
+	newEVM.context.SetRuntimeAccount(runtimeAcc.Clone())
+
 	newEVM.depth = depth
-	newEVM.context.Contract.Address = param.ContractAddress
-	newEVM.context.Message.Value = param.CallValue
-	newEVM.context.Message.Caller = e.context.Contract.Address
 
 	ret, err := newEVM.ExecuteContract()
 	if ret.ExitOpCode == opcodes.REVERT {

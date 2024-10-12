@@ -9,7 +9,7 @@ import (
 )
 
 func gasOfSelfDestruct(
-	contract *environment.Contract,
+	acc *environment.Account,
 	stx *stack.Stack,
 	mem *memory.Memory,
 	store *storage.Storage,
@@ -18,7 +18,7 @@ func gasOfSelfDestruct(
 
 	receiver := types.Int256ToAddress(stx.PeekPos(0))
 
-	balance, _ := store.Balance(contract.Address)
+	balance, _ := store.Balance(acc.Address)
 	if !balance.IsZero() && store.ContractEmpty(receiver) {
 		gasCost += 25000
 	}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/storage/cache"
@@ -14,17 +13,11 @@ type memStorage struct {
 	accounts cache.AccountCache
 }
 
-func (r *memStorage) GetContract(address types.Address) (*environment.Contract, error) {
+func (r *memStorage) GetAccount(address types.Address) (*environment.Account, error) {
 	if r.accounts[address] == nil {
-		r.accounts[address] = cache.NewAccountCacheUnit(&environment.Contract{
-			Address:  address,
-			Code:     []byte{},
-			CodeHash: types.Hash{},
-			CodeSize: 0,
-			Balance:  evmInt256.New(0),
-		})
+		r.accounts[address] = environment.NewAccount(address, nil, nil)
 	}
-	return r.accounts[address].Contract, nil
+	return r.accounts[address], nil
 }
 
 func (r *memStorage) HashOfCode(code []byte) types.Hash {
@@ -72,12 +65,12 @@ func (r *memStorage) Load(address types.Address, slot types.Slot) (*evmInt256.In
 	return ret, nil
 }
 
-func (r *memStorage) NewContract(address types.Address, code []byte) error {
-	r.accounts[address] = cache.NewAccountCacheUnit(&environment.Contract{
-		Address:  address,
-		Code:     bytes.Clone(code),
-		CodeHash: r.HashOfCode(code),
+func (r *memStorage) NewAccount(address types.Address, code []byte) error {
+	r.accounts[address] = environment.NewAccount(address, nil, &environment.Contract{
+		Code:     code,
 		CodeSize: uint64(len(code)),
 	})
+
+	r.accounts[address].Contract.CodeHash.SetBytes(crypto.Keccak256(code))
 	return nil
 }

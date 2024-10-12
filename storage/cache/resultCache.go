@@ -10,9 +10,10 @@ type ResultCache struct {
 	OriginalAccounts AccountCache
 	CachedAccounts   AccountCache
 
-	Logs         *LogCache
-	Destructs    DestructCache
-	NewContracts AccountCache
+	NewAccount AccountCache
+
+	Logs      *LogCache
+	Destructs DestructCache
 
 	tOriginalData TransientCache
 	tCachedData   TransientCache
@@ -22,23 +23,24 @@ func NewResultCache() ResultCache {
 	return ResultCache{
 		OriginalAccounts: AccountCache{},
 		CachedAccounts:   AccountCache{},
+		NewAccount:       AccountCache{},
 		tOriginalData:    TransientCache{},
 		tCachedData:      TransientCache{},
 		Logs:             &LogCache{},
 		Destructs:        DestructCache{},
-		NewContracts:     AccountCache{},
 	}
 }
 
 func MergeResultCache(result *ResultCache, to *ResultCache) {
 	to.OriginalAccounts.Merge(result.OriginalAccounts)
 	to.CachedAccounts.Merge(result.CachedAccounts)
-	to.tOriginalData.Merge(result.tOriginalData)
-	to.tCachedData.Merge(result.tCachedData)
+	to.NewAccount.Merge(result.NewAccount)
 	to.Destructs.Merge(result.Destructs)
-	to.NewContracts.Merge(result.NewContracts)
 
 	*to.Logs = *result.Logs
+
+	to.tOriginalData.Merge(result.tOriginalData)
+	to.tCachedData.Merge(result.tCachedData)
 }
 
 func (r *ResultCache) Clone() ResultCache {
@@ -46,11 +48,20 @@ func (r *ResultCache) Clone() ResultCache {
 	replica := ResultCache{
 		OriginalAccounts: r.OriginalAccounts.Clone(),
 		CachedAccounts:   r.CachedAccounts.Clone(),
-		tOriginalData:    r.tOriginalData.Clone(),
-		tCachedData:      r.tCachedData.Clone(),
-		Logs:             &logsClone,
-		Destructs:        r.Destructs.Clone(),
-		NewContracts:     r.NewContracts.Clone(),
+		NewAccount:       AccountCache{},
+
+		Logs:      &logsClone,
+		Destructs: r.Destructs.Clone(),
+
+		tOriginalData: r.tOriginalData.Clone(),
+		tCachedData:   r.tCachedData.Clone(),
+	}
+
+	for addr, acc := range r.NewAccount {
+		acc = replica.CachedAccounts.Get(addr)
+		if acc != nil {
+			replica.NewAccount[addr] = acc
+		}
 	}
 
 	return replica
@@ -80,14 +91,24 @@ func (r *ResultCache) XCachedStore(address types.Address, slot types.Slot, val *
 	}
 }
 
-func (r *ResultCache) CacheContract(contract *environment.Contract) {
-	if r.CachedAccounts[contract.Address] != nil {
+func (r *ResultCache) RemoveAccount(addr types.Address) {
+	if r.CachedAccounts[addr] == nil {
 		return
 	}
 
-	original := NewAccountCacheUnit(contract)
-	cached := NewAccountCacheUnit(contract)
+	delete(r.CachedAccounts, addr)
+	delete(r.NewAccount, addr)
+}
 
-	r.OriginalAccounts.Set(original)
+func (r *ResultCache) CacheAccount(acc *environment.Account) *environment.Account {
+	if r.CachedAccounts[acc.Address] != nil {
+		return r.CachedAccounts[acc.Address]
+	}
+
+	cached := acc.Clone()
+
+	r.OriginalAccounts.Set(acc.Clone())
 	r.CachedAccounts.Set(cached)
+
+	return cached
 }
