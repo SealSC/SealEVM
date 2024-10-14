@@ -168,7 +168,7 @@ func (e *EVM) getGasLeft() (uint64, error) {
 	return gasLeft, err
 }
 
-func (e *EVM) ExecuteContract() (ExecuteResult, error) {
+func (e *EVM) Execute() (ExecuteResult, error) {
 	var toAcc *environment.Account
 	var isCreation = false
 	result := ExecuteResult{
@@ -302,7 +302,7 @@ func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte,
 		newEVM.instructions.SetReadOnly()
 	}
 
-	ret, err := newEVM.ExecuteContract()
+	ret, err := newEVM.Execute()
 	if ret.ExitOpCode == opcodes.REVERT {
 		err = evmErrors.RevertErr
 	}
@@ -319,7 +319,7 @@ func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byt
 
 	newEVM.depth = depth
 
-	ret, err := newEVM.ExecuteContract()
+	ret, err := newEVM.Execute()
 	if ret.ExitOpCode == opcodes.REVERT {
 		err = evmErrors.RevertErr
 	}
