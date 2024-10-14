@@ -11,7 +11,7 @@ The current version has achieved decoupling from the storage system through inte
 - [Main Structures and Interfaces](#main-structures-and-interfaces)
   - [EVM Instance Configuration Parameters](#evm-instance-configuration-parameters)
   - [External Storage Interface](#external-storage-interface)
-  - [Execution Environment Struct](#execution-environment-struct)
+  - [Execution Environment Related Structures](#execution-environment-related-structures)
   - [Execution Results Struct](#execution-results-struct)
   - [Execution Result Cache Structure](#execution-result-cache-structure)
 - [Gas Setting](#gas-setting)
@@ -38,10 +38,10 @@ func main() {
     // Execute the EVM, the result returned is an ExecuteResult struct.
     // This struct stores information about the original state of the data, the final state, contract logs, internally created contracts, etc. 
     // The structure of this struct is explained in the following sections.
-    result, err := evm.ExecuteContract()
+    result, err := evm.Execute()
 }
 ```
-The [**example**](https://github.com/SealSC/SealEVM/tree/master/example) directory provides a simple reference example of SealEVM usage. 
+The [**example**](./example) directory provides a simple reference example of SealEVM usage. 
 This example uses memory as external storage, demonstrating simple functions like contract deployment, invocation, and variable reading.
 
 ## Main Structures and Interfaces
@@ -70,17 +70,17 @@ contract reading, state reading, address creation, and other functions.
 
 ```go
 type IExternalStorage interface {
-    // Retrieve stored contracts
-    GetContract(address types.Address) (*environment.Contract, error)
+    // Retrieve stored account
+    GetAccount(address types.Address) (*environment.Account, error)
     
     // Get block hash at a specified height
     GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
     
-    // Check if a contract exists
-    ContractExist(address types.Address) bool
+    // Check if an account exists
+    AccountExist(address types.Address) bool
     
-    // Check if an address is empty (see EIP161 for the definition of empty)
-    ContractEmpty(address types.Address) bool
+    // Check whether the account at the address is empty (see EIP161 for the definition of empty)
+    AccountEmpty(address types.Address) bool
     
     // Return the hash value of the given contract code
     HashOfCode(code []byte) types.Hash
@@ -98,7 +98,7 @@ type IExternalStorage interface {
 
 ##
 
->#### Execution Environment Struct
+>#### Execution Environment Related Structures
 Execution Environment Structure This structure is in the [environment](./environment) package
 and represents the execution context during SealEVM execution,
 including parameters like block, transaction, message, and contract.
@@ -109,7 +109,6 @@ including parameters like block, transaction, message, and contract.
 // and a contract instance is created and assigned to the Contract field.
 type Context struct {
     Block       Block       // Block environment structure, details are explained below
-    Contract    *Contract   // The contract structure being executed, details are explained below
     Transaction Transaction // Transaction structure, details are explained below
     Message     Message     // Message structure, details are explained below
 }
@@ -127,19 +126,15 @@ type Block struct {
     BlobBaseFee *evmInt256.Int // Blob base fee as defined in EIP-7516
 }
 
-// Contract environment structure
-type Contract struct {
-    Address  types.Address  // Address of the contract being executed
-    Code     []byte         // Contract code
-    CodeHash types.Hash     // Hash of the contract code
-    CodeSize uint64         // Byte size of the contract code
-    Balance  *evmInt256.Int // Account balance of the contract address
-}
-
 // Transaction environment structure
 type Transaction struct {
     TxHash    types.Hash     // Transaction hash
     Origin    types.Address  // Address that initiated this transaction, value obtained using the ORIGIN (0x32) opcode
+
+    // The contract address called by the transaction, where SealEVM will load the contract code from external storage.
+    // If this field is empty, it indicates a contract creation transaction.
+    To       *types.Address
+
     GasPrice  *evmInt256.Int // Gas price of the transaction
     GasLimit  *evmInt256.Int // Gas limit of the transaction
     BlobHashes []types.Hash  // tx.blob_versioned_hashes in EIP-4844
@@ -151,17 +146,47 @@ type Message struct {
     Value  *evmInt256.Int // Amount of ETH sent during the contract call
     Data   []byte         // Parameters passed to the contract during the call
 }
+
+
+// Account structure. SealEVM uses accounts to uniformly manage contract, balance, state storage, and other data.
+type Account struct {
+    Address  types.Address
+    Balance  *evmInt256.Int
+
+    // Contract information corresponding to the account, detailed information can be found below in this code snippet, 
+    // for EOA accounts, this field is nil
+    Contract *Contract
+
+    Slots    map[types.Slot]*evmInt256.Int // KV storage slots under the account
+}
+
+// Contract structure, used to store contract information under the account
+type Contract struct {
+    Code     []byte         //deployed code of the contract
+    CodeHash types.Hash     //deployed code hash
+    CodeSize uint64         //deployed code size
+}
 ```
 
 ##
 
 >#### Execution Results Struct
-When executing contracts, SealEVM places all data changes, except for new contract deployments, into a cache and does not notify external storage.
+After SealEVM completes transaction execution, all final account data, Logs produced during execution, 
+and self-destructed contract data are placed into the StorageCache of the execution result structure and returned to the caller.
+
 ```go
 type ExecuteResult struct {
+    // If it's a contract creation transaction and the transaction executes successfully, 
+    // this field will store the address of the newly created contract.
+    ContractAddress *types.Address
+
     ResultData   []byte //Data returned by contract execution
     GasLeft      uint64 //Remaining gas
-    StorageCache storage.ResultCache //Cache of external state changes. External data needs to be updated according to this cache. This will be explained in detail below.
+
+    // Cache of external state changes. External data needs to be updated according to this cache. 
+    // This will be explained in detail below.
+    StorageCache storage.ResultCache
+
     ExitOpCode   opcodes.OpCode //The last executed opcode when execution is completed
 }
 ```
@@ -169,45 +194,34 @@ type ExecuteResult struct {
 ##
 
 >#### Execution Result Cache Structure
-SealEVM will store the original data obtained from external sources during and after execution, 
-as well as the final result data, into a unified cache structure instance. 
-After the contract execution is completed, this instance is returned to the caller as the result. 
-This design allows external storage to focus only on providing the initial data 
-without worrying about state changes during execution, and still obtain the result after execution.
+SealEVM has designed a [cache](./storage/cache) package, which consolidates the original data retrieved from external sources during and after execution, 
+as well as the data that needs to be stored. After the contract execution is completed, 
+the caller can access these cached data for further processing in the StorageCache field of the return information structure. 
+This design allows users to complete transaction execution by only providing initial data, 
+without needing to implement complex runtime state management.
 
 ```go
-// Slot cache type, stores data of specified slots under the account, 
-// corresponding to the storage space of SSTORE and SLOAD opcodes
-type SlotCache map[types.Slot]*evmInt256.Int
-
-// Account cache unit structure
-type AccountCacheUnit struct {
-    Contract *environment.Contract // Contract information under the account, see the contract environment structure section for field descriptions
-    Slots    SlotCache             // Slot cache under the account, corresponding to the storage space of SSTORE and SLOAD opcodes
+// Summary cache structure
+type ResultCache struct {
+    OriginalAccounts AccountCache // Original state cache of accounts loaded from external storage during execution
+    CachedAccounts   AccountCache // Final state cache of accounts after execution
+  
+    Logs         *LogCache     // Log cache generated by opcodes LOG0 (0xA0) ~ LOG4 (0xA4)
+    Destructs    DestructCache // Cache for contracts that executed SELFDESTRUCT (0xFF)
+    NewContracts ContractCache // Cache for contracts created by internal transactions during execution
 }
 
-// Account cache type, contracts and Slot values loaded from external storage, 
-// summarized and managed through the account cache
-type AccountCache map[types.Address]*AccountCacheUnit
+
+
+// Account cache type: stores account structures indexed by address. 
+// For account structure details, please refer to the Execution Environment Related Structures section.
+type AccountCache map[types.Address]*environment.Account
 
 // Log cache type, sequentially stores Log data generated during contract execution
 type LogCache []*types.Log
 
 // Destructed contract address cache type, stores addresses of contracts that executed SELFDESTRUCT (0xFF)
 type DestructCache map[types.Address]types.Address
-
-// Contract cache type, stores instances of contracts created by internal transactions
-type ContractCache map[types.Address]*environment.Contract
-
-// Summary cache structure
-type ResultCache struct {
-    OriginalAccounts AccountCache // Original state cache of accounts loaded from external storage during execution
-    CachedAccounts   AccountCache // Final state cache of accounts after execution
-
-    Logs         *LogCache // Log cache generated by opcodes LOG0 (0xA0) ~ LOG4 (0xA4)
-    Destructs    DestructCache // Cache for contracts that executed SELFDESTRUCT (0xFF)
-    NewContracts ContractCache // Cache for contracts created by internal transactions during execution
-}
 ```
 
 ## Gas Setting

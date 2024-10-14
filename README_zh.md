@@ -11,7 +11,7 @@ SealEVM是一个独立的EVM执行器，目标是实现一个完全与存储系�
 - [主要结构体与接口](#主要结构体与接口)
   - [创建EVM实例配置参数](#创建evm实例配置参数)
   - [外部存储接口](#外部存储接口)
-  - [执行环境结构体](#执行环境结构体)
+  - [执行环境结相关构体](#执行环境结相关构体)
   - [执行结果结构体](#执行结果结构体)
   - [执行结果缓存结构体](#执行结果缓存结构体)
 - [Gas配置](#gas设置)
@@ -36,10 +36,10 @@ func main() {
     
     //evm执行，返回值中的result是一个ExecuteResult结构体
     //该结构体存储了数据的原始状态、最终状态、合约Log、内部创建合约等信息，该结构体说明见后续章节
-    result, err := evm.ExecuteContract()
+    result, err := evm.Execute()
 }
 ```
-[**example**](https://github.com/SealSC/SealEVM/tree/master/example)目录下，提供了一个简单的SealEVM的使用参考示例。该示例使用了内存作为外部存储，展示了简单的合约部署、调用、变量读取等功能。
+[**example**](./example)目录下，提供了一个简单的SealEVM的使用参考示例。该示例使用了内存作为外部存储，展示了简单的合约部署、调用、变量读取等功能。
 
 ## 主要结构体与接口
 
@@ -64,17 +64,17 @@ SealEVM将通过该接口，与外部存储进行交互，来实现必要的合�
 
 ```go
 type IExternalStorage interface {
-    //获取合约已存储的合约
-    GetContract(address types.Address) (*environment.Contract, error)
+    //获取账户信息
+    GetAccount(address types.Address) (*environment.Account, error)
     
     //获取指定高度的区块哈希
     GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
     
-    //检查合约是否存在
-    ContractExist(address types.Address) bool
+    //检查地址下的账户是否存在
+    AccountExist(address types.Address) bool
     
-    //检查地址是否为空，空的定义请参与EIP-161
-    ContractEmpty(address types.Address) bool
+    //检查地址下的账户是否为空，空的定义请参与EIP-161
+    AccountEmpty(address types.Address) bool
     
     //返回给定合约代码的哈希值
     HashOfCode(code []byte) types.Hash
@@ -92,16 +92,15 @@ type IExternalStorage interface {
 
 ##
 
->#### 执行环境结构体
+>#### 执行环境结相关构体
 该结构体在environment包内，是SealEVM执行时的执行上下文，包括区块、交易、消息、合约等参数。
 
 ```go
 
-//执行环境汇总结构体，Contract为nil时，视为创建合约交易
+//执行环境汇总结构体，Transaction的To字段为nil时，视为创建合约交易
 //执行创建合约交易时，会使用本结构体中的Message.Data字段作为合约代码，生成合约结构体实例赋值给Contract字段
 type Context struct {
     Block       Block       //区块环境结构体，详细信息见本代码段下文
-    Contract    *Contract   //本次执行的合约结构体，详细信息见本代码段下文，
     Transaction Transaction //交易结构体，详细信息见本代码段下文
     Message     Message     //消息结构体，详细信息见本代码段下文
 }
@@ -119,19 +118,11 @@ type Block struct {
     BlobBaseFee *evmInt256.Int //EIP-7516中定义的blob base-fee
 }
 
-//合约环境结构体
-type Contract struct {
-    Address  types.Address  //要执行的合约的地址
-    Code     []byte         //合约代码
-    CodeHash types.Hash     //合约的哈希
-    CodeSize uint64         //合约代码字节大小
-    Balance  *evmInt256.Int //合约地址的账户余额
-}
-
 //交易环境结构体
 type Transaction struct {
     TxHash   types.Hash     //交易哈希
     Origin   types.Address  //发起本次交易的地址，操作码ORIGIN(0x32)获取到的值
+    To       *types.Address //交易调用的合约地址，SealEVM会从外部存储载入该地址的合约代码，该字段为空时代表是一个创建合约的交易
     GasPrice *evmInt256.Int //交易的gas价格
     GasLimit *evmInt256.Int //交易的gas限制
     
@@ -140,18 +131,36 @@ type Transaction struct {
 
 //消息结构体
 type Message struct {
-    Caller types.Address //合约调用者地址，操作码CALLER(0x33)获取到的值
+    Caller types.Address  //合约调用者地址，操作码CALLER(0x33)获取到的值
     Value  *evmInt256.Int //合约调用时，发送的ETH数量
-    Data   []byte //合约调用时，传递给合约的参数
+    Data   []byte         //合约调用时，传递给合约的参数
 }
+
+//账户结构体，SealEVM通过账户来统一管理合约、余额、状态存储等数据
+type Account struct {
+    Address  types.Address  //账户地址
+    Balance  *evmInt256.Int //账户的余额
+    Contract *Contract      //账户对应的合约信息，详细信息见本代码段下文，EOA账户中，该字段为nil
+    Slots    map[types.Slot]*evmInt256.Int //账户下的KV存储槽
+}
+
+
+//合约结构体，用来存储账户下的合约信息
+type Contract struct {
+    Code     []byte         //合约代码
+    CodeHash types.Hash     //合约的哈希
+    CodeSize uint64         //合约代码字节大小
+}
+
 ```
 
 ##
 
 >#### 执行结果结构体
-SealEVM在执行合约时，会将除新合约部署外的，所有有变动的数据，放入缓存中，不会通知给外部存储。
+SealEVM在执行交易完毕后，所有的最终账户数据、执行中产出的Log数据、自毁合约数据等，放入执行结果结构体的StorageCache中返回给调用者。
 ```go
 type ExecuteResult struct {
+    ContractAddress *types.Address //如果是创建合约的交易，且交易成功执行，该字段会存储创建后的合约地址
     ResultData   []byte //合约执行返回的数据
     GasLeft      uint64 //剩余gas
     StorageCache storage.ResultCache //缓存结构体，说明见后续章节
@@ -162,22 +171,23 @@ type ExecuteResult struct {
 ##
 
 >#### 执行结果缓存结构体
-SealEVM会将执行过程中以及执行完毕后，从外部获取的原始数据，以及需要最终存储结果数据，
-放入一个统一缓存结构体实例，在合约执行完毕后作为结果返回给调用者。
-这种设计让外部存储不需要关心执行中的状态变更，只需要提供初始数据，就能够得到执行后的结果。
+SealEVM设计了一个[缓存](./storage/cache)包，将执行过程中以及执行完毕后，从外部获取的原始数据和需要最终存储结果数据，放入一个统一缓存结构体实例。
+合约执行完毕后，调用者可以在返回信息结构体的StorageCache字段得到这些缓存数据用于后续处理。
+这种设计让使用者只需要提供初始数据就能完成交易执行，不需要实现复杂的运行时状态管理。
 
 ```go
-//槽缓存类型，存放账户下的指定槽的数据，SSTORE、SLOAD操作码对应的存储空间
-type SlotCache map[types.Slot]*evmInt256.Int
+//缓存汇总结构体
+type ResultCache struct {
+    OriginalAccounts    AccountCache //执行过程中，从外部存储载入的账户状态缓存
+    CachedAccounts      AccountCache //执行完毕后，所有账户最终状态的缓存，包括下面NewContractAccount中的新合约账户
+    NewContractAccounts AccountCache //执行过程中，内部交易创建的合约的缓存，即由CREATE/CREATE2成功创建的合约的缓存
 
-//账户缓存单元结构体
-type AccountCacheUnit struct {
-    Contract *environment.Contract //账户下的合约信息，字段说明见[执行环境结构体]章节中的合约环境结构体
-    Slots    SlotCache             //账户下的槽缓存，SSTORE、SLOAD操作码对应的存储空间
+    Logs         *LogCache     //操作码LOG0(0xA0)~LOG4(0xA4)产生的日志缓存
+    Destructs    DestructCache //执行了SELFDESTRUCT(0xFF)的合约的缓存
 }
 
-//账户缓存类型，从外部存储载入的合约、Slot值，通过账户缓存来进行汇总和管理
-type AccountCache map[types.Address]*AccountCacheUnit
+//账户缓存类型，存放以地址索引的账户结构体，账户结构体请参阅执行环境结相关构体
+type AccountCache map[types.Address]*environment.Account
 
 //日志缓存类型，会顺序的存放合约执行过程中，依次产生的Log数据
 type LogCache []*types.Log
@@ -185,15 +195,6 @@ type LogCache []*types.Log
 //销毁合约地址缓存类型，存放执行了SELFDESTRUCT(0xFF)的合约地址
 type DestructCache map[types.Address]types.Address
 
-//缓存汇总结构体
-type ResultCache struct {
-    OriginalAccounts AccountCache //执行过程中，从外部存储载入的账户状态缓存
-    CachedAccounts   AccountCache //执行完毕后，账户最终状态的缓存
-
-    Logs         *LogCache     //操作码LOG0(0xA0)~LOG4(0xA4)产生的日志缓存
-    Destructs    DestructCache //执行了SELFDESTRUCT(0xFF)的合约的缓存
-    NewContracts ContractCache //执行过程中，内部交易创建的合约的缓存
-}
 ```
 
 ## Gas设置
@@ -207,10 +208,10 @@ type intrinsicGasSetting.IntrinsicGas func(data []byte, to *environment.Contract
 //通用的动态Gas消耗计算函数类型定义
 //需要返回要扩展的内存大小(memExpSize)、gas消耗量(gasCost)
 type dynamicGasSetting.CommonCalculator func(
-    contract *environment.Contract, //操作码执行的合约环境变量
-    stx *stack.Stack,               //操作码执行开始时的堆栈环境
-    mem *memory.Memory,             //操作码执行开始时的内存环境
-    store *storage.Storage,         //操作码开始执行时的存储环境
+    acc *environment.Account, //操作码执行开始时的环境账户信息，也就是当前执行合约所属的账户
+    stx *stack.Stack,         //操作码执行开始时的堆栈环境
+    mem *memory.Memory,       //操作码执行开始时的内存环境
+    store *storage.Storage,   //操作码开始执行时的存储环境
 ) (memExpSize uint64, gasCost uint64, err error)
 
 //为CALL、CALLCODE、STATICCALL、DELEGATECALL设计的Gas消耗计算函数类型定义
