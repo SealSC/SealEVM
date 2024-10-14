@@ -243,11 +243,11 @@ func (s *Storage) CachedData(addr types.Address, slot types.Slot) (org *evmInt25
 }
 
 func (s *Storage) ContractExist(addr types.Address) bool {
-	return s.externalStorage.ContractExist(addr)
+	return s.externalStorage.AccountExist(addr)
 }
 
 func (s *Storage) ContractEmpty(addr types.Address) bool {
-	return s.externalStorage.ContractEmpty(addr)
+	return s.externalStorage.AccountEmpty(addr)
 }
 
 func (s *Storage) RemoveCachedAccount(addr types.Address) {

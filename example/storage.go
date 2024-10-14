@@ -57,11 +57,11 @@ func (r *extStorage) CreateFixedAddress(caller types.Address, salt types.Hash, c
 	return ret
 }
 
-func (r *extStorage) ContractExist(address types.Address) bool {
+func (r *extStorage) AccountExist(address types.Address) bool {
 	return r.Accounts[address] != nil
 }
 
-func (r *extStorage) ContractEmpty(address types.Address) bool {
+func (r *extStorage) AccountEmpty(address types.Address) bool {
 	return r.Accounts[address] == nil
 }
 

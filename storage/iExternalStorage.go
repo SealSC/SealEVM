@@ -23,10 +23,11 @@ import (
 )
 
 type IExternalStorage interface {
-	GetAccount(address types.Address) (*environment.Account, error)
 	GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error)
-	ContractExist(address types.Address) bool
-	ContractEmpty(address types.Address) bool
+
+	GetAccount(address types.Address) (*environment.Account, error)
+	AccountExist(address types.Address) bool
+	AccountEmpty(address types.Address) bool
 
 	HashOfCode(code []byte) types.Hash
 	CreateAddress(caller types.Address, tx environment.Transaction) types.Address
