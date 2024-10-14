@@ -10,7 +10,7 @@ type ResultCache struct {
 	OriginalAccounts AccountCache
 	CachedAccounts   AccountCache
 
-	NewAccount AccountCache
+	NewContractAccounts AccountCache
 
 	Logs      *LogCache
 	Destructs DestructCache
@@ -21,20 +21,21 @@ type ResultCache struct {
 
 func NewResultCache() ResultCache {
 	return ResultCache{
-		OriginalAccounts: AccountCache{},
-		CachedAccounts:   AccountCache{},
-		NewAccount:       AccountCache{},
-		tOriginalData:    TransientCache{},
-		tCachedData:      TransientCache{},
-		Logs:             &LogCache{},
-		Destructs:        DestructCache{},
+		OriginalAccounts:    AccountCache{},
+		CachedAccounts:      AccountCache{},
+		NewContractAccounts: AccountCache{},
+		Logs:                &LogCache{},
+		Destructs:           DestructCache{},
+
+		tOriginalData: TransientCache{},
+		tCachedData:   TransientCache{},
 	}
 }
 
 func MergeResultCache(result *ResultCache, to *ResultCache) {
 	to.OriginalAccounts.Merge(result.OriginalAccounts)
 	to.CachedAccounts.Merge(result.CachedAccounts)
-	to.NewAccount.Merge(result.NewAccount)
+	to.NewContractAccounts.Merge(result.NewContractAccounts)
 	to.Destructs.Merge(result.Destructs)
 
 	*to.Logs = *result.Logs
@@ -46,9 +47,9 @@ func MergeResultCache(result *ResultCache, to *ResultCache) {
 func (r *ResultCache) Clone() ResultCache {
 	logsClone := r.Logs.Clone()
 	replica := ResultCache{
-		OriginalAccounts: r.OriginalAccounts.Clone(),
-		CachedAccounts:   r.CachedAccounts.Clone(),
-		NewAccount:       AccountCache{},
+		OriginalAccounts:    r.OriginalAccounts.Clone(),
+		CachedAccounts:      r.CachedAccounts.Clone(),
+		NewContractAccounts: AccountCache{},
 
 		Logs:      &logsClone,
 		Destructs: r.Destructs.Clone(),
@@ -57,10 +58,10 @@ func (r *ResultCache) Clone() ResultCache {
 		tCachedData:   r.tCachedData.Clone(),
 	}
 
-	for addr, acc := range r.NewAccount {
+	for addr, acc := range r.NewContractAccounts {
 		acc = replica.CachedAccounts.Get(addr)
 		if acc != nil {
-			replica.NewAccount[addr] = acc
+			replica.NewContractAccounts[addr] = acc
 		}
 	}
 
@@ -97,7 +98,7 @@ func (r *ResultCache) RemoveAccount(addr types.Address) {
 	}
 
 	delete(r.CachedAccounts, addr)
-	delete(r.NewAccount, addr)
+	delete(r.NewContractAccounts, addr)
 }
 
 func (r *ResultCache) CacheAccount(acc *environment.Account) *environment.Account {

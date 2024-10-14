@@ -262,7 +262,7 @@ func (s *Storage) CacheAccount(acc *environment.Account, newContract bool) {
 	cached := s.ResultCache.CacheAccount(acc)
 
 	if newContract {
-		s.ResultCache.NewAccount.Set(cached)
+		s.ResultCache.NewContractAccounts.Set(cached)
 	}
 }
 
