@@ -8,7 +8,7 @@ import (
 	"github.com/SealSC/SealEVM/types"
 )
 
-type ExecutionType opcodes.OpCode
+type ExecutionType byte
 
 const (
 	ExternalCall ExecutionType = 0
