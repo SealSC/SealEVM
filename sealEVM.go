@@ -20,6 +20,7 @@ import (
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/executionNote"
 	"github.com/SealSC/SealEVM/gasSetting"
 	"github.com/SealSC/SealEVM/instructions"
 	"github.com/SealSC/SealEVM/memory"
@@ -39,6 +40,7 @@ type EVMParam struct {
 	ResultCallback EVMResultCallback
 	Context        *environment.Context
 	GasSetting     *gasSetting.Setting
+	NoteConfig     *executionNote.NoteConfig
 }
 
 type EVM struct {
@@ -48,6 +50,7 @@ type EVM struct {
 	storage      *storage.Storage
 	context      *environment.Context
 	instructions instructions.IInstructions
+	note         *executionNote.Note
 	resultNotify EVMResultCallback
 }
 
@@ -57,6 +60,7 @@ type ExecuteResult struct {
 	GasLeft         uint64
 	StorageCache    cache.ResultCache
 	ExitOpCode      opcodes.OpCode
+	Note            *executionNote.Note
 }
 
 func Load() {
@@ -68,12 +72,23 @@ func New(param EVMParam) *EVM {
 		param.Context.Transaction.GasLimit = evmInt256.FromBigInt(param.Context.Block.GasLimit.Int)
 	}
 
+	var note *executionNote.Note = nil
+	if param.NoteConfig != nil {
+		note = executionNote.New(
+			param.NoteConfig,
+			executionNote.ExternalCall,
+			&param.Context.Transaction,
+			&param.Context.Message,
+		)
+	}
+
 	evm := &EVM{
 		stack:        stack.New(param.MaxStackDepth),
 		memory:       memory.New(),
 		storage:      storage.New(param.ExternalStore),
 		context:      param.Context,
 		instructions: nil,
+		note:         note,
 		resultNotify: param.ResultCallback,
 	}
 
@@ -82,7 +97,7 @@ func New(param EVMParam) *EVM {
 	return evm
 }
 
-func NewWithCache(param EVMParam, s *storage.Storage) *EVM {
+func newWithCache(param EVMParam, s *storage.Storage) *EVM {
 	if param.Context.Block.GasLimit.Cmp(param.Context.Transaction.GasLimit.Int) < 0 {
 		param.Context.Transaction.GasLimit = evmInt256.FromBigInt(param.Context.Block.GasLimit.Int)
 	}
@@ -168,10 +183,10 @@ func (e *EVM) getGasLeft() (uint64, error) {
 	return gasLeft, err
 }
 
-func (e *EVM) Execute() (ExecuteResult, error) {
+func (e *EVM) Execute() (result ExecuteResult, err error) {
 	var toAcc *environment.Account
 	var isCreation = false
-	result := ExecuteResult{
+	result = ExecuteResult{
 		ResultData:   nil,
 		GasLeft:      0,
 		StorageCache: e.storage.ResultCache,
@@ -179,6 +194,16 @@ func (e *EVM) Execute() (ExecuteResult, error) {
 
 	gasLeft, err := e.getGasLeft()
 	result.GasLeft = gasLeft
+
+	defer func() {
+		if e.note != nil {
+			e.note.SetResult(result.ResultData, err, e.storage.ResultCache)
+
+			if e.depth == 0 {
+				result.Note = e.note
+			}
+		}
+	}()
 
 	if err != nil {
 		return result, err
@@ -267,7 +292,7 @@ func (e *EVM) Execute() (ExecuteResult, error) {
 }
 
 func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
-	newEVM := NewWithCache(EVMParam{
+	newEVM := newWithCache(EVMParam{
 		MaxStackDepth:  1024,
 		ExternalStore:  e.storage.GetExternalStorage(),
 		ResultCallback: e.subResult,
@@ -302,6 +327,14 @@ func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte,
 		newEVM.instructions.SetReadOnly()
 	}
 
+	if e.note != nil {
+		newEVM.note = e.note.GenSubNote(
+			executionNote.ExecutionType(param.OpCode),
+			&newEVM.context.Transaction,
+			&newEVM.context.Message,
+		)
+	}
+
 	ret, err := newEVM.Execute()
 	if ret.ExitOpCode == opcodes.REVERT {
 		err = evmErrors.RevertErr
@@ -318,6 +351,14 @@ func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byt
 	newEVM.context.SetRuntimeAccount(runtimeAcc.Clone())
 
 	newEVM.depth = depth
+
+	if e.note != nil {
+		newEVM.note = e.note.GenSubNote(
+			executionNote.ExecutionType(param.OpCode),
+			&newEVM.context.Transaction,
+			&newEVM.context.Message,
+		)
+	}
 
 	ret, err := newEVM.Execute()
 	if ret.ExitOpCode == opcodes.REVERT {
