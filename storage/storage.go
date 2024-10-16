@@ -145,6 +145,10 @@ func (s *Storage) GetAccount(address types.Address) (*environment.Account, error
 	return extAcc, nil
 }
 
+func (s *Storage) AccountWithoutCache(addr types.Address) (*environment.Account, error) {
+	return s.externalStorage.GetAccount(addr)
+}
+
 func (s *Storage) Balance(address types.Address) (*evmInt256.Int, error) {
 	acc, err := s.GetAccount(address)
 	if err != nil {

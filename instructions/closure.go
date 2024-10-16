@@ -173,34 +173,39 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		addr = ctx.storage.CreateFixedAddress(caller, types.Int256ToHash(salt), code, ctx.environment.Transaction)
 	}
 
-	newAcc := environment.NewAccount(addr, evmInt256.New(0), &environment.Contract{
+	newCA, err := ctx.storage.AccountWithoutCache(addr)
+	newCA.Contract = &environment.Contract{
 		Code:     code,
 		CodeHash: types.Hash{},
 		CodeSize: uint64(len(code)),
-	})
-
-	cParam := ClosureParam{
-		VM:       ctx.vm,
-		OpCode:   opCode,
-		GasLimit: ctx.gasRemaining.Clone(),
-		Called:   addr,
-		Message: &environment.Message{
-			Caller: caller,
-			Value:  v,
-			Data:   nil,
-		},
 	}
 
-	ctx.storage.CacheAccount(newAcc, true)
+	ctx.storage.CacheAccount(newCA, true)
 
-	ret, err := ctx.closureExec(cParam)
+	var ret []byte
+	if err == nil {
+		cParam := ClosureParam{
+			VM:       ctx.vm,
+			OpCode:   opCode,
+			GasLimit: ctx.gasRemaining.Clone(),
+			Called:   addr,
+			Message: &environment.Message{
+				Caller: caller,
+				Value:  v,
+				Data:   nil,
+			},
+		}
+
+		ret, err = ctx.closureExec(cParam)
+	}
+
 	if err != nil {
 		ctx.stack.Push(evmInt256.New(0))
 		if err != evmErrors.RevertErr {
 			ret = nil
 		}
 
-		ctx.storage.RemoveCachedAccount(newAcc.Address)
+		ctx.storage.RemoveCachedAccount(newCA.Address)
 	} else {
 		ctx.stack.Push(addr.Int256())
 		ctx.storage.UpdateAccountContract(addr, ret)
