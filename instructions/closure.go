@@ -173,17 +173,18 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		addr = ctx.storage.CreateFixedAddress(caller, types.Int256ToHash(salt), code, ctx.environment.Transaction)
 	}
 
-	newCA, err := ctx.storage.AccountWithoutCache(addr)
-	newCA.Contract = &environment.Contract{
-		Code:     code,
-		CodeHash: types.Hash{},
-		CodeSize: uint64(len(code)),
-	}
-
-	ctx.storage.CacheAccount(newCA, true)
-
 	var ret []byte
+	newCA, err := ctx.storage.AccountWithoutCache(addr)
+
 	if err == nil {
+		newCA.Contract = &environment.Contract{
+			Code:     code,
+			CodeHash: types.Hash{},
+			CodeSize: uint64(len(code)),
+		}
+
+		ctx.storage.CacheAccount(newCA, true)
+
 		cParam := ClosureParam{
 			VM:       ctx.vm,
 			OpCode:   opCode,
@@ -205,7 +206,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 			ret = nil
 		}
 
-		ctx.storage.RemoveCachedAccount(newCA.Address)
+		ctx.storage.RemoveCachedAccount(addr)
 	} else {
 		ctx.stack.Push(addr.Int256())
 		ctx.storage.UpdateAccountContract(addr, ret)

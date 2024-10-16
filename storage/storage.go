@@ -17,6 +17,7 @@
 package storage
 
 import (
+	"errors"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
@@ -140,13 +141,26 @@ func (s *Storage) GetAccount(address types.Address) (*environment.Account, error
 		return nil, err
 	}
 
+	if extAcc == nil && err == nil {
+		return nil, evmErrors.NoSuchDataInTheStorage(errors.New("external return nil"))
+	}
+
 	s.ResultCache.CacheAccount(extAcc)
 
 	return extAcc, nil
 }
 
 func (s *Storage) AccountWithoutCache(addr types.Address) (*environment.Account, error) {
-	return s.externalStorage.GetAccount(addr)
+	acc, err := s.externalStorage.GetAccount(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	if acc == nil && err == nil {
+		return nil, evmErrors.NoSuchDataInTheStorage(errors.New("external storage return nil"))
+	}
+
+	return acc, err
 }
 
 func (s *Storage) Balance(address types.Address) (*evmInt256.Int, error) {
