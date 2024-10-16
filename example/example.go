@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/SealSC/SealEVM"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/executionNote"
 	"github.com/SealSC/SealEVM/types"
 	"math"
 )
@@ -50,6 +52,25 @@ func main() {
 
 	//store the result
 	storage.StoreResult(&ret.StorageCache)
+
+	//Traversing the call chain
+	fmt.Println("\nstart traversing the call chain")
+	if ret.Note != nil {
+		ret.Note.Walk(func(note *executionNote.Note, depth uint64) {
+			fmt.Println("\n----------------------->")
+			fmt.Println("  depth:", depth)
+			fmt.Println("   type:", note.Type)
+			fmt.Println("   from:", note.From)
+			fmt.Println("     to:", note.To)
+			fmt.Println("    gas:", note.Gas)
+			fmt.Println("    val:", note.Val)
+			fmt.Println("   data:", hex.EncodeToString(note.Input))
+			fmt.Println("execErr:", note.ExecutionError)
+			fmt.Println("execRet:", hex.EncodeToString(note.ReturnData))
+			fmt.Println("<-----------------------")
+		})
+	}
+	fmt.Println("traversing the call chain ended\n")
 
 	//the event logs
 	printLogs(ret.StorageCache.Logs)

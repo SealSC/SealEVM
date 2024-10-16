@@ -25,7 +25,7 @@ func (r *extStorage) GetAccount(address types.Address) (*environment.Account, er
 		return acc, nil
 	}
 
-	return nil, nil
+	return environment.NewAccount(address, nil, nil), nil
 }
 
 func (r *extStorage) HashOfCode(code []byte) types.Hash {

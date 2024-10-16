@@ -15,6 +15,7 @@ SealEVM是一个独立的EVM执行器，目标是实现一个完全与存储系�
   - [执行结果结构体](#执行结果结构体)
   - [执行结果缓存结构体](#执行结果缓存结构体)
 - [Gas配置](#gas设置)
+- [执行记录](#执行记录)
 - [预编译合约](#预编译合约)
 - [使用场景](#使用场景)
   - [使用案例](#使用案例)
@@ -54,6 +55,7 @@ type EVMParam struct {
     ResultCallback EVMResultCallback //EVM执行完成后的回调函数，定义见本代码段开头
     Context        *environment.Context //EVM执行时的环境上下文结构体，说明见后续章节
     GasSetting     *gasSetting.Setting //Gas费用设置，nil时使用默认设置，说明见后续章节
+    NoteConfig     *executionNote.NoteConfig //执行记录配置，nil时不会产生执行记录，说明见后续章节
 }
 ```
 
@@ -165,6 +167,7 @@ type ExecuteResult struct {
     GasLeft      uint64 //剩余gas
     StorageCache storage.ResultCache //缓存结构体，说明见后续章节
     ExitOpCode   opcodes.OpCode //执行完毕时，最后一个执行的opcode
+    Note         *executionNote.Note //执行记录结构体，说明见后续章节
 }
 ```
 
@@ -254,6 +257,63 @@ func Set(s *Setting)
 
 //获取当前默认Gas配置
 func Get() *Setting
+```
+
+## 执行记录
+SealEVM通过[executionNote](./executionNote)包，来记录内部调用链路，为开发区块链浏览器、交易分析等功能的用户提供更加细节的交易执行数据。
+执行记录模块会根据配置，顺序级联记录交易输入、返回结果以及账户中间状态，并将完整记录放置在执行结果结构体的Note字段，同时提供了一个Walk方法来方便用户对执行记录进行顺序遍历。
+
+```go
+//执行记录配置结构体
+type NoteConfig struct {
+    RecordCache bool //该字段为true时，开启中间状态缓存记录
+}
+
+//执行类型定义
+type ExecutionType byte //使用byte作为调用类型的底层存储类型
+
+const (
+    ExternalCall ExecutionType = 0 //0代表外部调用，也是调用链的最顶层调用
+    
+    //执行记录的其余调用类型的值，均与产生调用的操作码相同
+    Call         = ExecutionType(opcodes.CALL)
+    StaticCall   = ExecutionType(opcodes.STATICCALL)
+    DelegateCall = ExecutionType(opcodes.DELEGATECALL)
+    CallCode     = ExecutionType(opcodes.CALLCODE)
+    Create       = ExecutionType(opcodes.CREATE)
+    Create2      = ExecutionType(opcodes.CREATE2)
+)
+
+
+//记录结构体
+type Note struct {
+    Type  ExecutionType  //底层为byte的调用类型
+    From  types.Address
+    To    *types.Address
+    Gas   uint64
+    Val   *evmInt256.Int
+    Input []byte
+    
+    ExecutionError error              //SealEVM执行返回的错误信息
+    ReturnData     []byte             //SealEVM执行返回的数据
+
+    //如果在配置结构体中，将RecordCache字段设置为true，本字段会缓存本次交易完成时的中间状态，如果设置为false，则该字段为nil
+    StorageCache   *cache.ResultCache
+
+    //子调用记录，当合约执行 
+    //CALL，CALLCODE，DELEGATECALL，STATICCALL，CERATE，CREATE2
+    //操作码时，会产生子调用，也就是内部交易，SubNotes字段会顺序的级联存储调用链
+    SubNotes []*Note
+}
+
+//顺序遍历执行记录链
+//Walk方法会按照交易执行的顺序，调用meetNote来遍历所有执行记录，MeetNote定义见下文
+func (n *Note) Walk(meetNote MeetNote)
+
+//遍历回调函数，需要在遍历时提供
+//note是遍历到的执行记录结构体
+//depth是从0开始的当前执行深度
+type MeetNote func(note *Note, depth uint64)
 ```
 
 ## 预编译合约

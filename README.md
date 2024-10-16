@@ -15,7 +15,7 @@ The current version has achieved decoupling from the storage system through inte
   - [Execution Results Struct](#execution-results-struct)
   - [Execution Result Cache Structure](#execution-result-cache-structure)
 - [Gas Setting](#gas-setting)
-- [Precompiled Contracts](#precompiled-contracts)
+- [The Execution Notes](#the-execution-notes)
 - [Precompiled Contracts](#precompiled-contracts)
 - [Usage Scenarios](#usage-scenarios)
   - [User Case](#user-case)
@@ -58,6 +58,7 @@ type EVMParam struct {
     ResultCallback EVMResultCallback // Callback function after EVM execution, defined at the beginning of this code block
     Context        *environment.Context // Context structure during EVM execution, explained in the following sections
     GasSetting     *gasSetting.Setting // Gas fee settings, use default if nil, explained in the following sections
+    NoteConfig     *executionNote.NoteConfig //Execution note configure, if nil, execution note will not be generated, explained in the following sections
 }
 
 ```
@@ -188,6 +189,7 @@ type ExecuteResult struct {
     StorageCache storage.ResultCache
 
     ExitOpCode   opcodes.OpCode //The last executed opcode when execution is completed
+    Note         *executionNote.Note //Execution note structure. This will be explained in detail below.
 }
 ```
 
@@ -291,6 +293,69 @@ func Set(s *Setting)
 
 // Get the current default Gas configuration.
 func Get() *Setting
+```
+
+## The Execution Notes
+SealEVM uses the [executionNote](./executionNote) package to record the internal call chain, 
+providing users with more detailed transaction execution data for developing blockchain explorers, transaction analysis, and other functions. 
+The executionNote package will cascade and record transaction inputs, return results, and intermediate states in sequence according to the configuration, 
+and place the complete record in the Note field of the execution result structure. 
+It also provides a Walk method to facilitate the sequential traversal of execution records.
+
+```go
+// Execution record configuration structure
+type NoteConfig struct {
+    RecordCache bool // When this field is true, intermediate states caching records are enabled
+}
+
+// Execution type definition
+type ExecutionType byte // Using byte as the underlying storage type for call types
+
+const (
+    ExternalCall ExecutionType = 0 // 0 represents external call, which is also the top-level call in the call chain
+    
+    // The remaining types in the execution record have the same values as the opcodes that generate the execution
+    Call         = ExecutionType(opcodes.CALL)
+    StaticCall   = ExecutionType(opcodes.STATICCALL)
+    DelegateCall = ExecutionType(opcodes.DELEGATECALL)
+    CallCode     = ExecutionType(opcodes.CALLCODE)
+    Create       = ExecutionType(opcodes.CREATE)
+    Create2      = ExecutionType(opcodes.CREATE2)
+)
+
+// Record structure
+type Note struct {
+    Type  ExecutionType   // Call type with byte as the underlying type
+    From  types.Address
+    To    *types.Address
+    Gas   uint64
+    Val   *evmInt256.Int
+    Input []byte
+    
+    ExecutionError error  // Error information returned by SealEVM execution
+    ReturnData     []byte // Data returned by SealEVM execution
+
+    // If the RecordCache field in the configuration structure is set to true, 
+    // this field will cache the intermediate state at the end of this transaction. 
+    // If set to false, this field will be nil
+    StorageCache   *cache.ResultCache
+    
+    // Sub-call records. When the contract executes
+    // CALL, CALLCODE, DELEGATECALL, STATICCALL, CREATE, CREATE2
+    // opcodes, it will generate sub-calls, which are internal transactions. 
+    // The SubNotes field will cascade and store the call chain in sequence
+    SubNotes []*Note
+}
+
+// Sequentially traverse the execution record chain
+// The Walk method will call meetNote to traverse all execution records in the order of transaction execution. 
+// MeetNote is defined below
+func (n *Note) Walk(meetNote MeetNote)
+
+// Traversal callback function, needs to be provided during traversal.
+// note: The execution note structure being traversed
+// depth: The current execution depth starting from 0
+type MeetNote func(note *Note, depth uint64)
 ```
 
 ## Precompiled Contracts

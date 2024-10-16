@@ -4,6 +4,7 @@ import (
 	"github.com/SealSC/SealEVM"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/executionNote"
 	"github.com/SealSC/SealEVM/storage"
 	"github.com/SealSC/SealEVM/types"
 	"time"
@@ -37,6 +38,7 @@ func newEVM(
 			},
 			Message: *msg,
 		},
+		NoteConfig: &executionNote.NoteConfig{RecordCache: false},
 	})
 
 	return evm
