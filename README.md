@@ -163,9 +163,11 @@ type Account struct {
 
 // Contract structure, used to store contract information under the account
 type Contract struct {
-    Code     []byte         //deployed code of the contract
+    Code     types.Bytes    //deployed code of the contract
     CodeHash types.Hash     //deployed code hash
     CodeSize uint64         //deployed code size
+	
+	InitCode types.Bytes    //init code of the contract's deployment
 }
 ```
 

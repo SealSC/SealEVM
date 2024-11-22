@@ -149,9 +149,11 @@ type Account struct {
 
 //合约结构体，用来存储账户下的合约信息
 type Contract struct {
-    Code     []byte         //合约代码
-    CodeHash types.Hash     //合约的哈希
-    CodeSize uint64         //合约代码字节大小
+    Code     types.Bytes    //部署后的合约代码
+    CodeHash types.Hash     //部署后的合约的哈希
+    CodeSize uint64         //部署后的合约代码字节大小
+	
+	InitCode types.Bytes    //合约部署的初始化代码
 }
 
 ```
