@@ -80,6 +80,10 @@ func (n *Note) SetResult(retData []byte, retErr error, storageCache cache.Result
 	}
 }
 
+func (n *Note) UpdateNewContract(newContract cache.AccountCache) {
+	n.StorageCache.NewContractAccounts = newContract.Clone()
+}
+
 func (n *Note) GenSubNote(execType ExecutionType, tx *environment.Transaction, msg *environment.Message) *Note {
 	newNote := New(n.config, execType, tx, msg)
 	n.SubNotes = append(n.SubNotes, newNote)

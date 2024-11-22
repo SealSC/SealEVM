@@ -17,6 +17,7 @@
 package storage
 
 import (
+	"bytes"
 	"errors"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
@@ -290,9 +291,13 @@ func (s *Storage) UpdateAccountContract(address types.Address, code []byte) {
 		return
 	}
 
-	acc.Contract = &environment.Contract{
+	newContract := &environment.Contract{
 		Code:     code,
 		CodeHash: s.HashOfCode(code),
 		CodeSize: uint64(len(code)),
+
+		InitCode: bytes.Clone(acc.Contract.Code),
 	}
+
+	acc.Contract = newContract
 }

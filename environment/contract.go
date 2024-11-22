@@ -28,6 +28,7 @@ type Contract struct {
 	CodeHash types.Hash
 	CodeSize uint64
 
+	InitCode     types.Bytes
 	codeDataFlag map[uint64]bool
 }
 
@@ -36,6 +37,8 @@ func (c Contract) Clone() *Contract {
 		Code:     bytes.Clone(c.Code),
 		CodeHash: c.CodeHash,
 		CodeSize: c.CodeSize,
+
+		InitCode: bytes.Clone(c.InitCode),
 	}
 
 	return replica
