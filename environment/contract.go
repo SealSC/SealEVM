@@ -24,7 +24,7 @@ import (
 )
 
 type Contract struct {
-	Code     []byte
+	Code     types.Bytes
 	CodeHash types.Hash
 	CodeSize uint64
 

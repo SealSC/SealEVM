@@ -45,10 +45,10 @@ type Note struct {
 	To    *types.Address
 	Gas   uint64
 	Val   *evmInt256.Int
-	Input []byte
+	Input types.Bytes
 
 	ExecutionError error
-	ReturnData     []byte
+	ReturnData     types.Bytes
 	StorageCache   *cache.ResultCache
 
 	SubNotes []*Note
