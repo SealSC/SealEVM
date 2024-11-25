@@ -24,7 +24,7 @@ import (
 type Message struct {
 	Caller types.Address
 	Value  *evmInt256.Int
-	Data   []byte
+	Data   types.Bytes
 }
 
 func (m Message) DataSize() uint64 {

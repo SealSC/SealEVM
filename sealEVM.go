@@ -56,7 +56,7 @@ type EVM struct {
 
 type ExecuteResult struct {
 	ContractAddress *types.Address
-	ResultData      []byte
+	ResultData      types.Bytes
 	GasLeft         uint64
 	StorageCache    cache.ResultCache
 	ExitOpCode      opcodes.OpCode

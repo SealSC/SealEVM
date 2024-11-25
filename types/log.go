@@ -13,7 +13,7 @@ func Int256ToTopic(i *evmInt256.Int) Topic {
 type Log struct {
 	Address Address
 	Topics  []Topic
-	Data    []byte
+	Data    Bytes
 }
 
 func (l Log) Clone() *Log {
