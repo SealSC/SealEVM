@@ -209,6 +209,15 @@ func (e *EVM) Execute() (result ExecuteResult, err error) {
 		return result, err
 	}
 
+	if e.depth == 0 {
+		callerAcc, err := e.storage.GetAccount(e.context.Message.Caller)
+		if err != nil {
+			return result, err
+		}
+
+		e.storage.CacheAccount(callerAcc, false)
+	}
+
 	toAddr := e.context.Transaction.To
 	if toAddr == nil {
 		newAddr := e.storage.CreateAddress(e.context.Message.Caller, e.context.Transaction)
