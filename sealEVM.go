@@ -364,7 +364,6 @@ func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byt
 
 	if err == nil {
 		newEVM.storage.UpdateAccountContract(runtimeAcc.Address, ret.ResultData)
-		newEVM.note.UpdateNewContract(ret.StorageCache.NewContractAccounts)
 	}
 
 	if ret.ExitOpCode == opcodes.REVERT {

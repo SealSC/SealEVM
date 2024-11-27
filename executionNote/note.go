@@ -70,18 +70,22 @@ func New(cfg *NoteConfig, execType ExecutionType, tx *environment.Transaction, m
 	}
 }
 
+func (n *Note) Clone() *Note {
+	newNote := *n
+	newNote.SubNotes = make([]*Note, len(n.SubNotes))
+	for i, subNote := range n.SubNotes {
+		newNote.SubNotes[i] = subNote.Clone()
+	}
+	return &newNote
+}
+
 func (n *Note) SetResult(retData []byte, retErr error, storageCache cache.ResultCache) {
 	n.ReturnData = retData
 	n.ExecutionError = retErr
 
 	if n.config.RecordCache {
-		sCache := storageCache.Clone()
-		n.StorageCache = &sCache
+		n.StorageCache = &storageCache
 	}
-}
-
-func (n *Note) UpdateNewContract(newContract cache.AccountCache) {
-	n.StorageCache.NewContractAccounts = newContract.Clone()
 }
 
 func (n *Note) GenSubNote(execType ExecutionType, tx *environment.Transaction, msg *environment.Message) *Note {
@@ -100,5 +104,5 @@ func (n *Note) walk(meetNote MeetNote, depth uint64) {
 }
 
 func (n *Note) Walk(meetNote MeetNote) {
-	n.walk(meetNote, 0)
+	n.Clone().walk(meetNote, 0)
 }
