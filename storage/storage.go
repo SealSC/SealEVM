@@ -123,8 +123,6 @@ func (s *Storage) Transfer(fromAddr types.Address, toAddr types.Address, val *ev
 
 func (s *Storage) Log(log *types.Log) {
 	*s.ResultCache.Logs = append(*s.ResultCache.Logs, log)
-
-	return
 }
 
 func (s *Storage) Destruct(address types.Address) {
@@ -142,7 +140,7 @@ func (s *Storage) GetAccount(address types.Address) (*environment.Account, error
 		return nil, err
 	}
 
-	if extAcc == nil && err == nil {
+	if extAcc == nil {
 		return nil, evmErrors.NoSuchDataInTheStorage(errors.New("external return nil"))
 	}
 
@@ -157,7 +155,7 @@ func (s *Storage) AccountWithoutCache(addr types.Address) (*environment.Account,
 		return nil, err
 	}
 
-	if acc == nil && err == nil {
+	if acc == nil {
 		return nil, evmErrors.NoSuchDataInTheStorage(errors.New("external storage return nil"))
 	}
 
