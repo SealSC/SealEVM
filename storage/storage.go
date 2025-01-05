@@ -302,3 +302,54 @@ func (s *Storage) UpdateAccountContract(address types.Address, code []byte) {
 
 	acc.Contract = newContract
 }
+
+type IDataBlockStorage interface {
+	GetDataBlock(slot types.Slot) (types.Bytes, error)
+	SetDataBlock(slot types.Slot, data types.Bytes)
+}
+
+type dataBlockStorage struct {
+	address types.Address
+	dataBlock types.DataBlock
+	externalDataBlockStorage IExternalDataBlockStorage
+}
+
+func (s *dataBlockStorage) GetDataBlock(slot types.Slot) (types.Bytes, error) {
+	if s.dataBlock[slot] != nil {
+		return s.dataBlock[slot], nil
+	}
+
+	data, err := s.externalDataBlockStorage.GetDataBlock(s.address, slot)
+	if err != nil {
+		return nil, err
+	}
+
+	s.dataBlock[slot] = data
+	return data, nil
+}
+
+func (s *dataBlockStorage) SetDataBlock(slot types.Slot, data types.Bytes) {
+	s.dataBlock[slot] = data
+}
+
+func (s *Storage) NewDataBlockStorage(address types.Address) IDataBlockStorage {
+	if s.ResultCache.DataBlockCache[address] == nil {
+		s.ResultCache.DataBlockCache[address] = make(types.DataBlock)
+	}
+
+	return &dataBlockStorage{
+		address: address,
+		dataBlock: s.ResultCache.DataBlockCache[address],
+		externalDataBlockStorage: s.externalDataBlockStorage,
+	}
+}
+
+func (s *Storage) GetDataBlockStorage(address types.Address) types.DataBlock {
+	if s.ResultCache.DataBlockCache[address] != nil {
+		return s.ResultCache.DataBlockCache[address]
+	}
+
+	dataBlock := make(types.DataBlock)
+	s.ResultCache.DataBlockCache[address] = dataBlock
+	return dataBlock
+}

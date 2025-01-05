@@ -146,6 +146,28 @@ func (e *EVM) executePreCompiled(address types.Address, input []byte) (ExecuteRe
 	return result, err
 }
 
+func (e *EVM) executePreCompiledWithStorage(address types.Address, input []byte) (ExecuteResult, error) {
+	contract := precompiledContracts.GetWithStoragePrecompiledContract(address)
+	gasCost := contract.GasCost(address, input, e.storage.NewDataBlockStorage(address))
+	gasLeft := e.instructions.GetGasLeft()
+
+	result := ExecuteResult{
+		ResultData:   nil,
+		GasLeft:      gasLeft,
+		StorageCache: e.storage.ResultCache,
+	}
+
+	if gasLeft < gasCost {
+		return result, evmErrors.OutOfGas
+	}
+
+	execRet, err := contract.Execute(address, input, e.storage.NewDataBlockStorage(address))
+	gasLeft -= gasCost
+	e.instructions.SetGasLimit(gasLeft)
+	result.ResultData = execRet
+	return result, err
+}
+
 func (e *EVM) createContract(env *environment.Context) *environment.Contract {
 	return &environment.Contract{
 		Code:     env.Message.Data,
@@ -267,6 +289,10 @@ func (e *EVM) Execute() (result ExecuteResult, err error) {
 
 	if precompiledContracts.IsPrecompiledContract(toAcc.Address) {
 		return e.executePreCompiled(toAcc.Address, e.context.Message.Data)
+	}
+
+	if precompiledContracts.IsWithStoragePrecompiled(toAcc.Address) {
+		return e.executePreCompiledWithStorage(toAcc.Address, e.context.Message.Data)
 	}
 
 	execRet, gasLeft, err := e.instructions.ExecuteContract()

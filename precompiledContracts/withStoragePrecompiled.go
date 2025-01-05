@@ -2,6 +2,7 @@ package precompiledContracts
 
 import (
 	"github.com/SealSC/SealEVM/evmErrors"
+	"github.com/SealSC/SealEVM/storage"
 	"github.com/SealSC/SealEVM/types"
 )
 
@@ -11,8 +12,8 @@ const (
 )
 
 type IWithStoragePrecompiledContract interface {
-	GasCost(addr types.Address, input []byte, dataBlock types.DataBlock) uint64
-	Execute(addr types.Address, input []byte, dataBlock types.DataBlock) ([]byte, error)
+	GasCost(addr types.Address, input []byte, dataBlock storage.IDataBlockStorage) uint64
+	Execute(addr types.Address, input []byte, dataBlock storage.IDataBlockStorage) ([]byte, error)
 }
 
 var withStoragePrecompiledContracts = map[uint64]IWithStoragePrecompiledContract{}
