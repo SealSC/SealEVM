@@ -58,4 +58,12 @@ func InvalidPrecompiledAddress(addr types.Address) error {
 	return errors.New("invalid precompiled contract address " + addr.String())
 }
 
+func DuplicatePrecompiledContract(addr types.Address) error {
+	return errors.New("duplicate precompiled contract address " + addr.String())
+}
+
+func NoExternalDataBlockStorageSet() error {
+	return errors.New("no external data block storage set")
+}
+
 var OutOfMemory = errors.New("out of memory")
