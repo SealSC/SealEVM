@@ -35,3 +35,7 @@ type IExternalStorage interface {
 
 	Load(address types.Address, slot types.Slot) (*evmInt256.Int, error)
 }
+
+type IExternalDataBlockStorage interface {
+	GetDataBlock(address types.Address, slot types.Slot) (types.Bytes, error)
+}

@@ -20,9 +20,7 @@ func (l Log) Clone() *Log {
 	replica := &Log{}
 
 	replica.Topics = make([]Topic, len(l.Topics))
-	for idx, t := range l.Topics {
-		replica.Topics[idx] = t
-	}
+	copy(replica.Topics, l.Topics)
 
 	d := make([]byte, len(l.Data))
 	copy(d, l.Data)

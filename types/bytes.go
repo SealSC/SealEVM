@@ -8,6 +8,12 @@ import (
 
 type Bytes []byte
 
+func (b Bytes) Clone() Bytes {
+	replica := make([]byte, len(b))
+	copy(replica, b)
+	return replica
+}
+
 // MarshalJSON implements the json.Marshaler interface.
 func (b Bytes) MarshalJSON() ([]byte, error) {
 	hexStr := "0x" + hex.EncodeToString(b)

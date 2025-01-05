@@ -37,6 +37,7 @@ type EVMResultCallback func(result ExecuteResult, err error)
 type EVMParam struct {
 	MaxStackDepth  int
 	ExternalStore  storage.IExternalStorage
+	ExternalDataBlockStorage storage.IExternalDataBlockStorage
 	ResultCallback EVMResultCallback
 	Context        *environment.Context
 	GasSetting     *gasSetting.Setting
@@ -85,7 +86,7 @@ func New(param EVMParam) *EVM {
 	evm := &EVM{
 		stack:        stack.New(param.MaxStackDepth),
 		memory:       memory.New(),
-		storage:      storage.New(param.ExternalStore),
+		storage:      storage.New(param.ExternalStore, param.ExternalDataBlockStorage),
 		context:      param.Context,
 		instructions: nil,
 		note:         note,

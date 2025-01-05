@@ -15,6 +15,8 @@ type ResultCache struct {
 	Logs      *LogCache
 	Destructs DestructCache
 
+	DataBlockCache DataBlockCache
+
 	tOriginalData TransientCache
 	tCachedData   TransientCache
 }
@@ -26,6 +28,7 @@ func NewResultCache() ResultCache {
 		NewContractAccounts: AccountCache{},
 		Logs:                &LogCache{},
 		Destructs:           DestructCache{},
+		DataBlockCache:      DataBlockCache{},
 
 		tOriginalData: TransientCache{},
 		tCachedData:   TransientCache{},
@@ -37,6 +40,7 @@ func MergeResultCache(result *ResultCache, to *ResultCache) {
 	to.CachedAccounts.Merge(result.CachedAccounts)
 	to.NewContractAccounts.Merge(result.NewContractAccounts)
 	to.Destructs.Merge(result.Destructs)
+	to.DataBlockCache.Merge(result.DataBlockCache)
 
 	*to.Logs = *result.Logs
 
@@ -53,7 +57,7 @@ func (r *ResultCache) Clone() ResultCache {
 
 		Logs:      &logsClone,
 		Destructs: r.Destructs.Clone(),
-
+		DataBlockCache: r.DataBlockCache.Clone(),
 		tOriginalData: r.tOriginalData.Clone(),
 		tCachedData:   r.tCachedData.Clone(),
 	}

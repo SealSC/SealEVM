@@ -30,12 +30,14 @@ type Storage struct {
 	ResultCache     cache.ResultCache
 	readOnlyCache   cache.ReadOnlyCache
 	externalStorage IExternalStorage
+	externalDataBlockStorage IExternalDataBlockStorage
 }
 
-func New(extStorage IExternalStorage) *Storage {
+func New(extStorage IExternalStorage, extDataBlockStorage IExternalDataBlockStorage) *Storage {
 	s := &Storage{
 		ResultCache:     cache.NewResultCache(),
 		externalStorage: extStorage,
+		externalDataBlockStorage: extDataBlockStorage,
 		readOnlyCache: cache.ReadOnlyCache{
 			BlockHash: map[types.Slot]*evmInt256.Int{},
 		},
@@ -49,6 +51,7 @@ func (s *Storage) Clone() *Storage {
 		ResultCache:     s.ResultCache.Clone(),
 		readOnlyCache:   s.readOnlyCache,
 		externalStorage: s.externalStorage,
+		externalDataBlockStorage: s.externalDataBlockStorage,
 	}
 
 	return replica
