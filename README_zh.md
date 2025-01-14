@@ -5,16 +5,9 @@ SealEVM是一个独立的EVM执行器，目标是实现一个完全与存储系�
 
 **[English](https://github.com/SealSC/SealEVM/blob/master/README.md) | 中文**
 
-##
-
 - [SealEVM](#sealevm)
-  - [](#)
   - [如何使用](#如何使用)
   - [主要结构体与接口](#主要结构体与接口)
-  - [](#-1)
-  - [](#-2)
-  - [](#-3)
-  - [](#-4)
   - [Gas设置](#gas设置)
   - [执行记录](#执行记录)
   - [预编译合约](#预编译合约)
@@ -22,8 +15,6 @@ SealEVM是一个独立的EVM执行器，目标是实现一个完全与存储系�
     - [预编译合约存储接口](#预编译合约存储接口)
   - [使用场景](#使用场景)
 - [License](#license)
-
-------
 
 ## 如何使用
 
@@ -63,8 +54,6 @@ type EVMParam struct {
 }
 ```
 
-##
-
 >#### 外部存储接口
 SealEVM将通过该接口，与外部存储进行交互，来实现必要的合约读取、状态读取、地址创建等功能。
 
@@ -95,8 +84,6 @@ type IExternalStorage interface {
     Load(address types.Address, slot types.Slot) (*evmInt256.Int, error)
 }
 ```
-
-##
 
 >#### 执行环境结相关构体
 该结构体在environment包内，是SealEVM执行时的执行上下文，包括区块、交易、消息、合约等参数。
@@ -162,8 +149,6 @@ type Contract struct {
 
 ```
 
-##
-
 >#### 执行结果结构体
 SealEVM在执行交易完毕后，所有的最终账户数据、执行中产出的Log数据、自毁合约数据等，放入执行结果结构体的StorageCache中返回给调用者。
 ```go
@@ -176,8 +161,6 @@ type ExecuteResult struct {
     Note         *executionNote.Note //执行记录结构体，说明见后续章节
 }
 ```
-
-##
 
 >#### 执行结果缓存结构体
 SealEVM设计了一个[缓存](./storage/cache)包，将执行过程中以及执行完毕后，从外部获取的原始数据和需要最终存储结果数据，放入一个统一缓存结构体实例。
