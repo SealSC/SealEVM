@@ -54,3 +54,4 @@ localPlay
 *.log
 
 example/example
+.vscode

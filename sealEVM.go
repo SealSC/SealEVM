@@ -292,6 +292,10 @@ func (e *EVM) Execute() (result ExecuteResult, err error) {
 	}
 
 	if precompiledContracts.IsWithStoragePrecompiled(toAcc.Address) {
+		if !e.storage.HasExternalDataBlockStorage() {
+			return result, evmErrors.ExternalStorageIsNil
+		}
+
 		return e.executePreCompiledWithStorage(toAcc.Address, e.context.Message.Data)
 	}
 

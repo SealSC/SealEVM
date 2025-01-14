@@ -37,6 +37,7 @@ var WriteProtection = errors.New("write protection")
 var RevertErr = errors.New("revert")
 var BN256BadPairingInput = errors.New("bn256 bad pairing input")
 var InvalidExternalStorageResult = errors.New("external storage return invalid values")
+var ExternalStorageIsNil = errors.New("external storage is nil")
 
 func Panicked(err error) error {
 	return errors.New("panic error: " + err.Error())

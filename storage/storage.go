@@ -344,6 +344,10 @@ func (s *Storage) NewDataBlockStorage(address types.Address) IDataBlockStorage {
 	}
 }
 
+func (s *Storage) HasExternalDataBlockStorage() bool {
+	return s.externalDataBlockStorage != nil
+}
+
 func (s *Storage) GetDataBlockStorage(address types.Address) types.DataBlock {
 	if s.ResultCache.DataBlockCache[address] != nil {
 		return s.ResultCache.DataBlockCache[address]
