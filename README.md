@@ -5,20 +5,16 @@ The current version has achieved decoupling from the storage system through inte
 
 **[中文](https://github.com/SealSC/SealEVM/blob/master/README_zh.md) | English**
 
-##
-
-- [Usage](#usage)
-- [Main Structures and Interfaces](#main-structures-and-interfaces)
-  - [EVM Instance Configuration Parameters](#evm-instance-configuration-parameters)
-  - [External Storage Interface](#external-storage-interface)
-  - [Execution Environment Related Structures](#execution-environment-related-structures)
-  - [Execution Results Struct](#execution-results-struct)
-  - [Execution Result Cache Structure](#execution-result-cache-structure)
-- [Gas Setting](#gas-setting)
-- [The Execution Notes](#the-execution-notes)
-- [Precompiled Contracts](#precompiled-contracts)
-- [Usage Scenarios](#usage-scenarios)
-  - [User Case](#user-case)
+- [SealEVM](#sealevm)
+  - [Usage](#usage)
+  - [Main Structures and Interfaces](#main-structures-and-interfaces)
+  - [Gas Setting](#gas-setting)
+  - [The Execution Notes](#the-execution-notes)
+  - [Precompiled Contracts](#precompiled-contracts)
+  - [Precompiled Contracts with Storage](#precompiled-contracts-with-storage)
+    - [Storage Interface for Precompiled Contracts](#storage-interface-for-precompiled-contracts)
+  - [Usage Scenarios](#usage-scenarios)
+- [License](#license)
 
 ## Usage
 
@@ -55,15 +51,13 @@ type EVMResultCallback func(result ExecuteResult, err error)
 type EVMParam struct {
     MaxStackDepth  int // Maximum execution stack depth (note: not storage stack depth)
     ExternalStore  storage.IExternalStorage // External storage interface, explained in the following sections
+    ExternalDataBlockStorage storage.IExternalDataBlockStorage // External data block storage interface for precompiled contracts with storage
     ResultCallback EVMResultCallback // Callback function after EVM execution, defined at the beginning of this code block
     Context        *environment.Context // Context structure during EVM execution, explained in the following sections
     GasSetting     *gasSetting.Setting // Gas fee settings, use default if nil, explained in the following sections
     NoteConfig     *executionNote.NoteConfig //Execution note configure, if nil, execution note will not be generated, explained in the following sections
 }
-
 ```
-
-##
 
 >#### External Storage Interface
 SealEVM interacts with external storage through this interface to achieve necessary 
@@ -96,8 +90,6 @@ type IExternalStorage interface {
     Load(address types.Address, slot types.Slot) (*evmInt256.Int, error)
 }
 ```
-
-##
 
 >#### Execution Environment Related Structures
 Execution Environment Structure This structure is in the [environment](./environment) package
@@ -171,8 +163,6 @@ type Contract struct {
 }
 ```
 
-##
-
 >#### Execution Results Struct
 After SealEVM completes transaction execution, all final account data, Logs produced during execution, 
 and self-destructed contract data are placed into the StorageCache of the execution result structure and returned to the caller.
@@ -194,8 +184,6 @@ type ExecuteResult struct {
     Note         *executionNote.Note //Execution note structure. This will be explained in detail below.
 }
 ```
-
-##
 
 >#### Execution Result Cache Structure
 SealEVM has designed a [cache](./storage/cache) package, which consolidates the original data retrieved from external sources during and after execution, 
@@ -379,8 +367,65 @@ type PrecompiledContract interface {
 // 'addr' is the address where the precompiled contract is registered, it must be within the 
 // reserved address space of SealEVM, otherwise the registration will fail
 func RegisterContracts(addr types.Address, c PrecompiledContract) error
-
 ```
+
+## Precompiled Contracts with Storage
+SealEVM provides a special type of precompiled contracts that can access and modify storage. These contracts are allocated in the address space: 0x0000000000000000000000000000000000020000 ~ 0x000000000000000000000000000000000002FFFF.
+
+```go
+// Interface definition for precompiled contracts with storage
+// All registered precompiled contracts with storage must implement this interface
+type IWithStoragePrecompiledContract interface {
+    // Return the Gas consumption of the contract, which can be calculated based on input data and storage state
+    GasCost(addr types.Address, input []byte, dataBlock storage.IDataBlockStorage) uint64
+    
+    // Execute contract logic with access to storage
+    Execute(addr types.Address, input []byte, dataBlock storage.IDataBlockStorage) ([]byte, error)
+}
+
+// Registration function for precompiled contracts with storage
+// 'addr' is the address where the precompiled contract is registered
+// It must be within the reserved address space for precompiled contracts with storage in SealEVM,
+// otherwise the registration will fail
+func RegisterContractWithStorage(addr types.Address, c IWithStoragePrecompiledContract) error
+```
+
+### Storage Interface for Precompiled Contracts
+To support precompiled contracts with storage, SealEVM provides dedicated storage interfaces:
+
+```go
+// Data block storage interface
+type IDataBlockStorage interface {
+    // Get data block at specified slot
+    GetDataBlock(slot types.Slot) (types.Bytes, error)
+    
+    // Set data block at specified slot
+    SetDataBlock(slot types.Slot, data types.Bytes)
+}
+
+// Storage related methods in Storage struct
+type Storage struct {
+    // ... other fields ...
+    
+    // Clone data block storage for specified address
+    CloneDataBlockStorage(address types.Address) IDataBlockStorage
+    
+    // Create new data block storage
+    NewDataBlockStorage(address types.Address) IDataBlockStorage
+    
+    // Check if external data block storage exists
+    HasExternalDataBlockStorage() bool
+    
+    // Get data block storage for specified address
+    GetDataBlockStorage(address types.Address) types.DataBlock
+}
+```
+
+This design enables precompiled contracts to:
+- Have independent storage space
+- Read and write persistent data during execution
+- Maintain its own contract state
+- Implement more complex on-chain logic
 
 ## Usage Scenarios
 SealEVM is an independent, flexible, configurable, and well-structured EVM execution environment. If you have the following needs, developing based on SealEVM would be a good choice:
