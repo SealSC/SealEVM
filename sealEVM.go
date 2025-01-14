@@ -148,7 +148,7 @@ func (e *EVM) executePreCompiled(address types.Address, input []byte) (ExecuteRe
 
 func (e *EVM) executePreCompiledWithStorage(address types.Address, input []byte) (ExecuteResult, error) {
 	contract := precompiledContracts.GetWithStoragePrecompiledContract(address)
-	gasCost := contract.GasCost(address, input, e.storage.NewDataBlockStorage(address))
+	gasCost := contract.GasCost(address, input, e.storage.CloneDataBlockStorage(address))
 	gasLeft := e.instructions.GetGasLeft()
 
 	result := ExecuteResult{
@@ -165,6 +165,16 @@ func (e *EVM) executePreCompiledWithStorage(address types.Address, input []byte)
 	gasLeft -= gasCost
 	e.instructions.SetGasLimit(gasLeft)
 	result.ResultData = execRet
+
+	if err != nil {
+		result.StorageCache = cache.NewResultCache()
+		e.storage.ClearCache()
+	}
+
+	if e.resultNotify != nil {
+		e.resultNotify(result, err)
+	}
+
 	return result, err
 }
 

@@ -332,6 +332,18 @@ func (s *dataBlockStorage) SetDataBlock(slot types.Slot, data types.Bytes) {
 	s.dataBlock[slot] = data
 }
 
+func (s *Storage) CloneDataBlockStorage(address types.Address) IDataBlockStorage {
+	if s.ResultCache.DataBlockCache[address] == nil {
+		s.ResultCache.DataBlockCache[address] = make(types.DataBlock)
+	}
+
+	return &dataBlockStorage{
+		address: address,
+		dataBlock: s.ResultCache.DataBlockCache[address].Clone(),
+		externalDataBlockStorage: s.externalDataBlockStorage,
+	}
+}
+
 func (s *Storage) NewDataBlockStorage(address types.Address) IDataBlockStorage {
 	if s.ResultCache.DataBlockCache[address] == nil {
 		s.ResultCache.DataBlockCache[address] = make(types.DataBlock)
