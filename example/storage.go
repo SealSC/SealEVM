@@ -2,21 +2,27 @@ package main
 
 import (
 	"encoding/binary"
+	"fmt"
+	"time"
+
 	"github.com/SealSC/SealEVM/crypto/hashes"
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/storage/cache"
 	"github.com/SealSC/SealEVM/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"time"
 )
 
 type extStorage struct {
-	Accounts cache.AccountCache
+	Accounts   cache.AccountCache
+	DataBlocks map[types.Address]types.DataBlock
 }
 
 func newStorage() *extStorage {
-	return &extStorage{Accounts: cache.AccountCache{}}
+	return &extStorage{
+		Accounts:   cache.AccountCache{},
+		DataBlocks: make(map[types.Address]types.DataBlock),
+	}
 }
 
 func (r *extStorage) GetAccount(address types.Address) (*environment.Account, error) {
@@ -95,4 +101,31 @@ func (r *extStorage) StoreResult(ret *cache.ResultCache) {
 			r.Accounts[addr].Set(cachedAcc)
 		}
 	}
+
+	fmt.Println("ret.DataBlockCache: ", ret.DataBlockCache)
+	for addr, dataBlock := range ret.DataBlockCache {
+		if r.DataBlocks[addr] == nil {
+			r.DataBlocks[addr] = make(types.DataBlock)
+		}
+
+		for slot, data := range dataBlock {
+			fmt.Println("addr: ", addr, "slot: ", slot, "dataBlock: ", dataBlock)
+
+			r.DataBlocks[addr][slot] = data
+		}
+	}
+}
+
+func (r *extStorage) GetDataBlock(address types.Address, slot types.Slot) (types.Bytes, error) {
+	if r.DataBlocks[address] == nil {
+		r.DataBlocks[address] = make(types.DataBlock)
+	}
+	return r.DataBlocks[address][slot], nil
+}
+
+func (r *extStorage) SetDataBlock(address types.Address, slot types.Slot, data types.Bytes) {
+	if r.DataBlocks[address] == nil {
+		r.DataBlocks[address] = make(types.DataBlock)
+	}
+	r.DataBlocks[address][slot] = data
 }

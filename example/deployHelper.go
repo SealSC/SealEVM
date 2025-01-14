@@ -19,7 +19,7 @@ func deployContracts(
 		Caller: caller,
 		Value:  val,
 		Data:   initCode,
-	}, nil, math.MaxUint64, storage)
+	}, nil, math.MaxUint64, storage, storage)
 
 	//execute deploy tx
 	ret, err := evm.Execute()

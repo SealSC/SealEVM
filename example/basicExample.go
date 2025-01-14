@@ -1,13 +1,18 @@
+//go:build basic
+// +build basic
+
 package main
 
 import (
 	"encoding/hex"
 	"fmt"
+	"math"
+
 	"github.com/SealSC/SealEVM"
 	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/executionNote"
 	"github.com/SealSC/SealEVM/types"
-	"math"
+	"github.com/SealSC/SealEVM/example/contracts"
 )
 
 func main() {
@@ -18,19 +23,19 @@ func main() {
 	storage := newStorage()
 
 	//load codes
-	codes := loadCodes()
+	codes := exampleContracts.LoadBasicExampleCodes()
 
 	//using zero address as caller
 	caller := types.Address{}
 
 	//deploy contract, contract would be nil if deploy failed
-	contract := deployContracts(caller, codes.initCode, nil, storage)
+	contract := deployContracts(caller, codes.InitCode(), nil, storage)
 	if contract == nil {
 		return
 	}
 
 	//call counter() to get current counter's value
-	evm := newEVM(codes.CounterCallMessage(caller), &contract.Address, math.MaxUint64, storage)
+	evm := newEVM(codes.CounterCallMessage(caller), &contract.Address, math.MaxUint64, storage, storage)
 	ret, err := evm.Execute()
 	if err != nil {
 		fmt.Println("call counter() failed:", err)
@@ -42,7 +47,7 @@ func main() {
 	fmt.Println("counter: ", counter)
 
 	//call increaseFor("example") to increase the counter
-	evm = newEVM(codes.IncreaseCallMessage(caller), &contract.Address, math.MaxUint64, storage)
+	evm = newEVM(codes.IncreaseCallMessage(caller), &contract.Address, math.MaxUint64, storage, storage)
 	ret, _ = evm.Execute()
 
 	if err != nil {
@@ -76,7 +81,7 @@ func main() {
 	printLogs(ret.StorageCache.Logs)
 
 	//call counter() to get counter's value after increase
-	evm = newEVM(codes.CounterCallMessage(caller), &contract.Address, math.MaxUint64, storage)
+	evm = newEVM(codes.CounterCallMessage(caller), &contract.Address, math.MaxUint64, storage, storage)
 	ret, err = evm.Execute()
 
 	//result of Counter(), would be 1

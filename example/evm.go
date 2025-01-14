@@ -15,10 +15,12 @@ func newEVM(
 	to *types.Address,
 	gas uint64,
 	storage storage.IExternalStorage,
+	dataBlockStorage storage.IExternalDataBlockStorage,
 ) *SealEVM.EVM {
 	evm := SealEVM.New(SealEVM.EVMParam{
 		MaxStackDepth:  0,
 		ExternalStore:  storage,
+		ExternalDataBlockStorage: dataBlockStorage,
 		ResultCallback: nil,
 		Context: &environment.Context{
 			Block: environment.Block{
