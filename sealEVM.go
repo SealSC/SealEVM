@@ -290,7 +290,7 @@ func (e *EVM) Execute() (result ExecuteResult, err error) {
 		if e.storage.CanTransfer(msg.Caller, toAcc.Address, msg.Value) {
 			transErr := e.storage.Transfer(msg.Caller, toAcc.Address, msg.Value)
 			if transErr != nil {
-				return result, err
+				return result, transErr
 			}
 		} else {
 			return result, evmErrors.InsufficientBalance
