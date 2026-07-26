@@ -257,7 +257,7 @@ func (s *Storage) CachedContract(addr types.Address) bool {
 }
 
 func (s *Storage) CachedData(addr types.Address, slot types.Slot) (org *evmInt256.Int, current *evmInt256.Int) {
-	org = s.ResultCache.CachedAccounts.GetSlot(addr, slot)
+	org = s.ResultCache.OriginalAccounts.GetSlot(addr, slot)
 	current = s.ResultCache.CachedAccounts.GetSlot(addr, slot)
 	return org, current
 }
