@@ -21,6 +21,6 @@ func gasOfLog(topicCnt uint64) CommonCalculator {
 		if err != nil {
 			return 0, gasCost, err
 		}
-		return expandSize, 375 + 375*topicCnt + gasCost, nil
+		return expandSize, 375 + 375*topicCnt + 8*size.Uint64() + gasCost, nil
 	}
 }
