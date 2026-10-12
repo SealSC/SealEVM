@@ -17,7 +17,7 @@
 package precompiledContracts
 
 import (
-
+	"github.com/SealSC/SealEVM/evmInt256"
 	"github.com/SealSC/SealEVM/types"
 )
 
@@ -53,4 +53,17 @@ func IsPrecompiledContract(address types.Address) bool {
 	}
 
 	return contracts[addrInt.Uint64()] != nil
+}
+
+func RegisteredAddresses() []types.Address {
+	addrs := make([]types.Address, 0, len(contracts)+len(withStoragePrecompiledContracts))
+	for addr := range contracts {
+		addrs = append(addrs, types.Int256ToAddress(evmInt256.New(addr)))
+	}
+
+	for addr := range withStoragePrecompiledContracts {
+		addrs = append(addrs, types.Int256ToAddress(evmInt256.New(addr)))
+	}
+
+	return addrs
 }

@@ -31,6 +31,7 @@ type Storage struct {
 	readOnlyCache   cache.ReadOnlyCache
 	externalStorage IExternalStorage
 	externalDataBlockStorage IExternalDataBlockStorage
+	warmAddresses   map[types.Address]struct{}
 }
 
 func New(extStorage IExternalStorage, extDataBlockStorage IExternalDataBlockStorage) *Storage {
@@ -52,9 +53,20 @@ func (s *Storage) Clone() *Storage {
 		readOnlyCache:   s.readOnlyCache,
 		externalStorage: s.externalStorage,
 		externalDataBlockStorage: s.externalDataBlockStorage,
+		warmAddresses:   s.warmAddresses,
 	}
 
 	return replica
+}
+
+func (s *Storage) WarmUpAddresses(addrs ...types.Address) {
+	if s.warmAddresses == nil {
+		s.warmAddresses = make(map[types.Address]struct{}, len(addrs))
+	}
+
+	for _, addr := range addrs {
+		s.warmAddresses[addr] = struct{}{}
+	}
 }
 
 func (s *Storage) XLoad(address types.Address, slot types.Slot, t cache.TypeOfStorage) (*evmInt256.Int, error) {
@@ -253,6 +265,10 @@ func (s *Storage) ClearCache() {
 }
 
 func (s *Storage) CachedContract(addr types.Address) bool {
+	if _, warm := s.warmAddresses[addr]; warm {
+		return true
+	}
+
 	return s.ResultCache.CachedAccounts.Get(addr) != nil
 }
 

@@ -243,6 +243,9 @@ func (e *EVM) Execute() (result ExecuteResult, err error) {
 	}
 
 	if e.depth == 0 {
+		e.storage.WarmUpAddresses(e.context.Block.Coinbase)
+		e.storage.WarmUpAddresses(precompiledContracts.RegisteredAddresses()...)
+
 		callerAcc, err := e.storage.GetAccount(e.context.Message.Caller)
 		if err != nil {
 			return result, err
