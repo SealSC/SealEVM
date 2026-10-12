@@ -9,17 +9,16 @@ import (
 	"github.com/SealSC/SealEVM/utils"
 )
 
-func gasOfCopyMem(mem *memory.Memory, offset *evmInt256.Int, size *evmInt256.Int, gasCost uint64) (uint64, uint64, error) {
+func gasOfCopyMem(mem *memory.Memory, offset *evmInt256.Int, size *evmInt256.Int) (uint64, uint64, error) {
 	expSize, memGasCost, err := mem.CalculateMallocSizeAndGas(offset, size)
 
 	if err != nil {
 		return 0, 0, err
 	}
 
-	gasCost += utils.ToWordSize(size.Uint64()) * 3
-	gasCost += memGasCost
+	copyGasCost := utils.ToWordSize(size.Uint64()) * 3
 
-	return expSize, gasCost, nil
+	return expSize, copyGasCost + memGasCost, nil
 }
 
 func gasOfCopy(
@@ -33,7 +32,7 @@ func gasOfCopy(
 	var mOffset = stx.PeekPos(0)
 	var size = stx.PeekPos(2)
 
-	expSize, memGas, err := gasOfCopyMem(mem, mOffset, size, gasCost)
+	expSize, memGas, err := gasOfCopyMem(mem, mOffset, size)
 	if err != nil {
 		return 0, gasCost, err
 	}
@@ -52,7 +51,7 @@ func gasOfExtCodeCopy(
 	var mOffset = stx.PeekPos(1)
 	var size = stx.PeekPos(3)
 
-	expSize, memGas, err := gasOfCopyMem(mem, mOffset, size, gasCost)
+	expSize, memGas, err := gasOfCopyMem(mem, mOffset, size)
 	if err != nil {
 		return 0, gasCost, nil
 	}
