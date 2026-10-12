@@ -24,6 +24,9 @@ import (
 	"github.com/SealSC/SealEVM/types"
 )
 
+// callStipend is the free gas given to the callee of a CALL/CALLCODE that transfers value
+const callStipend uint64 = 2300
+
 type ClosureExecute func(ClosureParam) ([]byte, error)
 
 type ClosureParam struct {
@@ -87,8 +90,12 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 	v := evmInt256.New(0)
 
 	caller := ctx.environment.Address()
+	gasLimit := ctx.callGasLimit
 	if opCode == opcodes.CALL || opCode == opcodes.CALLCODE {
 		v = ctx.stack.Pop()
+		if !v.IsZero() {
+			gasLimit += callStipend
+		}
 	} else if opCode == opcodes.DELEGATECALL {
 		v = ctx.environment.Message.Value
 		caller = ctx.environment.Message.Caller
@@ -107,7 +114,7 @@ func commonCall(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, error)
 	cParam := ClosureParam{
 		VM:       ctx.vm,
 		OpCode:   opCode,
-		GasLimit: evmInt256.New(ctx.callGasLimit),
+		GasLimit: evmInt256.New(gasLimit),
 		Called:   addr,
 		Message: &environment.Message{
 			Caller: caller,
