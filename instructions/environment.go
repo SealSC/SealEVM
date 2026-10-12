@@ -341,11 +341,6 @@ func extCodeHashAction(ctx *instructionsContext) ([]byte, error) {
 	addrInt := ctx.stack.Peek()
 
 	addr := types.Int256ToAddress(addrInt)
-	if precompiledContracts.IsPrecompiledContract(addr) {
-		addrInt.SetBytes(utils.ZeroHash)
-		return nil, nil
-	}
-
 	codeHash, err := ctx.storage.GetCodeHash(addr)
 	if err != nil {
 		return nil, err

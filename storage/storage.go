@@ -226,11 +226,17 @@ func (s *Storage) GetCodeHash(address types.Address) (*types.Hash, error) {
 		return nil, err
 	}
 
-	if acc.Contract == nil {
-		return &types.Hash{}, nil
+	if acc.Contract != nil {
+		return &acc.Contract.CodeHash, nil
 	}
 
-	return &acc.Contract.CodeHash, nil
+	hasBalance := acc.Balance != nil && !acc.Balance.IsZero()
+	if hasBalance || !s.externalStorage.AccountEmpty(address) {
+		emptyCodeHash := s.HashOfCode(nil)
+		return &emptyCodeHash, nil
+	}
+
+	return nil, nil
 }
 
 func (s *Storage) GetBlockHash(block *evmInt256.Int) (*evmInt256.Int, error) {
