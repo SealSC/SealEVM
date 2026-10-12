@@ -271,6 +271,8 @@ func (e *EVM) Execute() (result ExecuteResult, err error) {
 
 		isCreation = true
 		contract := e.createContract(e.context)
+		// the message data is the init code, the init code itself runs with empty calldata
+		e.context.Message.Data = nil
 		toAcc = environment.NewAccount(newAddr, evmInt256.New(0), contract)
 
 		e.context.SetRuntimeAccount(toAcc)
