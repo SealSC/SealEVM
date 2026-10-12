@@ -40,6 +40,28 @@ func gasOfCopy(
 	return expSize, gasCost + memGas, nil
 }
 
+func gasOfMCopy(
+	_ *environment.Account,
+	stx *stack.Stack,
+	mem *memory.Memory,
+	_ *storage.Storage,
+) (uint64, uint64, error) {
+	var gasCost uint64 = 3
+
+	var mOffset = stx.PeekPos(0)
+	if src := stx.PeekPos(1); src.GT(mOffset) {
+		mOffset = src
+	}
+	var size = stx.PeekPos(2)
+
+	expSize, memGas, err := gasOfCopyMem(mem, mOffset, size)
+	if err != nil {
+		return 0, gasCost, err
+	}
+
+	return expSize, gasCost + memGas, nil
+}
+
 func gasOfExtCodeCopy(
 	_ *environment.Account,
 	stx *stack.Stack,

@@ -36,7 +36,7 @@ func Common() [opcodes.MaxOpCodesCount]CommonCalculator {
 	commDynamicCost[opcodes.MSTORE] = gasOfMemory(3, evmInt256.New(32))
 	commDynamicCost[opcodes.MSTORE8] = gasOfMemory(3, evmInt256.New(1))
 
-	commDynamicCost[opcodes.MCOPY] = gasOfCopy
+	commDynamicCost[opcodes.MCOPY] = gasOfMCopy
 
 	commDynamicCost[opcodes.SLOAD] = gasOfSLoad
 	commDynamicCost[opcodes.SSTORE] = gasOfSStore
