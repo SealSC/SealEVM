@@ -91,7 +91,8 @@ type IExternalStorage interface {
 ```go
 
 //执行环境汇总结构体，Transaction的To字段为nil时，视为创建合约交易
-//执行创建合约交易时，会使用本结构体中的Message.Data字段作为合约代码，生成合约结构体实例赋值给Contract字段
+//执行创建合约交易时，会使用本结构体中的Message.Data字段作为新合约的初始化代码
+//初始化代码执行时的calldata为空，因此在取出初始化代码后，Message.Data会被清空（置为nil）
 type Context struct {
     Block       Block       //区块环境结构体，详细信息见本代码段下文
     Transaction Transaction //交易结构体，详细信息见本代码段下文
@@ -172,10 +173,11 @@ SealEVM设计了一个[缓存](./storage/cache)包，将执行过程中以及执
 type ResultCache struct {
     OriginalAccounts    AccountCache //执行过程中，从外部存储载入的账户状态缓存
     CachedAccounts      AccountCache //执行完毕后，所有账户最终状态的缓存，包括下面NewContractAccount中的新合约账户
-    NewContractAccounts AccountCache //执行过程中，内部交易创建的合约的缓存，即由CREATE/CREATE2成功创建的合约的缓存
+    NewContractAccounts AccountCache //执行过程中创建的合约账户的缓存，即由创建合约交易或CREATE/CREATE2成功创建的合约的缓存
 
-    Logs         *LogCache     //操作码LOG0(0xA0)~LOG4(0xA4)产生的日志缓存
-    Destructs    DestructCache //执行了SELFDESTRUCT(0xFF)的合约的缓存
+    Logs           *LogCache      //操作码LOG0(0xA0)~LOG4(0xA4)产生的日志缓存
+    Destructs      DestructCache  //执行了SELFDESTRUCT(0xFF)的合约的缓存
+    DataBlockCache DataBlockCache //带存储的预编译合约访问过的数据块的最终状态，以合约地址索引
 }
 
 //账户缓存类型，存放以地址索引的账户结构体，账户结构体请参阅执行环境结相关构体
@@ -187,6 +189,8 @@ type LogCache []*types.Log
 //销毁合约地址缓存类型，存放执行了SELFDESTRUCT(0xFF)的合约地址
 type DestructCache map[types.Address]types.Address
 
+//数据块缓存类型，存放每个带存储的预编译合约的数据块
+type DataBlockCache map[types.Address]types.DataBlock
 ```
 
 ## Gas设置
@@ -199,6 +203,7 @@ type intrinsicGasSetting.IntrinsicGas func(data []byte, to *environment.Contract
 
 //通用的动态Gas消耗计算函数类型定义
 //需要返回要扩展的内存大小(memExpSize)、gas消耗量(gasCost)
+//操作码配置了动态计算函数时，不会再叠加该操作码的ConstCost，因此gasCost必须同时包含操作码的基础费用（例如MLOAD的3）和内存扩展费用
 type dynamicGasSetting.CommonCalculator func(
     acc *environment.Account, //操作码执行开始时的环境账户信息，也就是当前执行合约所属的账户
     stx *stack.Stack,         //操作码执行开始时的堆栈环境
@@ -208,6 +213,9 @@ type dynamicGasSetting.CommonCalculator func(
 
 //为CALL、CALLCODE、STATICCALL、DELEGATECALL设计的Gas消耗计算函数类型定义
 //需要返回要扩展的内存大小(memExpSize)、gas消耗量(gasCost)、内部调用发送的gas量(sendGas)
+//memExpSize需要同时覆盖输入(args)和输出(ret)两个内存区域，以结束位置较大者为准
+//对于转账金额非0的CALL/CALLCODE，SealEVM会在sendGas之外额外给被调用方2300 gas的补贴(stipend)，
+//该补贴不向调用方收取，也不应计入gasCost
 type CallGas func(
     code opcodes.OpCode,    //当前的操作码
     availableGas uint64,    //当前可使用的Gas数量
@@ -224,7 +232,7 @@ type Setting struct {
     //每个交易的固定Gas费用计算函数，会在执行开始前调用一次，以扣除固定的交易费用
     IntrinsicCost intrinsicGasSetting.IntrinsicGas
 
-    //动态Gas消耗计算函数配置，CALL、CALLCODE、STATICCALL、DELEGATECALL、SSTORE操作码将忽略该配置
+    //动态Gas消耗计算函数配置，CALL、CALLCODE、STATICCALL、DELEGATECALL操作码将忽略该配置，改用CallCost
     CommonDynamicCost [opcodes.MaxOpCodesCount]dynamicGasSetting.CommonCalculator
 
     //内部调用CALL、CALLCODE、STATICCALL、DELEGATECALL时的gas计算配置
@@ -233,7 +241,7 @@ type Setting struct {
     //Create、Create2以及创建合约的交易，在存储合约代码时的Gas计算配置
     ContractStoreCost dynamicGasSetting.ContractStoreGas
 
-    //操作码固定消耗配置，如果CommonDynamicCost、CallCost、SStoreCost都未被使用，则使用该操作码的固定消耗配置
+    //操作码固定消耗配置，仅在该操作码未配置CommonDynamicCost时使用（CALL、CALLCODE、STATICCALL、DELEGATECALL始终使用CallCost）
     ConstCost [opcodes.MaxOpCodesCount]uint64
 }
 ```
