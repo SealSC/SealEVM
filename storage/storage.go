@@ -78,6 +78,10 @@ func (s *Storage) XLoad(address types.Address, slot types.Slot, t cache.TypeOfSt
 		return nil, evmErrors.InvalidTypeOfStorage()
 	}
 
+	if t == cache.SStorage {
+		s.ResultCache.MarkSlotAccessed(address, slot)
+	}
+
 	var err error = nil
 	i := s.ResultCache.XCachedLoad(address, slot, t)
 	if i == nil {
@@ -99,7 +103,15 @@ func (s *Storage) XLoad(address types.Address, slot types.Slot, t cache.TypeOfSt
 }
 
 func (s *Storage) XStore(address types.Address, slot types.Slot, val *evmInt256.Int, t cache.TypeOfStorage) {
+	if t == cache.SStorage {
+		s.ResultCache.MarkSlotAccessed(address, slot)
+	}
+
 	s.ResultCache.XCachedStore(address, slot, val, t)
+}
+
+func (s *Storage) SlotAccessed(address types.Address, slot types.Slot) bool {
+	return s.ResultCache.SlotAccessed(address, slot)
 }
 
 func (s *Storage) CanTransfer(from types.Address, to types.Address, amount *evmInt256.Int) bool {

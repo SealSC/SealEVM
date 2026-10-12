@@ -19,6 +19,8 @@ type ResultCache struct {
 
 	tOriginalData TransientCache
 	tCachedData   TransientCache
+
+	accessedSlots AccessedSlotCache
 }
 
 func NewResultCache() ResultCache {
@@ -32,6 +34,8 @@ func NewResultCache() ResultCache {
 
 		tOriginalData: TransientCache{},
 		tCachedData:   TransientCache{},
+
+		accessedSlots: AccessedSlotCache{},
 	}
 }
 
@@ -46,6 +50,8 @@ func MergeResultCache(result *ResultCache, to *ResultCache) {
 
 	to.tOriginalData.Merge(result.tOriginalData)
 	to.tCachedData.Merge(result.tCachedData)
+
+	to.accessedSlots.Merge(result.accessedSlots)
 }
 
 func (r *ResultCache) Clone() ResultCache {
@@ -60,6 +66,8 @@ func (r *ResultCache) Clone() ResultCache {
 		DataBlockCache: r.DataBlockCache.Clone(),
 		tOriginalData: r.tOriginalData.Clone(),
 		tCachedData:   r.tCachedData.Clone(),
+
+		accessedSlots: r.accessedSlots.Clone(),
 	}
 
 	for addr, acc := range r.NewContractAccounts {
@@ -94,6 +102,14 @@ func (r *ResultCache) XCachedStore(address types.Address, slot types.Slot, val *
 	} else {
 		r.tCachedData.Set(address, slot, val)
 	}
+}
+
+func (r *ResultCache) MarkSlotAccessed(address types.Address, slot types.Slot) {
+	r.accessedSlots.Add(address, slot)
+}
+
+func (r *ResultCache) SlotAccessed(address types.Address, slot types.Slot) bool {
+	return r.accessedSlots.Has(address, slot)
 }
 
 func (r *ResultCache) RemoveAccount(addr types.Address) {
