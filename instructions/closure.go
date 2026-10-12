@@ -177,11 +177,7 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 	newCA, err := ctx.storage.AccountWithoutCache(addr)
 
 	if err == nil {
-		newCA.Contract = &environment.Contract{
-			Code:     code,
-			CodeHash: types.Hash{},
-			CodeSize: uint64(len(code)),
-		}
+		newCA.Contract = ctx.storage.ConstructingContract(code)
 
 		ctx.storage.CacheAccount(newCA, true)
 

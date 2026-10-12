@@ -232,6 +232,15 @@ func (s *Storage) HashOfCode(code []byte) types.Hash {
 	return s.externalStorage.HashOfCode(code)
 }
 
+// ConstructingContract is the cached view of an account whose init code is running:
+// it has no code yet, the init code is kept in InitCode.
+func (s *Storage) ConstructingContract(initCode []byte) *environment.Contract {
+	return &environment.Contract{
+		CodeHash: s.HashOfCode(nil),
+		InitCode: bytes.Clone(initCode),
+	}
+}
+
 func (s *Storage) GetCodeHash(address types.Address) (*types.Hash, error) {
 	acc, err := s.GetAccount(address)
 	if err != nil {
@@ -331,7 +340,7 @@ func (s *Storage) UpdateAccountContract(address types.Address, code []byte) {
 		CodeHash: s.HashOfCode(code),
 		CodeSize: uint64(len(code)),
 
-		InitCode: bytes.Clone(acc.Contract.Code),
+		InitCode: bytes.Clone(acc.Contract.InitCode),
 	}
 
 	acc.Contract = newContract

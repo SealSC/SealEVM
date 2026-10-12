@@ -287,7 +287,12 @@ func (e *EVM) Execute() (result ExecuteResult, err error) {
 		}
 	}
 
-	e.storage.CacheAccount(toAcc, isCreation)
+	cachedAcc := toAcc
+	if isCreation {
+		cachedAcc = toAcc.Clone()
+		cachedAcc.Contract = e.storage.ConstructingContract(toAcc.Contract.Code)
+	}
+	e.storage.CacheAccount(cachedAcc, isCreation)
 
 	if e.context.Message.Value == nil {
 		e.context.Message.Value = evmInt256.New(0)
@@ -413,7 +418,14 @@ func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byt
 	newEVM := e.getClosureDefaultEVM(param)
 
 	runtimeAcc, _ := e.storage.GetAccount(param.Called)
-	newEVM.context.SetRuntimeAccount(runtimeAcc.Clone())
+	runningAcc := runtimeAcc.Clone()
+	initCode := runtimeAcc.Contract.InitCode
+	runningAcc.Contract = &environment.Contract{
+		Code:     initCode,
+		CodeHash: e.storage.HashOfCode(initCode),
+		CodeSize: uint64(len(initCode)),
+	}
+	newEVM.context.SetRuntimeAccount(runningAcc)
 
 	newEVM.depth = depth
 
