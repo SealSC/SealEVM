@@ -75,7 +75,7 @@ func gasOfExtCodeCopy(
 
 	expSize, memGas, err := gasOfCopyMem(mem, mOffset, size)
 	if err != nil {
-		return 0, gasCost, nil
+		return 0, gasCost, err
 	}
 
 	return expSize, gasCost + memGas, nil
