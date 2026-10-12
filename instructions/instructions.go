@@ -17,6 +17,8 @@
 package instructions
 
 import (
+	"fmt"
+
 	"github.com/SealSC/SealEVM/environment"
 	"github.com/SealSC/SealEVM/evmErrors"
 	"github.com/SealSC/SealEVM/evmInt256"
@@ -153,7 +155,11 @@ func (i *instructionsContext) calcGas(code opcodes.OpCode, gasRemaining uint64) 
 func (i *instructionsContext) ExecuteContract() (ret []byte, gasRemaining uint64, err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			err = evmErrors.Panicked(e.(error))
+			pErr, ok := e.(error)
+			if !ok {
+				pErr = fmt.Errorf("%v", e)
+			}
+			err = evmErrors.Panicked(pErr)
 			gasRemaining = i.gasRemaining.Uint64()
 		}
 	}()
