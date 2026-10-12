@@ -35,11 +35,13 @@ func gasOfCall(
 	store *storage.Storage,
 ) (uint64, uint64, uint64, error) {
 	var baseGas uint64
-	var mOffset, size *evmInt256.Int
+	var argsOffset, argsSize, retOffset, retSize *evmInt256.Int
 
 	if code == opcodes.CALL || code == opcodes.CALLCODE {
-		mOffset = stx.PeekPos(5)
-		size = stx.PeekPos(6)
+		argsOffset = stx.PeekPos(3)
+		argsSize = stx.PeekPos(4)
+		retOffset = stx.PeekPos(5)
+		retSize = stx.PeekPos(6)
 
 		val := stx.PeekPos(2)
 		addr := stx.PeekPos(1)
@@ -53,15 +55,26 @@ func gasOfCall(
 			}
 		}
 	} else {
-		mOffset = stx.PeekPos(4)
-		size = stx.PeekPos(5)
+		argsOffset = stx.PeekPos(2)
+		argsSize = stx.PeekPos(3)
+		retOffset = stx.PeekPos(4)
+		retSize = stx.PeekPos(5)
 	}
 
 	baseGas += gasWithTouchedCheck(stx, 1, store.CachedContract)
 
-	expSize, memCost, err := mem.CalculateMallocSizeAndGas(mOffset, size)
+	expSize, memCost, err := mem.CalculateMallocSizeAndGas(retOffset, retSize)
 	if err != nil {
 		return 0, baseGas, 0, err
+	}
+
+	argsExpSize, argsMemCost, err := mem.CalculateMallocSizeAndGas(argsOffset, argsSize)
+	if err != nil {
+		return 0, baseGas, 0, err
+	}
+
+	if argsExpSize > expSize {
+		expSize, memCost = argsExpSize, argsMemCost
 	}
 
 	baseGas += memCost
