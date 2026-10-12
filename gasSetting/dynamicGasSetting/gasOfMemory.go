@@ -8,7 +8,7 @@ import (
 	"github.com/SealSC/SealEVM/storage"
 )
 
-func gasOfMemory(size *evmInt256.Int) CommonCalculator {
+func gasOfMemory(baseGas uint64, fixedSize *evmInt256.Int) CommonCalculator {
 	return func(
 		_ *environment.Account,
 		stx *stack.Stack,
@@ -16,9 +16,12 @@ func gasOfMemory(size *evmInt256.Int) CommonCalculator {
 		_ *storage.Storage,
 	) (uint64, uint64, error) {
 		mOffset := stx.PeekPos(0)
+		size := fixedSize
 		if size == nil {
 			size = stx.PeekPos(1)
 		}
-		return mem.CalculateMallocSizeAndGas(mOffset, size)
+
+		expSize, gasCost, err := mem.CalculateMallocSizeAndGas(mOffset, size)
+		return expSize, baseGas + gasCost, err
 	}
 }

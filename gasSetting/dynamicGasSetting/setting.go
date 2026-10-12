@@ -32,9 +32,9 @@ func Common() [opcodes.MaxOpCodesCount]CommonCalculator {
 
 	commDynamicCost[opcodes.EXTCODECOPY] = gasOfExtCodeCopy
 
-	commDynamicCost[opcodes.MLOAD] = gasOfMemory(evmInt256.New(32))
-	commDynamicCost[opcodes.MSTORE] = gasOfMemory(evmInt256.New(32))
-	commDynamicCost[opcodes.MSTORE8] = gasOfMemory(evmInt256.New(0))
+	commDynamicCost[opcodes.MLOAD] = gasOfMemory(3, evmInt256.New(32))
+	commDynamicCost[opcodes.MSTORE] = gasOfMemory(3, evmInt256.New(32))
+	commDynamicCost[opcodes.MSTORE8] = gasOfMemory(3, evmInt256.New(1))
 
 	commDynamicCost[opcodes.MCOPY] = gasOfCopy
 
@@ -50,8 +50,8 @@ func Common() [opcodes.MaxOpCodesCount]CommonCalculator {
 	commDynamicCost[opcodes.CREATE] = gasOfCreate(false)
 	commDynamicCost[opcodes.CREATE2] = gasOfCreate(true)
 
-	commDynamicCost[opcodes.RETURN] = gasOfMemory(nil)
-	commDynamicCost[opcodes.REVERT] = gasOfMemory(nil)
+	commDynamicCost[opcodes.RETURN] = gasOfMemory(0, nil)
+	commDynamicCost[opcodes.REVERT] = gasOfMemory(0, nil)
 	commDynamicCost[opcodes.SELFDESTRUCT] = gasOfSelfDestruct
 
 	return commDynamicCost
