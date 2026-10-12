@@ -352,7 +352,7 @@ type MeetNote func(note *Note, depth uint64)
 SealEVM provides a custom precompiled contract registration interface within the reserved address space, 
 offering better extensibility for different system requirements.  
 
-Reserved address space: 0x0000000000000000000000000000000100000000 ~ 0x00000000000000000000000000000001FFFFFFFF.
+Reserved address space: 0x0000000000000000000000000000000000010000 ~ 0x000000000000000000000000000000000001FFFF.
 
 >SealEVM has implemented precompiled contracts consistent with Ethereum to provide good application compatibility.
 
