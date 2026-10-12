@@ -18,10 +18,10 @@ func newEVM(
 	dataBlockStorage storage.IExternalDataBlockStorage,
 ) *SealEVM.EVM {
 	evm := SealEVM.New(SealEVM.EVMParam{
-		MaxStackDepth:  0,
-		ExternalStore:  storage,
+		MaxStackDepth:            0,
+		ExternalStore:            storage,
 		ExternalDataBlockStorage: dataBlockStorage,
-		ResultCallback: nil,
+		ResultCallback:           nil,
 		Context: &environment.Context{
 			Block: environment.Block{
 				ChainID:    evmInt256.New(0),

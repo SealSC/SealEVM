@@ -27,17 +27,17 @@ import (
 )
 
 type Storage struct {
-	ResultCache     cache.ResultCache
-	readOnlyCache   cache.ReadOnlyCache
-	externalStorage IExternalStorage
+	ResultCache              cache.ResultCache
+	readOnlyCache            cache.ReadOnlyCache
+	externalStorage          IExternalStorage
 	externalDataBlockStorage IExternalDataBlockStorage
-	warmAddresses   map[types.Address]struct{}
+	warmAddresses            map[types.Address]struct{}
 }
 
 func New(extStorage IExternalStorage, extDataBlockStorage IExternalDataBlockStorage) *Storage {
 	s := &Storage{
-		ResultCache:     cache.NewResultCache(),
-		externalStorage: extStorage,
+		ResultCache:              cache.NewResultCache(),
+		externalStorage:          extStorage,
 		externalDataBlockStorage: extDataBlockStorage,
 		readOnlyCache: cache.ReadOnlyCache{
 			BlockHash: map[types.Slot]*evmInt256.Int{},
@@ -49,11 +49,11 @@ func New(extStorage IExternalStorage, extDataBlockStorage IExternalDataBlockStor
 
 func (s *Storage) Clone() *Storage {
 	replica := &Storage{
-		ResultCache:     s.ResultCache.Clone(),
-		readOnlyCache:   s.readOnlyCache,
-		externalStorage: s.externalStorage,
+		ResultCache:              s.ResultCache.Clone(),
+		readOnlyCache:            s.readOnlyCache,
+		externalStorage:          s.externalStorage,
 		externalDataBlockStorage: s.externalDataBlockStorage,
-		warmAddresses:   s.warmAddresses,
+		warmAddresses:            s.warmAddresses,
 	}
 
 	return replica
@@ -343,8 +343,8 @@ type IDataBlockStorage interface {
 }
 
 type dataBlockStorage struct {
-	address types.Address
-	dataBlock types.DataBlock
+	address                  types.Address
+	dataBlock                types.DataBlock
 	externalDataBlockStorage IExternalDataBlockStorage
 }
 
@@ -372,8 +372,8 @@ func (s *Storage) CloneDataBlockStorage(address types.Address) IDataBlockStorage
 	}
 
 	return &dataBlockStorage{
-		address: address,
-		dataBlock: s.ResultCache.DataBlockCache[address].Clone(),
+		address:                  address,
+		dataBlock:                s.ResultCache.DataBlockCache[address].Clone(),
 		externalDataBlockStorage: s.externalDataBlockStorage,
 	}
 }
@@ -384,8 +384,8 @@ func (s *Storage) NewDataBlockStorage(address types.Address) IDataBlockStorage {
 	}
 
 	return &dataBlockStorage{
-		address: address,
-		dataBlock: s.ResultCache.DataBlockCache[address],
+		address:                  address,
+		dataBlock:                s.ResultCache.DataBlockCache[address],
 		externalDataBlockStorage: s.externalDataBlockStorage,
 	}
 }

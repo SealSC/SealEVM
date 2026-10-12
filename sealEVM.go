@@ -35,13 +35,13 @@ import (
 
 type EVMResultCallback func(result ExecuteResult, err error)
 type EVMParam struct {
-	MaxStackDepth  int
-	ExternalStore  storage.IExternalStorage
+	MaxStackDepth            int
+	ExternalStore            storage.IExternalStorage
 	ExternalDataBlockStorage storage.IExternalDataBlockStorage
-	ResultCallback EVMResultCallback
-	Context        *environment.Context
-	GasSetting     *gasSetting.Setting
-	NoteConfig     *executionNote.NoteConfig
+	ResultCallback           EVMResultCallback
+	Context                  *environment.Context
+	GasSetting               *gasSetting.Setting
+	NoteConfig               *executionNote.NoteConfig
 }
 
 type EVM struct {

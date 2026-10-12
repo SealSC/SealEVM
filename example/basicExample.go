@@ -10,9 +10,9 @@ import (
 
 	"github.com/SealSC/SealEVM"
 	"github.com/SealSC/SealEVM/evmInt256"
+	"github.com/SealSC/SealEVM/example/contracts"
 	"github.com/SealSC/SealEVM/executionNote"
 	"github.com/SealSC/SealEVM/types"
-	"github.com/SealSC/SealEVM/example/contracts"
 )
 
 func main() {

@@ -37,7 +37,7 @@ func loadStack() {
 	setDupActions()
 }
 
-//EIP-3855 (https://eips.ethereum.org/EIPS/eip-3855)
+// EIP-3855 (https://eips.ethereum.org/EIPS/eip-3855)
 func setPush0() {
 	instructionTable[opcodes.PUSH0] = opCodeInstruction{
 		action: func(ctx *instructionsContext) ([]byte, error) {

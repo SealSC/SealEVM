@@ -61,11 +61,11 @@ func (r *ResultCache) Clone() ResultCache {
 		CachedAccounts:      r.CachedAccounts.Clone(),
 		NewContractAccounts: AccountCache{},
 
-		Logs:      &logsClone,
-		Destructs: r.Destructs.Clone(),
+		Logs:           &logsClone,
+		Destructs:      r.Destructs.Clone(),
 		DataBlockCache: r.DataBlockCache.Clone(),
-		tOriginalData: r.tOriginalData.Clone(),
-		tCachedData:   r.tCachedData.Clone(),
+		tOriginalData:  r.tOriginalData.Clone(),
+		tCachedData:    r.tCachedData.Clone(),
 
 		accessedSlots: r.accessedSlots.Clone(),
 	}
