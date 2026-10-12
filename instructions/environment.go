@@ -333,7 +333,7 @@ func returnDataCopyAction(ctx *instructionsContext) ([]byte, error) {
 		return nil, evmErrors.ReturnDataCopyOutOfBounds
 	}
 
-	err := ctx.memory.Store(mOffset.Uint64(), ctx.lastReturn[dOffset.Uint64():dLen.Uint64()])
+	err := ctx.memory.Store(mOffset.Uint64(), ctx.lastReturn[dOffset.Uint64():end.Uint64()])
 	return nil, err
 }
 
