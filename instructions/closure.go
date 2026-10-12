@@ -207,6 +207,8 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 		}
 
 		ctx.storage.RemoveCachedAccount(addr)
+		// keep the new address warm in the creator's scope even though the creation failed
+		_, _ = ctx.storage.GetAccount(addr)
 	} else {
 		ctx.stack.Push(addr.Int256())
 		ctx.storage.UpdateAccountContract(addr, ret)

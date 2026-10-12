@@ -373,10 +373,12 @@ func (e *EVM) getClosureDefaultEVM(param instructions.ClosureParam) *EVM {
 }
 
 func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte, error) {
+	// load the called account in the caller's scope so it stays warm even if the sub-call fails
+	calledAcc, _ := e.storage.GetAccount(param.Called)
+
 	newEVM := e.getClosureDefaultEVM(param)
 	newEVM.depth = depth
 
-	calledAcc, _ := newEVM.storage.GetAccount(param.Called)
 	runtimeAcc := calledAcc.Clone()
 
 	if param.OpCode == opcodes.DELEGATECALL {
