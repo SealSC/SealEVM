@@ -143,6 +143,16 @@ func (e *EVM) executePreCompiled(address types.Address, input []byte) (ExecuteRe
 	gasLeft -= gasCost
 	e.instructions.SetGasLimit(gasLeft)
 	result.ResultData = execRet
+
+	if err != nil {
+		result.StorageCache = cache.NewResultCache()
+		e.storage.ClearCache()
+	}
+
+	if e.resultNotify != nil {
+		e.resultNotify(result, err)
+	}
+
 	return result, err
 }
 
