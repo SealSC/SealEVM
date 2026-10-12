@@ -386,7 +386,7 @@ func (e *EVM) commonCall(param instructions.ClosureParam, depth uint64) ([]byte,
 
 	runtimeAcc := calledAcc.Clone()
 
-	if param.OpCode == opcodes.DELEGATECALL {
+	if param.OpCode == opcodes.DELEGATECALL || param.OpCode == opcodes.CALLCODE {
 		runtimeAcc = e.context.Account().Clone()
 		runtimeAcc.Contract = calledAcc.Contract
 	}
