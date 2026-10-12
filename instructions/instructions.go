@@ -161,7 +161,7 @@ func (i *instructionsContext) ExecuteContract() (ret []byte, gasRemaining uint64
 	i.pc = 0
 	contract := i.environment.Contract()
 
-	if len(contract.Code) == 0 {
+	if contract == nil || len(contract.Code) == 0 {
 		return nil, i.gasRemaining.Uint64(), nil
 	}
 
