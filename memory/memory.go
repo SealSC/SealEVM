@@ -101,6 +101,10 @@ func (m *Memory) Malloc(length uint64) {
 	}
 	newMem := make([]byte, length)
 	m.cell = append(m.cell, newMem...)
+
+	if cost, err := m.gasCost(uint64(len(m.cell))); err == nil {
+		m.lastGasCost = cost
+	}
 }
 
 func (m *Memory) Map(offset uint64, length uint64) ([]byte, error) {
