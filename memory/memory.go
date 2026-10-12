@@ -51,6 +51,10 @@ func (m *Memory) gasCost(size uint64) (uint64, error) {
 }
 
 func (m *Memory) CalculateMallocSizeAndGas(offset *evmInt256.Int, size *evmInt256.Int) (uint64, uint64, error) {
+	if size.IsZero() {
+		return 0, 0, nil
+	}
+
 	mLen := uint64(len(m.cell))
 	bound := offset.Clone()
 	bound.Add(size).ExtendedAlign(expandUnit)
@@ -117,6 +121,10 @@ func (m *Memory) Map(offset uint64, length uint64) ([]byte, error) {
 
 func (m *Memory) Store(offset uint64, data []byte) error {
 	dLen := uint64(len(data))
+	if dLen == 0 {
+		return nil
+	}
+
 	if dLen+offset > uint64(len(m.cell)) {
 		return evmErrors.OutOfMemory
 	}
@@ -126,6 +134,10 @@ func (m *Memory) Store(offset uint64, data []byte) error {
 }
 
 func (m *Memory) StoreNBytes(offset uint64, n uint64, data []byte) error {
+	if n == 0 {
+		return nil
+	}
+
 	if offset+n > uint64(len(m.cell)) {
 		return evmErrors.OutOfMemory
 	}
@@ -144,15 +156,15 @@ func (m *Memory) Set(idx uint64, data byte) error {
 }
 
 func (m *Memory) Copy(offset uint64, length uint64) ([]byte, error) {
+	if length == 0 {
+		return []byte{}, nil
+	}
+
 	if offset+length > uint64(len(m.cell)) {
 		return nil, evmErrors.OutOfMemory
 	}
 
 	ret := make([]byte, length, length)
-	if length == 0 {
-		return ret, nil
-	}
-
 	copy(ret, m.cell[offset:offset+length])
 	return ret, nil
 }
