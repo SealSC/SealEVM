@@ -434,7 +434,7 @@ func (e *EVM) commonCreate(param instructions.ClosureParam, depth uint64) ([]byt
 	if ret.ExitOpCode == opcodes.REVERT {
 		err = evmErrors.RevertErr
 	}
-	e.instructions.SetGasLimit(ret.GasLeft)
+	e.instructions.SetGasLimit(e.instructions.GetGasLeft() - param.GasLimit.Uint64() + ret.GasLeft)
 	return ret.ResultData, err
 }
 

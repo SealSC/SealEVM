@@ -185,10 +185,11 @@ func commonCreate(ctx *instructionsContext, opCode opcodes.OpCode) ([]byte, erro
 
 		ctx.storage.CacheAccount(newCA, true)
 
+		available := ctx.gasRemaining.Uint64()
 		cParam := ClosureParam{
 			VM:       ctx.vm,
 			OpCode:   opCode,
-			GasLimit: ctx.gasRemaining.Clone(),
+			GasLimit: evmInt256.New(available - available/64),
 			Called:   addr,
 			Message: &environment.Message{
 				Caller: caller,
